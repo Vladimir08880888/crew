@@ -82,30 +82,38 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
                 Calme 50 % / Normal 100 % / Chargé 150 %. */}
             <div style={{ marginTop: '0.5rem' }}>
               <p className="muted" style={{ fontSize: '0.72rem', marginBottom: '0.3rem' }}>
-                {t('smartPlanner.densityHint', "L'estimation du manager basée sur les réservations et l'historique.")}
+                {t('smartPlanner.densityHint2', '1,0 = service standard. 0,5 = calme (réservations en baisse). 1,3 = chargé (terrasse pleine). Au-delà : exceptionnel.')}
               </p>
               {[
                 { key: 'midi', label: t('shifts.midi', 'Midi'), emoji: '🍽️', value: capMidi, set: setCapMidi },
                 { key: 'soir', label: t('shifts.soir', 'Soir'), emoji: '🌙', value: capSoir, set: setCapSoir },
               ].map(({ key, label, emoji, value, set }) => (
-                <div key={key} className="row" style={{ gap: '0.5rem', alignItems: 'center', margin: '0.25rem 0' }}>
+                <div key={key} className="row" style={{ gap: '0.5rem', alignItems: 'center', margin: '0.25rem 0', flexWrap: 'wrap' }}>
                   <span style={{ minWidth: 80, fontSize: '0.85rem' }}>{emoji} {label}</span>
                   {[
-                    { preset: 50,  label: t('smartPlanner.calme',   'Calme'),   color: 'var(--info)'    },
-                    { preset: 100, label: t('smartPlanner.normal',  'Normal'),  color: 'var(--success)' },
-                    { preset: 150, label: t('smartPlanner.charge',  'Chargé'),  color: 'var(--danger)'  },
+                    { preset: 50,  label: t('smartPlanner.calme',  'Calme'),  color: 'var(--info)'    },
+                    { preset: 100, label: t('smartPlanner.normal', 'Normal'), color: 'var(--success)' },
+                    { preset: 130, label: t('smartPlanner.charge', 'Chargé'), color: 'var(--danger)'  },
                   ].map(({ preset, label, color }) => (
                     <button
                       key={preset}
                       type="button"
                       className={value === preset ? '' : 'secondary'}
                       onClick={() => set(preset)}
-                      style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.8rem',
+                      style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.8rem', minWidth: 90,
                                ...(value === preset ? { background: color, borderColor: color } : {}) }}
                     >
-                      {label} <span style={{ opacity: 0.75, fontSize: '0.72rem' }}>{preset}%</span>
+                      {label} <span style={{ opacity: 0.75, fontSize: '0.72rem' }}>{(preset/100).toFixed(1)}</span>
                     </button>
                   ))}
+                  {/* Custom value pour les cas rares (banquet, pointe) */}
+                  <input
+                    type="number" min={30} max={200} step={5}
+                    value={value}
+                    onChange={(e) => set(Number(e.target.value))}
+                    style={{ width: 70, padding: '0.35rem', fontSize: '0.8rem' }}
+                    title={t('smartPlanner.customCap', 'Valeur personnalisée (0,30 à 2,00)')}
+                  />
                 </div>
               ))}
             </div>
