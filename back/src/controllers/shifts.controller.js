@@ -209,6 +209,9 @@ export const shiftsController = {
     const capacityByDate = req.body.capacityByDate && typeof req.body.capacityByDate === 'object'
       ? req.body.capacityByDate
       : {};
+    const capacityByService = req.body.capacityByService && typeof req.body.capacityByService === 'object'
+      ? req.body.capacityByService
+      : {};
     const result = generatePlan({
       members: activeMembers,
       weekDates,
@@ -219,6 +222,7 @@ export const shiftsController = {
       })),
       settings,
       capacityByDate,
+      capacityByService,
     });
 
     res.json(result);

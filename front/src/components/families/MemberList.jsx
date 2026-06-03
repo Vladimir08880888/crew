@@ -67,6 +67,20 @@ export function MemberList({ members, currentUserId, isAdmin, onApprove, onUpdat
                         <Hash size={10} /> {m.weekly_hours_target}h/sem
                       </span>
                     )}
+                    {m.level && (
+                      <span
+                        className="role-tag"
+                        style={
+                          m.level === 'chef'
+                            ? { background: 'rgba(99,102,241,0.18)', color: 'var(--primary)' }
+                            : m.level === 'junior'
+                            ? { background: 'rgba(245,158,11,0.15)', color: 'var(--warning)' }
+                            : { background: 'rgba(16,185,129,0.15)', color: 'var(--success)' }
+                        }
+                      >
+                        ★ {t(`levels.${m.level}`, m.level)}
+                      </span>
+                    )}
                     {incomplete && (
                       <span className="role-tag" style={{ background: 'rgba(245,158,11,0.15)', color: 'var(--warning)' }}>
                         ⚠ {t('memberList.setupIncomplete')}

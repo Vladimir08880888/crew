@@ -90,6 +90,7 @@ export function generatePlan(input) {
     settings = DEFAULT_SETTINGS,
     closedDays = DEFAULT_CLOSED_DAYS,
     capacityByDate = {},
+    capacityByService = {},
   } = input;
 
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
@@ -135,10 +136,15 @@ export function generatePlan(input) {
     const dow = new Date(date).getDay();
     if (closedDays.includes(dow)) continue;
 
-    const capacityPct = capacityByDate[date] != null ? Number(capacityByDate[date]) : 100;
-    const capacityFactor = Math.max(0, Math.min(200, capacityPct)) / 100;
-
     for (const service of PLANNING_SHIFTS) {
+      // Capacité = service > date > 100. Le service prime sur le date pour
+      // pouvoir dire « tous les midi à 80 %, tous les soir à 120 % ».
+      let capacityPct;
+      if (capacityByService[service] != null) capacityPct = Number(capacityByService[service]);
+      else if (capacityByDate[date] != null) capacityPct = Number(capacityByDate[date]);
+      else capacityPct = 100;
+      const capacityFactor = Math.max(0, Math.min(200, capacityPct)) / 100;
+
       for (const poste of PLANNING_POSTES) {
         const ideal = Math.round(idealOf(cfg, service, poste) * capacityFactor);
         if (ideal === 0) continue; // poste désactivé ce service
@@ -225,7 +231,7 @@ export function generatePlan(input) {
  * Retourne memberStats (heures/cibles) et coverage par (date,service,poste)
  * pour le dashboard.
  */
-export function computeSummary({ members, weekDates, existingShifts, settings = DEFAULT_SETTINGS, closedDays = DEFAULT_CLOSED_DAYS, capacityByDate = {} }) {
+export function computeSummary({ members, weekDates, existingShifts, settings = DEFAULT_SETTINGS, closedDays = DEFAULT_CLOSED_DAYS, capacityByDate = {}, capacityByService = {} }) {
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
   const memberById = new Map();
   for (const m of members) memberById.set(m.user_id, m);
@@ -265,10 +271,14 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
   for (const date of weekDates) {
     const dow = new Date(date).getDay();
     if (closedDays.includes(dow)) continue;
-    const capacityPct = capacityByDate[date] != null ? Number(capacityByDate[date]) : 100;
-    const capacityFactor = Math.max(0, Math.min(200, capacityPct)) / 100;
 
     for (const service of PLANNING_SHIFTS) {
+      let capacityPct;
+      if (capacityByService[service] != null) capacityPct = Number(capacityByService[service]);
+      else if (capacityByDate[date] != null) capacityPct = Number(capacityByDate[date]);
+      else capacityPct = 100;
+      const capacityFactor = Math.max(0, Math.min(200, capacityPct)) / 100;
+
       for (const poste of PLANNING_POSTES) {
         const ideal = Math.round(idealOf(cfg, service, poste) * capacityFactor);
         if (ideal === 0) continue;

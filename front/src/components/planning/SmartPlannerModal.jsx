@@ -27,22 +27,19 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [data, setData] = useState(null);
-  const [capacity, setCapacity] = useState(100);
+  const [capMidi, setCapMidi] = useState(100);
+  const [capSoir, setCapSoir] = useState(100);
 
   const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
-  const capacityByDate = useMemo(() => {
-    const map = {};
-    for (const d of dateRange(from, to)) map[d] = capacity;
-    return map;
-  }, [from, to, capacity]);
+  const capacityByService = useMemo(() => ({ midi: capMidi, soir: capSoir }), [capMidi, capSoir]);
 
   useEffect(() => {
     setLoading(true);
-    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByDate })
+    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByService })
       .then(setData)
       .catch((err) => { toast.fromError(err); onClose(); })
       .finally(() => setLoading(false));
-  }, [familyId, from, to, capacity]);
+  }, [familyId, from, to, capMidi, capSoir]);
 
   async function apply() {
     setApplying(true);
@@ -81,19 +78,34 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
 
-            {/* Capacité de service (densité) — applique à tous les jours de la semaine */}
+            {/* Capacité par service : un slider pour midi, un pour soir.
+                S'applique uniformément à tous les jours de la semaine. */}
             <div style={{ marginTop: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {t('smartPlanner.capacityLabel', 'Densité de service')}
-                <strong>{capacity} %</strong>
-              </label>
-              <input type="range" min={50} max={150} step={10}
-                     value={capacity}
-                     onChange={(e) => setCapacity(Number(e.target.value))}
-                     style={{ width: '100%' }} />
-              <p className="muted" style={{ fontSize: '0.72rem', margin: 0 }}>
+              <p className="muted" style={{ fontSize: '0.72rem', marginBottom: '0.3rem' }}>
                 {t('smartPlanner.capacityHint', '50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.')}
               </p>
+              <div className="row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <label style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>🍽️ {t('shifts.midi', 'Midi')}</span>
+                    <strong>{capMidi} %</strong>
+                  </label>
+                  <input type="range" min={50} max={150} step={10}
+                         value={capMidi}
+                         onChange={(e) => setCapMidi(Number(e.target.value))}
+                         style={{ width: '100%' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <label style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>🌙 {t('shifts.soir', 'Soir')}</span>
+                    <strong>{capSoir} %</strong>
+                  </label>
+                  <input type="range" min={50} max={150} step={10}
+                         value={capSoir}
+                         onChange={(e) => setCapSoir(Number(e.target.value))}
+                         style={{ width: '100%' }} />
+                </div>
+              </div>
             </div>
 
             {/* Stats globales */}
