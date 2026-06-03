@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Edit2, LogOut } from 'lucide-react';
+import { Edit2, LogOut, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { familiesApi } from '../api/families.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -151,9 +151,14 @@ export default function FamilyDetail() {
         )}
         <div className="row">
           {isAdmin && !editingName && (
-            <button className="secondary" onClick={() => { setNewName(family.name); setEditingName(true); }}>
-              <Edit2 size={14} /> {t('familyDetail.renameButton')}
-            </button>
+            <>
+              <button className="secondary" onClick={() => navigate(`/teams/${familyId}/settings`)}>
+                <Settings size={14} /> {t('familyDetail.settingsButton', 'Configuration')}
+              </button>
+              <button className="secondary" onClick={() => { setNewName(family.name); setEditingName(true); }}>
+                <Edit2 size={14} /> {t('familyDetail.renameButton')}
+              </button>
+            </>
           )}
           <button className="ghost" onClick={leave}>
             <LogOut size={14} /> {t('familyDetail.leaveButton')}

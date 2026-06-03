@@ -21,6 +21,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
     poste: member.poste || '',
     shift_default: member.shift_default || '',
     weekly_hours_target: member.weekly_hours_target ?? '',
+    level: member.level || 'confirme',
   });
 
   const isFirstSetup = !member.poste || member.weekly_hours_target == null;
@@ -36,6 +37,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
       poste: form.poste || null,
       shift_default: form.shift_default || null,
       weekly_hours_target: form.weekly_hours_target === '' ? null : Number(form.weekly_hours_target),
+      level: form.level || 'confirme',
     });
   }
 
@@ -98,6 +100,24 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
                 </select>
               </div>
             </div>
+
+            <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.level', 'Niveau')}</label>
+            <div className="row" style={{ gap: '0.4rem', flexWrap: 'wrap' }}>
+              {['junior', 'confirme', 'chef'].map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  className={form.level === lvl ? '' : 'secondary'}
+                  onClick={() => setForm({ ...form, level: lvl })}
+                  style={{ flex: 1, minWidth: 100 }}
+                >
+                  {t(`levels.${lvl}`, lvl)}
+                </button>
+              ))}
+            </div>
+            <p className="muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
+              {t('memberEdit.levelHint', 'Pondère la couverture du service. Junior = demi-puissance.')}
+            </p>
           </fieldset>
 
           {canChangeRole && (

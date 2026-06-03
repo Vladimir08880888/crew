@@ -13,4 +13,6 @@ export const familiesApi = {
   resetMemberPassword: (id, userId)        => api.post(`/families/${id}/members/${userId}/reset-password`),
   regenerateCode: (id)                     => api.post(`/families/${id}/regenerate-code`),
   remove:         (id)                     => api.delete(`/families/${id}`),
+  getSettings:    (id)                     => api.get(`/families/${id}/settings`),
+  updateSettings: (id, fields)             => api.put(`/families/${id}/settings`, fields),
 };

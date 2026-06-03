@@ -10,6 +10,7 @@ import Families from './pages/Families.jsx';
 import FamilyDetail from './pages/FamilyDetail.jsx';
 import FamilyCreate from './pages/FamilyCreate.jsx';
 import FamilyJoin from './pages/FamilyJoin.jsx';
+import FamilySettings from './pages/FamilySettings.jsx';
 import Profile from './pages/Profile.jsx';
 import Planning from './pages/Planning.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/teams/new" element={<FamilyCreate />} />
         <Route path="/teams/join" element={<FamilyJoin />} />
         <Route path="/teams/:id" element={<FamilyDetail />} />
+        <Route path="/teams/:id/settings" element={<FamilySettings />} />
         <Route path="/profile" element={<Profile />} />
       </Route>
 

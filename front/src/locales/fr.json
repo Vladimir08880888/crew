@@ -126,6 +126,7 @@
   "familyDetail": {
     "renameButton": "Renommer",
     "leaveButton": "Quitter",
+    "settingsButton": "Configuration",
     "approvedToast": "{{name}} validé(e) comme {{role}}",
     "removeMemberTitle": "Retirer ce membre ?",
     "removeMemberMessage": "{{first}} {{last}} sera retiré(e) de l'équipe.",
@@ -234,6 +235,24 @@
     "equipier": "Équipier",
     "apprenti": "Apprenti"
   },
+  "levels": {
+    "junior": "Junior",
+    "confirme": "Confirmé",
+    "chef": "Chef"
+  },
+  "settings": {
+    "title": "Configuration de l'équipe",
+    "managerOnly": "Seul un manager peut configurer l'équipe.",
+    "coefsTitle": "Coefficients par niveau d'équipier",
+    "coefsHint": "Contribution de chaque équipier à la couverture du service. Référence : Confirmé = 100.",
+    "capacityTitle": "Capacité de service (référence 100 %)",
+    "maxCouverts": "Couverts servis à pleine capacité",
+    "maxCouvertsHint": "Ex : 100 couverts/service un jour plein. Sur les jours calmes, indiquez une densité réduite (50 %) dans la modale Smart Planner — la cible est divisée automatiquement.",
+    "idealsTitle": "Configuration idéale par service (= 100 % à pleine capacité)",
+    "idealsHint": "Somme de coefficients visée par le solver pour chaque (service, poste). La plonge est intégrée à la cuisine.",
+    "service": "Service",
+    "saved": "Configuration enregistrée"
+  },
   "planning": {
     "title": "Planning de service",
     "selectTeam": "Sélectionnez une équipe active dans la barre.",
@@ -268,7 +287,10 @@
     "suggested": "Proposés",
     "uncovered": "Non couverts",
     "hoursPerMember": "Heures par équipier (après application)",
-    "uncoveredTitle": "Services non pourvus",
+    "uncoveredTitle": "Services non pourvus (en dessous du seuil mini)",
+    "coverageTitle": "Couverture par service et poste",
+    "capacityLabel": "Densité de service",
+    "capacityHint": "50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.",
     "apply": "Appliquer ({{n}} shifts)",
     "appliedToast": "{{n}} shifts créés automatiquement",
     "cloneTitle": "Dupliquer la semaine précédente ?",
@@ -298,6 +320,8 @@
     "weeklyHours": "Heures hebdo cibles",
     "weeklyHoursPlaceholder": "ex. 35",
     "weeklyHoursHint": "Utilisé par le planificateur automatique. Mettre 0 pour exclure (cadres, patron).",
-    "presetExclude": "Exclu (0h)"
+    "presetExclude": "Exclu (0h)",
+    "level": "Niveau",
+    "levelHint": "Pondère la couverture du service. Junior = demi-puissance, Chef = lead."
   }
 }

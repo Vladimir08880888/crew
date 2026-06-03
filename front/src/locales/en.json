@@ -126,6 +126,7 @@
   "familyDetail": {
     "renameButton": "Rename",
     "leaveButton": "Leave",
+    "settingsButton": "Settings",
     "approvedToast": "{{name}} approved as {{role}}",
     "removeMemberTitle": "Remove this member?",
     "removeMemberMessage": "{{first}} {{last}} will be removed from the team.",
@@ -234,6 +235,24 @@
     "equipier": "Member",
     "apprenti": "Apprentice"
   },
+  "levels": {
+    "junior": "Junior",
+    "confirme": "Confirmed",
+    "chef": "Chef"
+  },
+  "settings": {
+    "title": "Team configuration",
+    "managerOnly": "Only a manager can configure the team.",
+    "coefsTitle": "Coefficients per experience level",
+    "coefsHint": "Each member's contribution to service coverage. Reference: Confirmed = 100.",
+    "capacityTitle": "Service capacity (100 % reference)",
+    "maxCouverts": "Covers served at full capacity",
+    "maxCouvertsHint": "E.g. 100 covers/service on a full day. On quieter days, reduce the density in the Smart Planner — the target is divided accordingly.",
+    "idealsTitle": "Ideal staffing per service (= 100 % at full capacity)",
+    "idealsHint": "Coefficient sum the solver aims for at each (service, station). Dishwashing is merged into kitchen.",
+    "service": "Service",
+    "saved": "Configuration saved"
+  },
   "planning": {
     "title": "Schedule",
     "selectTeam": "Select an active team in the navigation bar.",
@@ -268,7 +287,10 @@
     "suggested": "Proposed",
     "uncovered": "Uncovered",
     "hoursPerMember": "Hours per member (after applying)",
-    "uncoveredTitle": "Unstaffed shifts",
+    "uncoveredTitle": "Unstaffed shifts (below min threshold)",
+    "coverageTitle": "Coverage per service and station",
+    "capacityLabel": "Service density",
+    "capacityHint": "50 % = quiet service (target halved). 100 % = full day. 150 % = heavy load.",
     "apply": "Apply ({{n}} shifts)",
     "appliedToast": "{{n}} shifts created automatically",
     "cloneTitle": "Duplicate previous week?",
@@ -298,6 +320,8 @@
     "weeklyHours": "Weekly hours target",
     "weeklyHoursPlaceholder": "e.g. 35",
     "weeklyHoursHint": "Used by the auto-planner. Set to 0 to exclude (executives, owner).",
-    "presetExclude": "Excluded (0h)"
+    "presetExclude": "Excluded (0h)",
+    "level": "Level",
+    "levelHint": "Weights service coverage. Junior = half-power, Chef = lead."
   }
 }

@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, AlertCircle, Check, X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { shiftsApi } from '../../api/shifts.api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 
 const POSTE_EMOJI = { cuisine: '🍳', salle: '🍽️', bar: '🍷', plonge: '🧽', administration: '📋' };
+
+function dateRange(from, to) {
+  const days = [];
+  const d = new Date(from);
+  const end = new Date(to);
+  while (d <= end) { days.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1); }
+  return days;
+}
 
 /**
  * Modal qui :
@@ -19,16 +27,22 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [data, setData] = useState(null);
+  const [capacity, setCapacity] = useState(100);
 
   const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
+  const capacityByDate = useMemo(() => {
+    const map = {};
+    for (const d of dateRange(from, to)) map[d] = capacity;
+    return map;
+  }, [from, to, capacity]);
 
-  // Charger la proposition à l'ouverture
-  useState(() => {
-    shiftsApi.generatePlan({ family_id: familyId, from, to })
+  useEffect(() => {
+    setLoading(true);
+    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByDate })
       .then(setData)
       .catch((err) => { toast.fromError(err); onClose(); })
       .finally(() => setLoading(false));
-  }, []);
+  }, [familyId, from, to, capacity]);
 
   async function apply() {
     setApplying(true);
@@ -66,6 +80,21 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               from: new Date(from).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
+
+            {/* Capacité de service (densité) — applique à tous les jours de la semaine */}
+            <div style={{ marginTop: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {t('smartPlanner.capacityLabel', 'Densité de service')}
+                <strong>{capacity} %</strong>
+              </label>
+              <input type="range" min={50} max={150} step={10}
+                     value={capacity}
+                     onChange={(e) => setCapacity(Number(e.target.value))}
+                     style={{ width: '100%' }} />
+              <p className="muted" style={{ fontSize: '0.72rem', margin: 0 }}>
+                {t('smartPlanner.capacityHint', '50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.')}
+              </p>
+            </div>
 
             {/* Stats globales */}
             <div className="row" style={{ gap: '1rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
@@ -113,7 +142,36 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               })}
             </div>
 
-            {/* Slots non couverts */}
+            {/* Couverture par (jour, service, poste) */}
+            {data.coverage && data.coverage.length > 0 && (
+              <>
+                <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>{t('smartPlanner.coverageTitle', 'Couverture par service et poste')}</h4>
+                <div style={{ maxHeight: 200, overflowY: 'auto', fontSize: '0.85rem' }}>
+                  {data.coverage.map((c, i) => {
+                    const pct = c.ideal > 0 ? Math.round((c.actual_coef / c.ideal) * 100) : 0;
+                    const color = pct >= 100 ? 'var(--success)'
+                                : pct >= 50  ? 'var(--warning)'
+                                : 'var(--danger)';
+                    return (
+                      <div key={i} className="row" style={{
+                        padding: '0.25rem 0.4rem',
+                        borderBottom: '1px solid var(--glass-border)',
+                      }}>
+                        <span style={{ flex: 1 }}>
+                          {new Date(c.date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric' })}
+                          {' — '}{POSTE_EMOJI[c.poste]} {t(`shifts.${c.service}`, c.service)} {t(`postes.${c.poste}`, c.poste)}
+                        </span>
+                        <span style={{ color, fontWeight: 600, minWidth: 80, textAlign: 'right' }}>
+                          {c.actual_coef}/{c.ideal} ({pct}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Slots non couverts (en dessous du seuil min) */}
             {data.uncovered.length > 0 && (
               <>
                 <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', color: 'var(--danger)' }}>
@@ -123,7 +181,7 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
                   {data.uncovered.map((s, i) => (
                     <li key={i} style={{ padding: '0.2rem 0', color: 'var(--text-muted)' }}>
                       {new Date(s.date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric' })}
-                      {' — '}{POSTE_EMOJI[s.poste]} {t(`shifts.${s.shift_type}`, s.shift_type)} {t(`postes.${s.poste}`, s.poste)}
+                      {' — '}{POSTE_EMOJI[s.poste]} {t(`shifts.${s.service || s.shift_type}`, s.service || s.shift_type)} {t(`postes.${s.poste}`, s.poste)} : {s.actual_coef}/{s.ideal}
                     </li>
                   ))}
                 </ul>
