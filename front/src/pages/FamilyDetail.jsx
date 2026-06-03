@@ -44,7 +44,14 @@ export default function FamilyDetail() {
     try {
       await familiesApi.approve(familyId, member.user_id, role);
       toast.success(t('familyDetail.approvedToast', { name: member.first_name, role: t(`roles.${role}`) }));
-      await reloadFamilies(); load();
+      await reloadFamilies();
+      load();
+      // Pour les équipiers, on enchaîne directement avec le setup
+      // wizard (poste + heures contractuelles). C'est ce qui rend
+      // l'expérience administrateur cohérente : valider = configurer.
+      if (role === 'child') {
+        setEditingMember({ ...member, role });
+      }
     } catch (err) { toast.fromError(err); }
   }
 

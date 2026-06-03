@@ -161,7 +161,9 @@
     "removeTitle": "Remove",
     "approveParent": "Approve as manager",
     "approveChild": "Approve as member",
-    "rejectTitle": "Reject"
+    "rejectTitle": "Reject",
+    "setupIncomplete": "Setup needed",
+    "setupCta": "Configure"
   },
   "tempPassword": {
     "title": "Password reset",
@@ -281,15 +283,21 @@
     "gapsTitle": "{{n}} uncovered shift(s) this week"
   },
   "memberEdit": {
-    "title": "Edit — {{name}}",
-    "role": "Role",
+    "title": "Configure — {{name}}",
+    "setupBannerTitle": "First-time setup for this member",
+    "setupBannerHint": "Start with their contractual hours, then their role. The smart planner will only include them once both are set.",
+    "stepHours": "Contractual hours",
+    "stepRole": "Role & default shift",
+    "stepPermissions": "Permissions",
+    "role": "Permission",
     "isAdmin": "Team admin",
-    "poste": "Role",
+    "poste": "Role (post)",
     "posteAny": "— Versatile —",
     "shiftDefault": "Default shift",
     "shiftAny": "— Variable —",
     "weeklyHours": "Weekly hours target",
     "weeklyHoursPlaceholder": "e.g. 35",
-    "weeklyHoursHint": "Used by the auto-planner. Set to 0 to exclude (executives)."
+    "weeklyHoursHint": "Used by the auto-planner. Set to 0 to exclude (executives, owner).",
+    "presetExclude": "Excluded (0h)"
   }
 }

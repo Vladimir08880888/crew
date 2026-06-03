@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { POSTES, SHIFTS, FAMILY_ROLES } from '../../utils/enums.js';
 
 /**
- * Modal d'édition d'un membre de famille / établissement.
- * Permet au manager de régler : rôle, poste, shift habituel,
- * et heures hebdomadaires cibles (utilisées par le solver).
+ * Modal d'édition d'un membre d'équipe.
+ *
+ * Si le membre n'a pas encore été configuré (pas de poste ou pas
+ * d'heures cibles), un bandeau « setup wizard » apparaît en haut
+ * et propose des heures par défaut (35h temps plein, 24h temps
+ * partiel) pour guider l'administrateur. C'est l'expérience
+ * onboarding demandée : chaque équipier doit avoir ses caractéristiques
+ * définies AVANT d'apparaître dans le solver.
  */
 export function MemberEditModal({ member, onClose, onSave, canChangeRole = false }) {
   const { t } = useTranslation();
@@ -17,6 +22,12 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
     shift_default: member.shift_default || '',
     weekly_hours_target: member.weekly_hours_target ?? '',
   });
+
+  const isFirstSetup = !member.poste || member.weekly_hours_target == null;
+
+  function setHoursPreset(h) {
+    setForm({ ...form, weekly_hours_target: h });
+  }
 
   function submit(e) {
     e.preventDefault();
@@ -30,15 +41,68 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
         <div className="modal-header">
-          <h3>{t('memberEdit.title', { name: `${member.first_name} ${member.last_name}` })}</h3>
+          <h3>
+            {isFirstSetup && <Sparkles size={16} style={{ verticalAlign: '-2px', color: 'var(--primary)' }} />}{' '}
+            {t('memberEdit.title', { name: `${member.first_name} ${member.last_name}` })}
+          </h3>
           <button className="ghost icon-only" onClick={onClose}><X size={18} /></button>
         </div>
 
+        {isFirstSetup && (
+          <div className="setup-banner">
+            <strong>{t('memberEdit.setupBannerTitle')}</strong>
+            <p className="muted" style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>
+              {t('memberEdit.setupBannerHint')}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={submit}>
+          <fieldset className="setup-step">
+            <legend>1. {t('memberEdit.stepHours')}</legend>
+            <label>{t('memberEdit.weeklyHours')}</label>
+            <input
+              type="number"
+              min={0}
+              max={80}
+              value={form.weekly_hours_target}
+              placeholder={t('memberEdit.weeklyHoursPlaceholder')}
+              onChange={(e) => setForm({ ...form, weekly_hours_target: e.target.value })}
+            />
+            <div className="row" style={{ gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+              <button type="button" className="secondary preset-btn" onClick={() => setHoursPreset(35)}>35h</button>
+              <button type="button" className="secondary preset-btn" onClick={() => setHoursPreset(24)}>24h</button>
+              <button type="button" className="secondary preset-btn" onClick={() => setHoursPreset(20)}>20h</button>
+              <button type="button" className="secondary preset-btn" onClick={() => setHoursPreset(0)}>{t('memberEdit.presetExclude')}</button>
+            </div>
+            <p className="muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>{t('memberEdit.weeklyHoursHint')}</p>
+          </fieldset>
+
+          <fieldset className="setup-step">
+            <legend>2. {t('memberEdit.stepRole')}</legend>
+            <div className="row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 140 }}>
+                <label>{t('memberEdit.poste')}</label>
+                <select value={form.poste} onChange={(e) => setForm({ ...form, poste: e.target.value })}>
+                  <option value="">{t('memberEdit.posteAny')}</option>
+                  {POSTES.map((p) => <option key={p} value={p}>{t(`postes.${p}`, p)}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1, minWidth: 140 }}>
+                <label>{t('memberEdit.shiftDefault')}</label>
+                <select value={form.shift_default} onChange={(e) => setForm({ ...form, shift_default: e.target.value })}>
+                  <option value="">{t('memberEdit.shiftAny')}</option>
+                  {SHIFTS.map((s) => <option key={s} value={s}>{t(`shifts.${s}`, s)}</option>)}
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
           {canChangeRole && (
-            <>
+            <fieldset className="setup-step">
+              <legend>3. {t('memberEdit.stepPermissions')}</legend>
               <label>{t('memberEdit.role')}</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                 {FAMILY_ROLES.map((r) => (
@@ -53,36 +117,8 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
                   onChange={(e) => setForm({ ...form, is_admin: e.target.checked })}
                 /> {t('memberEdit.isAdmin')}
               </label>
-            </>
+            </fieldset>
           )}
-
-          <div className="row" style={{ gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <label>{t('memberEdit.poste')}</label>
-              <select value={form.poste} onChange={(e) => setForm({ ...form, poste: e.target.value })}>
-                <option value="">{t('memberEdit.posteAny')}</option>
-                {POSTES.map((p) => <option key={p} value={p}>{t(`postes.${p}`, p)}</option>)}
-              </select>
-            </div>
-            <div style={{ flex: 1, minWidth: 140 }}>
-              <label>{t('memberEdit.shiftDefault')}</label>
-              <select value={form.shift_default} onChange={(e) => setForm({ ...form, shift_default: e.target.value })}>
-                <option value="">{t('memberEdit.shiftAny')}</option>
-                {SHIFTS.map((s) => <option key={s} value={s}>{t(`shifts.${s}`, s)}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <label style={{ marginTop: '0.5rem' }}>{t('memberEdit.weeklyHours')}</label>
-          <input
-            type="number"
-            min={0}
-            max={80}
-            value={form.weekly_hours_target}
-            placeholder={t('memberEdit.weeklyHoursPlaceholder')}
-            onChange={(e) => setForm({ ...form, weekly_hours_target: e.target.value })}
-          />
-          <p className="muted" style={{ fontSize: '0.8rem' }}>{t('memberEdit.weeklyHoursHint')}</p>
 
           <div className="row" style={{ marginTop: '1.25rem' }}>
             <button type="submit"><Save size={14} /> {t('common.save')}</button>

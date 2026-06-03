@@ -812,3 +812,37 @@
   align-items: center;
   margin-bottom: 0.5rem;
 }
+
+/* ============ Setup wizard inside MemberEditModal ============ */
+.setup-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.12));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+}
+.setup-step {
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin: 0 0 0.75rem;
+}
+.setup-step legend {
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.preset-btn {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+}
+
+/* Member card needing setup → soft orange highlight */
+.member-list li.member-card-incomplete {
+  border-left: 3px solid var(--warning, #f59e0b);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08), transparent 80%);
+}
