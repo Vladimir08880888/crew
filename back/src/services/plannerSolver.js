@@ -333,13 +333,26 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     });
   }
 
-  // ── 2. Conformité HCR (convention collective + Matre 2021).
+  // ── 2. Conformité HCR (convention collective Hôtels-Cafés-Restaurants).
+  //    Sources :
+  //    - Convention HCR du 30/04/1997 : max quotidien selon poste,
+  //      max hebdomadaire 48 h absolu / 46 h moyenne 12 sem, 2 jours
+  //      de repos hebdo minimum.
+  //    - Code du travail L3121-18 / L3121-20 : 48 h plafond.
+  //    - Matre et al. (2021) Scand. J. Work Env. Health : risque
+  //      accidentogène mesurable au-delà de ces seuils.
+  const dailyMaxByPoste = {
+    administration: 10,
+    cuisine:        11,    // cuisinier HCR
+    plonge:         11.5,  // « autre personnel » HCR
+    salle:          11.5,
+    bar:            11.5,
+  };
   const hcrViolations = [];
   for (const m of members) {
     const userShifts = existingShifts.filter((s) => s.user_id === m.user_id);
     const distinctDays = new Set(userShifts.map((s) => s.date.slice(0, 10)));
     const weekHours = userShifts.reduce((sum, s) => sum + (SHIFT_DURATIONS[s.shift_type] || 0), 0);
-    // Heures par jour : on additionne les durées des shifts du même jour.
     const hoursPerDay = {};
     for (const s of userShifts) {
       const d = s.date.slice(0, 10);
@@ -347,24 +360,31 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
     const maxDayHours = Math.max(0, ...Object.values(hoursPerDay));
     const restDays = Math.max(0, weekDates.length - distinctDays.size);
+    const dailyCap = dailyMaxByPoste[m.poste] ?? 11.5;
 
-    if (weekHours > 55) hcrViolations.push({
+    if (weekHours > 48) hcrViolations.push({
       user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
-      type: 'weekly_hours', value: weekHours, threshold: 55, severity: 'high',
-      reason: `${weekHours} h cette semaine — au-dessus du seuil de risque accidentogène.`,
-      citation: 'Matre et al. (2021), Scand. J. Work Env. Health — RR=1,24 au-delà de 55 h/sem.',
+      type: 'weekly_hours', value: weekHours, threshold: 48, severity: 'high',
+      reason: `${weekHours} h cette semaine — dépasse le plafond légal de 48 h.`,
+      citation: 'Convention HCR + Code du travail L3121-20 : 48 h hebdo absolu.',
     });
-    if (maxDayHours > 12) hcrViolations.push({
+    else if (weekHours > 46) hcrViolations.push({
       user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
-      type: 'daily_hours', value: maxDayHours, threshold: 12, severity: 'high',
-      reason: `${maxDayHours} h dans une seule journée — fatigue critique.`,
-      citation: 'Matre et al. (2021) — RR=1,24 au-delà de 12 h/jour.',
+      type: 'weekly_hours_avg', value: weekHours, threshold: 46, severity: 'medium',
+      reason: `${weekHours} h cette semaine — au-dessus de la moyenne maximale 46 h/12 sem.`,
+      citation: 'Convention HCR : 46 h en moyenne sur 12 semaines consécutives.',
+    });
+    if (maxDayHours > dailyCap) hcrViolations.push({
+      user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
+      type: 'daily_hours', value: maxDayHours, threshold: dailyCap, severity: 'high',
+      reason: `${maxDayHours} h sur une journée — dépasse ${dailyCap} h (${m.poste || 'poste'}).`,
+      citation: `Convention HCR — max quotidien ${dailyCap} h pour le poste « ${m.poste || 'autre'} ».`,
     });
     if (m.weekly_hours_target > 0 && restDays < 2 && weekDates.length >= 7) hcrViolations.push({
       user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
       type: 'rest_days', value: restDays, threshold: 2, severity: 'high',
       reason: `Seulement ${restDays} jour(s) de repos cette semaine — non-conforme.`,
-      citation: 'Convention collective HCR — minimum 2 jours de repos par semaine.',
+      citation: 'Convention collective HCR — minimum 2 jours de repos hebdomadaire.',
     });
   }
 
