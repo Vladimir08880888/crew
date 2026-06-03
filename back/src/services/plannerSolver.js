@@ -22,6 +22,19 @@ import { SHIFT_DURATIONS, DEFAULT_CLOSED_DAYS, PLANNING_SHIFTS, PLANNING_POSTES 
 
 const MAX_CONSECUTIVE_DAYS = 6;
 
+// Plafonds de la Convention collective HCR du 30 avril 1997
+// et du Code du travail L3121-20.
+const HCR_WEEKLY_MAX = 48;             // h absolu sur une semaine
+const HCR_MIN_REST_DAYS = 2;           // jours/semaine
+const HCR_DAILY_MAX_BY_POSTE = {       // h effectives par jour
+  administration: 10,
+  cuisine:        11,    // cuisinier
+  plonge:         11.5,  // « autre personnel »
+  salle:          11.5,
+  bar:            11.5,
+};
+function hcrDailyCap(poste) { return HCR_DAILY_MAX_BY_POSTE[poste] ?? 11.5; }
+
 const DEFAULT_SETTINGS = {
   junior_coef: 50,
   confirme_coef: 100,
@@ -173,11 +186,23 @@ export function generatePlan(input) {
               if (!posteMatches(m.poste, poste)) return false;
               const akey = `${m.user_id}-${date}`;
               if (assignedByUserDay.get(akey)?.has(service)) return false;
-              const wouldBe = hours[m.user_id].planned + (SHIFT_DURATIONS[service] || 0);
-              if (wouldBe > m.weekly_hours_target + 2) return false;
+              const shiftDur = SHIFT_DURATIONS[service] || 0;
+              const wouldBeWeek = hours[m.user_id].planned + shiftDur;
+              // Cible contractuelle (préférence) — tolérance +2h.
+              if (wouldBeWeek > m.weekly_hours_target + 2) return false;
+              // HCR : plafond hebdomadaire absolu 48 h.
+              if (wouldBeWeek > HCR_WEEKLY_MAX) return false;
+              // HCR : plafond quotidien selon poste.
+              const dayShifts = assignedByUserDay.get(akey) || new Set();
+              const dayHours = [...dayShifts].reduce((sum, st) => sum + (SHIFT_DURATIONS[st] || 0), 0);
+              if (dayHours + shiftDur > hcrDailyCap(m.poste)) return false;
+              // HCR : minimum 2 jours de repos hebdo.
               const userDays = daysWorked.get(m.user_id) || new Set();
+              const wouldDays = new Set([...userDays, date]).size;
+              if (weekDates.length >= 7 && weekDates.length - wouldDays < HCR_MIN_REST_DAYS) return false;
+              // Max 6 jours consécutifs (cohérent avec repos hebdo).
               if (countConsecutive([...userDays, date]) > MAX_CONSECUTIVE_DAYS) return false;
-              // Junior seul interdit : si aucun senior déjà présent ET ce candidat est junior, on saute.
+              // Junior seul interdit.
               if (!seniorPresent && !isSenior(m) && !slotMembers.some((sm) => isSenior(memberById.get(sm.user_id)))) {
                 return false;
               }
@@ -221,7 +246,10 @@ export function generatePlan(input) {
 
         coverage.push({ date, service, poste, ideal, actual_coef: coefSum, members: slotMembers });
         if (coefSum < ideal / 2) {
-          uncovered.push({ date, service, poste, ideal, actual_coef: coefSum, reason: 'couverture insuffisante (junior seul interdit, heures saturées)' });
+          uncovered.push({
+            date, service, poste, ideal, actual_coef: coefSum,
+            reason: 'Aucun équipier éligible sans enfreindre la Convention HCR (heures, repos hebdo, junior seul).',
+          });
         }
       }
     }
@@ -338,16 +366,9 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
   //    - Convention HCR du 30/04/1997 : max quotidien selon poste,
   //      max hebdomadaire 48 h absolu / 46 h moyenne 12 sem, 2 jours
   //      de repos hebdo minimum.
-  //    - Code du travail L3121-18 / L3121-20 : 48 h plafond.
-  //    - Matre et al. (2021) Scand. J. Work Env. Health : risque
-  //      accidentogène mesurable au-delà de ces seuils.
-  const dailyMaxByPoste = {
-    administration: 10,
-    cuisine:        11,    // cuisinier HCR
-    plonge:         11.5,  // « autre personnel » HCR
-    salle:          11.5,
-    bar:            11.5,
-  };
+  //    - Code du travail L3121-20 : 48 h plafond hebdomadaire.
+  //    Les seuils sont définis en tête de module (HCR_*) et partagés
+  //    avec le solver pour qu'il n'engendre jamais de violation.
   const hcrViolations = [];
   for (const m of members) {
     const userShifts = existingShifts.filter((s) => s.user_id === m.user_id);
@@ -360,12 +381,12 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
     const maxDayHours = Math.max(0, ...Object.values(hoursPerDay));
     const restDays = Math.max(0, weekDates.length - distinctDays.size);
-    const dailyCap = dailyMaxByPoste[m.poste] ?? 11.5;
+    const dailyCap = hcrDailyCap(m.poste);
 
-    if (weekHours > 48) hcrViolations.push({
+    if (weekHours > HCR_WEEKLY_MAX) hcrViolations.push({
       user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
-      type: 'weekly_hours', value: weekHours, threshold: 48, severity: 'high',
-      reason: `${weekHours} h cette semaine — dépasse le plafond légal de 48 h.`,
+      type: 'weekly_hours', value: weekHours, threshold: HCR_WEEKLY_MAX, severity: 'high',
+      reason: `${weekHours} h cette semaine — dépasse le plafond légal de ${HCR_WEEKLY_MAX} h.`,
       citation: 'Convention HCR + Code du travail L3121-20 : 48 h hebdo absolu.',
     });
     else if (weekHours > 46) hcrViolations.push({
@@ -380,7 +401,7 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
       reason: `${maxDayHours} h sur une journée — dépasse ${dailyCap} h (${m.poste || 'poste'}).`,
       citation: `Convention HCR — max quotidien ${dailyCap} h pour le poste « ${m.poste || 'autre'} ».`,
     });
-    if (m.weekly_hours_target > 0 && restDays < 2 && weekDates.length >= 7) hcrViolations.push({
+    if (m.weekly_hours_target > 0 && restDays < HCR_MIN_REST_DAYS && weekDates.length >= 7) hcrViolations.push({
       user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
       type: 'rest_days', value: restDays, threshold: 2, severity: 'high',
       reason: `Seulement ${restDays} jour(s) de repos cette semaine — non-conforme.`,
