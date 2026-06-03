@@ -762,6 +762,23 @@
   outline-offset: -2px;
   background: var(--primary-light);
 }
+.extra-ghost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--warning);
+  color: var(--warning);
+  background: var(--warning-bg);
+  font-size: 0.72rem;
+  margin-bottom: 0.25rem;
+}
+.poste-group-header td {
+  border-bottom: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-border);
+}
 .shift-pill.shift-midi   { border-left-color: var(--warning); background: var(--warning-bg); color: var(--warning); }
 .shift-pill.shift-soir   { border-left-color: var(--primary); }
 .shift-pill.shift-matin  { border-left-color: var(--info); background: var(--info-bg); color: var(--info); }

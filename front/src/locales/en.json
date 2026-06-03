@@ -276,7 +276,11 @@
     "deleteTitle": "Delete shift?",
     "deleteMessage": "The {{type}} shift for {{name}} on {{date}} will be deleted.",
     "upcoming": "My upcoming shifts",
-    "noUpcoming": "No upcoming shifts this week."
+    "noUpcoming": "No upcoming shifts this week.",
+    "extras": "Extras",
+    "extrasHint": "missing on this station",
+    "extraTitle": "{{service}}: {{deficit}} coef missing to reach ideal — plan for an extra.",
+    "extrasAlertTitle": "{{n}} slot(s) need an extra this week"
   },
   "smartPlanner": {
     "title": "Auto planner",

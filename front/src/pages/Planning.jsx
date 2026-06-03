@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, ChevronLeft, ChevronRight, Calendar, Trash2, Sparkles, Copy, Eraser, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -64,6 +64,39 @@ export default function Planning() {
   );
   const from = iso(weekDays[0]);
   const to   = iso(weekDays[6]);
+
+  // Tri par groupe de poste : cuisine (+plonge) puis salle, autres en fin.
+  const POSTE_GROUP = { cuisine: 'cuisine', plonge: 'cuisine', salle: 'salle' };
+  const POSTE_ORDER = ['cuisine', 'salle', 'other'];
+  function groupOf(poste) { return POSTE_GROUP[poste] || 'other'; }
+  const sortedMembers = useMemo(() => {
+    const score = (g) => POSTE_ORDER.indexOf(g);
+    return [...members].sort((a, b) => {
+      const ga = score(groupOf(a.poste));
+      const gb = score(groupOf(b.poste));
+      if (ga !== gb) return ga - gb;
+      return (a.first_name || '').localeCompare(b.first_name || '');
+    });
+  }, [members]);
+
+  // Index couverture par (group, date, service) → { actual, ideal }.
+  const coverageIndex = useMemo(() => {
+    const idx = {};
+    for (const c of summary?.coverage || []) {
+      const g = groupOf(c.poste);
+      const key = `${g}|${c.date}|${c.service}`;
+      idx[key] = c;
+    }
+    return idx;
+  }, [summary]);
+
+  // Slots nécessitant un extra (sous l'idéal ET densité ≥ 100 %).
+  // Pour l'instant on signale TOUT slot sous-idéal — le seuil sera affiné
+  // si besoin par jour. coverage est rempli par le back en fonction de la
+  // capacité courante (par défaut 100 %).
+  const extrasNeeded = useMemo(() => {
+    return (summary?.coverage || []).filter((c) => c.actual_coef < c.ideal);
+  }, [summary]);
 
   const load = useCallback(async () => {
     if (!active) { setLoading(false); return; }
@@ -250,8 +283,8 @@ export default function Planning() {
         </div>
       </div>
 
-      {/* Couverture warnings */}
-      {isManager && summary?.coverageGaps?.length > 0 && (
+      {/* Alerte « extras nécessaires » : créneaux sous l'idéal */}
+      {isManager && extrasNeeded.length > 0 && (
         <div className="card" style={{
           marginTop: '0.5rem',
           borderLeft: '4px solid var(--warning)',
@@ -259,16 +292,19 @@ export default function Planning() {
         }}>
           <div className="row" style={{ gap: '0.5rem' }}>
             <AlertTriangle size={16} style={{ color: 'var(--warning)' }} />
-            <b>{t('smartPlanner.gapsTitle', { n: summary.coverageGaps.length })}</b>
+            <b>{t('planning.extrasAlertTitle', { n: extrasNeeded.length, defaultValue: '{{n}} créneaux nécessitent un extra cette semaine' })}</b>
           </div>
           <div className="row" style={{ flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem', fontSize: '0.85rem' }}>
-            {summary.coverageGaps.slice(0, 6).map((g, i) => (
-              <span key={i} className="tag">
-                {new Date(g.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
-                {' '}{t(`shifts.${g.shift_type}`)} {t(`postes.${g.poste}`)}
-              </span>
-            ))}
-            {summary.coverageGaps.length > 6 && <span className="muted">+ {summary.coverageGaps.length - 6}</span>}
+            {extrasNeeded.slice(0, 8).map((c, i) => {
+              const deficit = c.ideal - c.actual_coef;
+              return (
+                <span key={i} className="tag">
+                  {new Date(c.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}
+                  {' '}{t(`shifts.${c.service}`)} {t(`postes.${groupOf(c.poste)}`)} <b>+{deficit}</b>
+                </span>
+              );
+            })}
+            {extrasNeeded.length > 8 && <span className="muted">+ {extrasNeeded.length - 8}</span>}
           </div>
         </div>
       )}
@@ -296,14 +332,36 @@ export default function Planning() {
               </tr>
             </thead>
             <tbody>
-              {members.map((m) => {
+              {sortedMembers.map((m, idx) => {
                 const stats = memberStats(m.user_id);
                 const statusColor =
                   stats?.status === 'over'  ? 'var(--danger)'
                   : stats?.status === 'under' ? 'var(--warning)'
                   : stats?.status === 'ok'    ? 'var(--success)'
                   : 'var(--text-muted)';
+                const myGroup = groupOf(m.poste);
+                const prevGroup = idx > 0 ? groupOf(sortedMembers[idx - 1].poste) : null;
+                const nextGroup = idx < sortedMembers.length - 1 ? groupOf(sortedMembers[idx + 1].poste) : null;
+                const isFirstOfGroup = prevGroup !== myGroup;
+                const isLastOfGroup = nextGroup !== myGroup;
                 return (
+                <Fragment key={m.user_id}>
+                {isFirstOfGroup && (
+                  <tr key={`hdr-${myGroup}`} className="poste-group-header">
+                    <td colSpan={weekDays.length + 1} style={{
+                      background: 'var(--bg-soft, rgba(0,0,0,0.04))',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      fontSize: '0.75rem',
+                      color: 'var(--text-muted)',
+                      padding: '0.4rem 0.6rem',
+                    }}>
+                      {myGroup === 'cuisine' ? '🍳 ' : myGroup === 'salle' ? '🍽️ ' : ''}
+                      {t(`postes.${myGroup}`, myGroup)}
+                    </td>
+                  </tr>
+                )}
                 <tr key={m.user_id}>
                   <td className="member-cell">
                     <b>{m.first_name}</b>
@@ -371,6 +429,37 @@ export default function Planning() {
                     );
                   })}
                 </tr>
+                {isLastOfGroup && isManager && (
+                  <tr key={`extras-${myGroup}`} className="extras-row">
+                    <td className="member-cell" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      <b>{t('planning.extras', 'Extras')}</b>
+                      <div style={{ fontSize: '0.7rem', marginTop: '0.15rem' }}>{t('planning.extrasHint', 'manque sur ce poste')}</div>
+                    </td>
+                    {weekDays.map((d) => {
+                      const dateStr = iso(d);
+                      const midi = coverageIndex[`${myGroup}|${dateStr}|midi`];
+                      const soir = coverageIndex[`${myGroup}|${dateStr}|soir`];
+                      const items = [midi, soir].filter((c) => c && c.actual_coef < c.ideal);
+                      return (
+                        <td key={dateStr} className="planning-cell">
+                          {items.length === 0 && (midi || soir) && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--success)', opacity: 0.7 }}>✓</div>
+                          )}
+                          {items.map((c) => {
+                            const deficit = c.ideal - c.actual_coef;
+                            return (
+                              <div key={c.service} className="extra-ghost" title={t('planning.extraTitle', { service: t(`shifts.${c.service}`), deficit })}>
+                                <span style={{ fontWeight: 600 }}>+{deficit}</span>
+                                <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>{t(`shifts.${c.service}`, c.service)}</span>
+                              </div>
+                            );
+                          })}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                )}
+                </Fragment>
                 );
               })}
             </tbody>
