@@ -1,0 +1,27 @@
+{
+  "name": "Crew — Planning d'équipe",
+  "short_name": "Crew",
+  "description": "Planification d'équipe simple et intelligente. Smart planner, gestion des heures contractuelles, sync calendrier natif.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf6ed",
+  "theme_color": "#6366f1",
+  "lang": "fr-FR",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

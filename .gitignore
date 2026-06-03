@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+.vercel
+.fly
+
+# Local screenshots/data
+screenshots/*.png
+front/dist/
+back/data/

@@ -1,0 +1,171 @@
+/*
+ * Palette « Bistro / Éditorial »
+ * Inspiration : Eater, Le Fooding, Chefs Pencil — la chaleur d'un bistrot
+ * marseillais, sans renoncer à la rigueur d'une interface professionnelle.
+ *
+ * Choix de couleur :
+ *  - Fond crème (chaleur, lisibilité dans la durée)
+ *  - Accent terracotta (vivacité, gourmandise, identité forte)
+ *  - Vert romarin pour validation (naturel, calme)
+ *  - Bordeaux pour urgence (réduit la fatigue par rapport au rouge pur)
+ *
+ * Typographie :
+ *  - Serif éditorial (Cormorant Garamond) pour les titres → identité forte
+ *  - Sans-serif (Inter) pour le corps → lisibilité optimale
+ */
+
+:root {
+  /* ── Fonds ─────────────────────────────────────────────────────── */
+  --bg-base: #faf6ed;
+  --bg-mesh:
+    radial-gradient(at 12% 8%,  rgba(232, 195, 168, 0.55) 0%, transparent 45%),
+    radial-gradient(at 88% 12%, rgba(212, 165, 20, 0.18)  0%, transparent 45%),
+    radial-gradient(at 50% 95%, rgba(195, 85, 58, 0.12)   0%, transparent 50%),
+    radial-gradient(at 92% 80%, rgba(74, 92, 63, 0.15)    0%, transparent 40%),
+    var(--bg-base);
+
+  /* ── Surfaces (glass papier crème) ───────────────────────────── */
+  --glass:                rgba(255, 251, 240, 0.72);
+  --glass-strong:         rgba(255, 251, 240, 0.88);
+  --glass-elevated:       rgba(255, 252, 244, 0.96);
+  --glass-hover:          rgba(255, 251, 240, 0.82);
+  --glass-border:         rgba(195, 85, 58, 0.18);
+  --glass-border-strong:  rgba(195, 85, 58, 0.32);
+
+  /* ── Texte ───────────────────────────────────────────────────── */
+  --text:        #2b2520;
+  --text-muted:  #847261;
+  --text-strong: #1a1612;
+  --text-on-primary: #ffffff;
+
+  /* ── Marque : terracotta (rouge tomate de bistrot) ──────────── */
+  --primary:       #c3553a;
+  --primary-hover: #a8442e;
+  --primary-light: rgba(195, 85, 58, 0.12);
+  --primary-grad:  linear-gradient(135deg, #c3553a 0%, #d4a514 60%, #8b2c14 100%);
+  --primary-grad-hover: linear-gradient(135deg, #a8442e 0%, #b88c10 60%, #6b1f0d 100%);
+
+  /* ── Statuts ────────────────────────────────────────────────── */
+  --success:    #4a5c3f;                       /* vert romarin */
+  --success-bg: rgba(74, 92, 63, 0.16);
+  --warning:    #d4a514;                       /* safran */
+  --warning-bg: rgba(212, 165, 20, 0.18);
+  --danger:     #8b2c14;                       /* bordeaux */
+  --danger-bg:  rgba(139, 44, 20, 0.16);
+  --info:       #4a6b7a;                       /* bleu ardoise */
+  --info-bg:    rgba(74, 107, 122, 0.16);
+
+  /* ── Priorités (cohérent avec Statuts) ──────────────────────── */
+  --priority-high:   #8b2c14;
+  --priority-medium: #d4a514;
+  --priority-low:    #4a5c3f;
+
+  /* ── Catégories (palette terroir) ───────────────────────────── */
+  --cat-Santé:         #8b2c14;
+  --cat-Finances:      #d4a514;
+  --cat-Administratif: #4a6b7a;
+  --cat-Véhicule:      #4a5c3f;
+  --cat-Logement:      #7c4d2e;
+  --cat-Corvée:        #c3553a;
+  --cat-Autre:         #847261;
+
+  /* ── Ombres : profondes et chaudes ──────────────────────────── */
+  --shadow-xs:   0 1px 2px rgba(43, 37, 32, 0.08);
+  --shadow-sm:   0 2px 8px rgba(43, 37, 32, 0.10);
+  --shadow-md:   0 8px 28px rgba(124, 77, 46, 0.14);
+  --shadow-lg:   0 20px 50px rgba(124, 77, 46, 0.20);
+  --shadow-glow: 0 0 0 4px rgba(195, 85, 58, 0.22);
+
+  /* ── Rayons : un peu plus serrés (registre éditorial) ───────── */
+  --r-xs:   4px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-xl:   24px;
+  --r-full: 9999px;
+
+  /* ── Flou ───────────────────────────────────────────────────── */
+  --blur-sm: blur(6px)  saturate(140%);
+  --blur-md: blur(14px) saturate(160%);
+  --blur-lg: blur(32px) saturate(180%);
+
+  /* ── Animations ─────────────────────────────────────────────── */
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast:   120ms;
+  --t-base:   220ms;
+  --t-slow:   400ms;
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  --nav-h: 64px;
+  --container-w: 1180px;
+
+  /* ── Typographies ───────────────────────────────────────────── */
+  --font-base:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif:
+    'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-mono:
+    'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ── Mode sombre : « bistrot de nuit » ─────────────────────────── */
+[data-theme="dark"] {
+  --bg-base: #1c1612;
+  --bg-mesh:
+    radial-gradient(at 12% 8%,  rgba(124, 77, 46, 0.30)  0%, transparent 50%),
+    radial-gradient(at 88% 12%, rgba(212, 165, 20, 0.18) 0%, transparent 50%),
+    radial-gradient(at 50% 95%, rgba(74, 92, 63, 0.22)   0%, transparent 55%),
+    radial-gradient(at 92% 80%, rgba(195, 85, 58, 0.20)  0%, transparent 45%),
+    var(--bg-base);
+
+  --glass:               rgba(45, 36, 28, 0.62);
+  --glass-strong:        rgba(50, 40, 32, 0.80);
+  --glass-elevated:      rgba(58, 47, 38, 0.94);
+  --glass-hover:         rgba(54, 43, 34, 0.74);
+  --glass-border:        rgba(255, 247, 230, 0.10);
+  --glass-border-strong: rgba(255, 247, 230, 0.22);
+
+  --text:        #f0e4cf;
+  --text-muted:  #b8a98e;
+  --text-strong: #fdf6e5;
+
+  --primary:       #d96b4e;
+  --primary-hover: #c3553a;
+  --primary-light: rgba(217, 107, 78, 0.20);
+  --primary-grad:  linear-gradient(135deg, #d96b4e 0%, #e3b53d 60%, #b04020 100%);
+  --primary-grad-hover: linear-gradient(135deg, #c3553a 0%, #c89e26 60%, #8b2c14 100%);
+
+  --success:    #7d9168;
+  --success-bg: rgba(125, 145, 104, 0.20);
+  --warning:    #e3b53d;
+  --warning-bg: rgba(227, 181, 61, 0.22);
+  --danger:     #d65a3a;
+  --danger-bg:  rgba(214, 90, 58, 0.20);
+
+  --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.42);
+  --shadow-md:   0 8px 28px rgba(0, 0, 0, 0.55);
+  --shadow-lg:   0 20px 50px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 0 4px rgba(217, 107, 78, 0.28);
+}
+
+/* ── Titres en serif éditorial ─────────────────────────────────── */
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+
+h1 { font-size: 2.25rem; line-height: 1.15; }
+h2 { font-size: 1.75rem; line-height: 1.2;  }
+h3 { font-size: 1.35rem; line-height: 1.25; }
+
+/* ── Accessibilité ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
