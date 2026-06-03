@@ -46,7 +46,7 @@
 > Planification d'équipe intelligente avec smart planner
 >
 > Soutenance de fin de formation — Développeur Web et Web Mobile
-> Vladimir Rodzaevskiy — AFPA Marseille La Treille — [date]
+> Vladimir Rodzaevskiy — AFPA Marseille La Treille — *(date à définir)*
 
 **À dire** :
 > « Bonjour. Je vais vous présenter Crew, mon projet de fin de formation Développeur Web et Web Mobile. C'est une application web full-stack pour la planification de services d'équipe, avec un solver d'auto-planning qui respecte les heures contractuelles et envoie les services sur le téléphone de chaque équipier via le calendrier natif, sans aucune application à installer. »

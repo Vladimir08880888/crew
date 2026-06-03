@@ -3,7 +3,7 @@
 > Application web responsive pour la planification de services d'équipe.
 > Solver d'auto-planning, suivi des heures contractuelles, sync calendrier natif.
 
-**Démo en production** : https://crew-planner.vercel.app
+**Démo en production** : https://crew-planner-hazel.vercel.app
 
 ---
 
