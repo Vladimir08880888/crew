@@ -53,3 +53,12 @@ router.post('/:familyId/members/:userId/reset-password',
   asyncHandler(requireFamilyMember),
   requireAdmin,
   asyncHandler(familiesController.resetMemberPassword));
+
+router.get('/:familyId/settings',
+  asyncHandler(requireFamilyMember),
+  asyncHandler(familiesController.getSettings));
+
+router.put('/:familyId/settings',
+  asyncHandler(requireFamilyMember),
+  requireAdmin,
+  asyncHandler(familiesController.updateSettings));

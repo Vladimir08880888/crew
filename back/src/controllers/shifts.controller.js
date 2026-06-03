@@ -1,5 +1,6 @@
 import { shiftModel } from '../models/shift.model.js';
 import { familyMemberModel } from '../models/familyMember.model.js';
+import { familyModel } from '../models/family.model.js';
 import { validateCreateShift, validateUpdateShift } from '../validators/shift.validator.js';
 import { forbidden, notFound, badRequest } from '../utils/httpError.js';
 import { generatePlan, computeSummary } from '../services/plannerSolver.js';
@@ -161,13 +162,20 @@ export const shiftsController = {
     }
 
     const activeMembers = members.filter((m) => m.status === 'active');
-    const { memberStats, coverageGaps } = computeSummary({
+    const settings = await familyModel.getSettings(familyId);
+    const { memberStats, coverage } = computeSummary({
       members: activeMembers,
       weekDates,
       existingShifts: shifts,
+      settings,
     });
 
-    res.json({ memberStats, coverageGaps, totalShifts: shifts.length });
+    // Rétro-compat : coverageGaps est dérivé de coverage (slots sous le seuil min).
+    const coverageGaps = coverage
+      .filter((c) => c.actual_coef < c.ideal / 2)
+      .map((c) => ({ date: c.date, shift_type: c.service, poste: c.poste, missing: 1 }));
+
+    res.json({ memberStats, coverage, coverageGaps, totalShifts: shifts.length });
   },
 
   /**
@@ -197,6 +205,10 @@ export const shiftsController = {
     }
 
     const activeMembers = members.filter((m) => m.status === 'active');
+    const settings = await familyModel.getSettings(familyId);
+    const capacityByDate = req.body.capacityByDate && typeof req.body.capacityByDate === 'object'
+      ? req.body.capacityByDate
+      : {};
     const result = generatePlan({
       members: activeMembers,
       weekDates,
@@ -205,6 +217,8 @@ export const shiftsController = {
         date: s.date.toISOString ? s.date.toISOString().slice(0, 10) : s.date,
         family_id: familyId,
       })),
+      settings,
+      capacityByDate,
     });
 
     res.json(result);

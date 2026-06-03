@@ -1,7 +1,7 @@
 import { familyModel } from '../models/family.model.js';
 import { familyMemberModel } from '../models/familyMember.model.js';
 import { userModel } from '../models/user.model.js';
-import { validateCreateFamily, validateJoinFamily, validateMemberUpdate } from '../validators/family.validator.js';
+import { validateCreateFamily, validateJoinFamily, validateMemberUpdate, validateFamilySettings } from '../validators/family.validator.js';
 import { randomInviteCode } from '../utils/randomToken.js';
 import { generateTempPassword } from '../services/tempPassword.service.js';
 import { hashPassword } from '../services/password.service.js';
@@ -141,5 +141,19 @@ export const familiesController = {
       temp_password: tempPassword,
       warning: 'Communiquez ce mot de passe au membre concerné — il ne sera plus affiché.',
     });
+  },
+
+  async getSettings(req, res) {
+    const familyId = Number(req.params.familyId);
+    const settings = await familyModel.getSettings(familyId);
+    if (!settings) throw notFound('Famille introuvable');
+    res.json(settings);
+  },
+
+  async updateSettings(req, res) {
+    const familyId = Number(req.params.familyId);
+    const fields = validateFamilySettings(req.body);
+    await familyModel.updateSettings(familyId, fields);
+    res.json(await familyModel.getSettings(familyId));
   },
 };

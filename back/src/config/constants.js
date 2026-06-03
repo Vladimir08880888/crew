@@ -25,6 +25,17 @@ export const MEMBER_STATUSES = ['active', 'pending'];
 export const POSTES = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];
 export const SHIFTS = ['matin', 'midi', 'coupure', 'soir', 'nuit'];
 
+// Niveaux d'expérience (pondération de la couverture par équipier).
+// Le coefficient effectif est lu dans family.settings — ces valeurs ne
+// servent qu'à valider l'enum côté API.
+export const LEVELS = ['junior', 'confirme', 'chef'];
+
+// Postes et services pris en charge par le solver (« cuisine » regroupe
+// la plonge, plus de service du matin). Les autres valeurs de l'enum
+// restent acceptées pour la rétro-compatibilité des shifts existants.
+export const PLANNING_POSTES = ['cuisine', 'salle'];
+export const PLANNING_SHIFTS = ['midi', 'soir'];
+
 /**
  * Durée standard d'un shift en heures (utilisée par le solver
  * de planning pour calculer les heures effectives par équipier).

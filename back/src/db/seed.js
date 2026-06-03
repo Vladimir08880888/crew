@@ -44,11 +44,11 @@ async function createFamily(name, createdBy) {
   return r.insertId;
 }
 
-async function addMember(familyId, userId, role, isAdmin = false, poste = null, shiftDefault = null, weeklyHours = null) {
+async function addMember(familyId, userId, role, isAdmin = false, poste = null, shiftDefault = null, weeklyHours = null, level = 'confirme') {
   await pool.query(
-    `INSERT INTO family_members (family_id, user_id, role, is_admin, status, poste, shift_default, weekly_hours_target)
-     VALUES (?, ?, ?, ?, 'active', ?, ?, ?)`,
-    [familyId, userId, role, isAdmin, poste, shiftDefault, weeklyHours]
+    `INSERT INTO family_members (family_id, user_id, role, is_admin, status, poste, shift_default, weekly_hours_target, level)
+     VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?)`,
+    [familyId, userId, role, isAdmin, poste, shiftDefault, weeklyHours, level]
   );
 }
 
@@ -80,17 +80,17 @@ async function run() {
 
     const team = await createFamily('Bistrot du Vieux Port', julien);
     // Patron (target=0 → exclu du solver automatique)
-    await addMember(team, julien, 'parent', true,  'administration', null,    0);
+    await addMember(team, julien, 'parent', true,  'administration', null,    0,  'chef');
     // Managers : heures cibles 42h
-    await addMember(team, sophie, 'parent', false, 'salle',          'midi', 42);
-    await addMember(team, ahmed,  'parent', false, 'cuisine',        'midi', 42);
+    await addMember(team, sophie, 'parent', false, 'salle',          'midi', 42, 'chef');
+    await addMember(team, ahmed,  'parent', false, 'cuisine',        'midi', 42, 'chef');
     // Équipiers temps plein : 35h
-    await addMember(team, elena,  'child',  false, 'salle',          'midi', 35);
-    await addMember(team, lucas,  'child',  false, 'salle',          'soir', 35);
-    await addMember(team, mehdi,  'child',  false, 'cuisine',        'midi', 35);
-    await addMember(team, samir,  'child',  false, 'plonge',         'soir', 35);
+    await addMember(team, elena,  'child',  false, 'salle',          'midi', 35, 'confirme');
+    await addMember(team, lucas,  'child',  false, 'salle',          'soir', 35, 'confirme');
+    await addMember(team, mehdi,  'child',  false, 'cuisine',        'midi', 35, 'confirme');
+    await addMember(team, samir,  'child',  false, 'plonge',         'soir', 35, 'confirme');
     // Apprentie temps partiel : 24h
-    await addMember(team, clara,  'child',  false, 'cuisine',        'soir', 24);
+    await addMember(team, clara,  'child',  false, 'cuisine',        'soir', 24, 'junior');
     console.log('[seed] Équipe « Bistrot du Vieux Port » créée (8 membres avec postes + heures cibles)');
 
     // ─────────────────────────────────────────────────────────────────
@@ -105,28 +105,25 @@ async function run() {
     };
 
     const shiftPlan = [];
-    for (let offset = 0; offset < 14; offset++) {
+    // Seule la semaine en cours est pré-remplie : la suivante reste vide
+    // pour que la démo du Smart Planner ait quelque chose à proposer.
+    for (let offset = 0; offset < 7; offset++) {
       const dow = dayOfWeek(offset);
       if (dow === 1) continue;
 
-      // Service midi
-      shiftPlan.push([offset, julien, 'midi', 'administration', 'Permanence patron']);
-      shiftPlan.push([offset, sophie, 'midi', 'salle',          null]);
-      shiftPlan.push([offset, ahmed,  'midi', 'cuisine',        null]);
-      shiftPlan.push([offset, elena,  'midi', 'salle',          null]);
-      shiftPlan.push([offset, mehdi,  'midi', 'cuisine',        null]);
+      // Service midi : 1 chef cuisine + 1 confirmé salle = couverture minimale.
+      shiftPlan.push([offset, ahmed,  'midi', 'cuisine', null]);
+      shiftPlan.push([offset, sophie, 'midi', 'salle',   null]);
+      shiftPlan.push([offset, elena,  'midi', 'salle',   null]);
 
-      // Service soir
-      shiftPlan.push([offset, sophie, 'soir', 'salle',          null]);
-      shiftPlan.push([offset, ahmed,  'soir', 'cuisine',        null]);
-      shiftPlan.push([offset, lucas,  'soir', 'salle',          null]);
-      shiftPlan.push([offset, clara,  'soir', 'cuisine',        null]);
-      shiftPlan.push([offset, samir,  'soir', 'plonge',         null]);
-
-      // Renfort vendredi soir
+      // Service soir : un peu plus de monde + renfort vendredi.
+      shiftPlan.push([offset, ahmed,  'soir', 'cuisine', null]);
+      shiftPlan.push([offset, samir,  'soir', 'plonge',  null]);
+      shiftPlan.push([offset, lucas,  'soir', 'salle',   null]);
+      shiftPlan.push([offset, sophie, 'soir', 'salle',   null]);
       if (dow === 5) {
+        shiftPlan.push([offset, clara, 'soir', 'cuisine', 'Renfort vendredi soir']);
         shiftPlan.push([offset, elena, 'soir', 'salle',   'Renfort vendredi soir']);
-        shiftPlan.push([offset, mehdi, 'soir', 'cuisine', 'Renfort vendredi soir']);
       }
     }
 
@@ -143,7 +140,19 @@ async function run() {
         if (err.code !== 'ER_DUP_ENTRY') throw err;
       }
     }
-    console.log(`[seed] ${shiftPlan.length} shifts planifiés sur 14 jours (lundi fermé, renfort vendredi)`);
+    console.log(`[seed] ${shiftPlan.length} shifts planifiés sur la semaine courante (la suivante reste vide pour la démo Smart Planner)`);
+
+    // Paramètres de l'établissement : valeurs par défaut (manager pourra les changer
+    // depuis l'écran « Configuration » plus tard).
+    await pool.query(
+      `UPDATE families SET
+         junior_coef = 50, confirme_coef = 100, chef_coef = 150,
+         max_couverts = 100,
+         midi_cuisine_ideal = 200, midi_salle_ideal = 300,
+         soir_cuisine_ideal = 300, soir_salle_ideal = 400
+       WHERE id = ?`,
+      [team]
+    );
 
     console.log('');
     console.log('[seed] === Comptes de démonstration ===');

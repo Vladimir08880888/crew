@@ -42,4 +42,22 @@ export const familyModel = {
   async remove(id) {
     await pool.query('DELETE FROM families WHERE id = ?', [id]);
   },
+
+  async getSettings(id) {
+    const [rows] = await pool.query(
+      `SELECT junior_coef, confirme_coef, chef_coef, max_couverts,
+              midi_cuisine_ideal, midi_salle_ideal,
+              soir_cuisine_ideal, soir_salle_ideal
+       FROM families WHERE id = ?`,
+      [id]
+    );
+    return rows[0] || null;
+  },
+
+  async updateSettings(id, fields) {
+    const keys = Object.keys(fields);
+    if (!keys.length) return;
+    const set = keys.map((k) => `${k} = ?`).join(', ');
+    await pool.query(`UPDATE families SET ${set} WHERE id = ?`, [...Object.values(fields), id]);
+  },
 };

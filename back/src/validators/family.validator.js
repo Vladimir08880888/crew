@@ -1,4 +1,4 @@
-import { FAMILY_ROLES, POSTES, SHIFTS } from '../config/constants.js';
+import { FAMILY_ROLES, POSTES, SHIFTS, LEVELS } from '../config/constants.js';
 import { badRequest } from '../utils/httpError.js';
 
 export function validateCreateFamily(body) {
@@ -43,6 +43,29 @@ export function validateMemberUpdate(body) {
       if (Number.isInteger(n) && n >= 0 && n <= 80) out.weekly_hours_target = n;
       else errors.weekly_hours_target = 'Heures cibles : entier entre 0 et 80';
     }
+  }
+  if (body.level !== undefined) {
+    if (!LEVELS.includes(body.level)) errors.level = 'Niveau invalide';
+    else out.level = body.level;
+  }
+  if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
+  return out;
+}
+
+const SETTING_FIELDS = [
+  'junior_coef', 'confirme_coef', 'chef_coef', 'max_couverts',
+  'midi_cuisine_ideal', 'midi_salle_ideal',
+  'soir_cuisine_ideal', 'soir_salle_ideal',
+];
+
+export function validateFamilySettings(body) {
+  const errors = {};
+  const out = {};
+  for (const f of SETTING_FIELDS) {
+    if (body[f] === undefined) continue;
+    const n = Number(body[f]);
+    if (!Number.isInteger(n) || n < 0 || n > 10000) errors[f] = 'Entier 0–10000 attendu';
+    else out[f] = n;
   }
   if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
   return out;
