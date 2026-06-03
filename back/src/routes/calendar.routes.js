@@ -7,8 +7,8 @@ export const router = Router();
 // Calendrier global (toutes les tâches en cours + à valider pour les parents)
 router.get('/:token', asyncHandler(calendarController.export));
 
-// Sub-feed: uniquement les tâches personnelles
-router.get('/:token/perso.ics', asyncHandler(calendarController.exportPersonal));
+// Alias .ics pour clients qui exigent l'extension (Apple Calendar, etc.)
+router.get('/:token/perso.ics', asyncHandler(calendarController.export));
 
 // Sub-feed: tâches d'une famille spécifique
 router.get('/:token/family/:familyId.ics', asyncHandler(calendarController.exportFamily));
