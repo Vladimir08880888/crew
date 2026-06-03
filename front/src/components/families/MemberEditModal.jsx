@@ -103,20 +103,25 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
 
             <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.level', 'Niveau')}</label>
             <div className="row" style={{ gap: '0.4rem', flexWrap: 'wrap' }}>
-              {['junior', 'confirme', 'chef'].map((lvl) => (
+              {[
+                { key: 'junior',   pct: '~50 %' },
+                { key: 'confirme', pct: '100 %' },
+                { key: 'chef',     pct: '~150 %' },
+              ].map(({ key, pct }) => (
                 <button
-                  key={lvl}
+                  key={key}
                   type="button"
-                  className={form.level === lvl ? '' : 'secondary'}
-                  onClick={() => setForm({ ...form, level: lvl })}
-                  style={{ flex: 1, minWidth: 100 }}
+                  className={form.level === key ? '' : 'secondary'}
+                  onClick={() => setForm({ ...form, level: key })}
+                  style={{ flex: 1, minWidth: 100, display: 'flex', flexDirection: 'column', gap: '0.1rem', padding: '0.45rem 0.5rem' }}
                 >
-                  {t(`levels.${lvl}`, lvl)}
+                  <span>{t(`levels.${key}`, key)}</span>
+                  <span style={{ fontSize: '0.7rem', opacity: 0.85 }}>{pct}</span>
                 </button>
               ))}
             </div>
             <p className="muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-              {t('memberEdit.levelHint', 'Pondère la couverture du service. Junior = demi-puissance.')}
+              {t('memberEdit.levelHint', 'Vaut un pourcentage de la force d\'un confirmé. Le solver vise une somme idéale par service (cf. Configuration).')}
             </p>
           </fieldset>
 
