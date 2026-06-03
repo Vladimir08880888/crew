@@ -99,6 +99,15 @@ export default function Planning() {
     return idx;
   }, [summary]);
 
+  // Index couverture globale moyenne (cuisine+salle/2) par (date, service).
+  const overallIndex = useMemo(() => {
+    const idx = {};
+    for (const o of summary?.overallService || []) {
+      idx[`${o.date}|${o.service}`] = o;
+    }
+    return idx;
+  }, [summary]);
+
   // Slots nécessitant un extra (sous l'idéal ET densité ≥ 100 %).
   // Pour l'instant on signale TOUT slot sous-idéal — le seuil sera affiné
   // si besoin par jour. coverage est rempli par le back en fonction de la
@@ -390,12 +399,21 @@ export default function Planning() {
                             style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: c, margin: '0 1px' }} />
                     );
                   };
+                  const oMidi = overallIndex[`${dateStr}|midi`];
+                  const oSoir = overallIndex[`${dateStr}|soir`];
                   return (
                     <th key={dateStr} className={dateStr === iso(new Date()) ? 'today' : ''}>
                       <div>{fmt(d)}</div>
                       {(hMidi || hSoir) && (
                         <div style={{ fontSize: '0.65rem', marginTop: '0.1rem', opacity: 0.9 }}>
                           {dot(hMidi)} {dot(hSoir)}
+                        </div>
+                      )}
+                      {(oMidi || oSoir) && (
+                        <div style={{ fontSize: '0.65rem', marginTop: '0.1rem', opacity: 0.85, fontFamily: 'monospace' }}>
+                          {oMidi && <span title={t('planning.midiCoverage', 'Couverture midi (moyenne cuisine+salle)')}>M {(oMidi.avg_pct/100).toFixed(2)}</span>}
+                          {oMidi && oSoir && ' / '}
+                          {oSoir && <span title={t('planning.soirCoverage', 'Couverture soir (moyenne cuisine+salle)')}>S {(oSoir.avg_pct/100).toFixed(2)}</span>}
                         </div>
                       )}
                     </th>

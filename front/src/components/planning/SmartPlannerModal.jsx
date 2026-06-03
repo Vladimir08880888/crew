@@ -175,8 +175,8 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
                           {new Date(c.date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric' })}
                           {' — '}{POSTE_EMOJI[c.poste]} {t(`shifts.${c.service}`, c.service)} {t(`postes.${c.poste}`, c.poste)}
                         </span>
-                        <span style={{ color, fontWeight: 600, minWidth: 80, textAlign: 'right' }}>
-                          {c.actual_coef}/{c.ideal} ({pct}%)
+                        <span style={{ color, fontWeight: 600, minWidth: 90, textAlign: 'right', fontFamily: 'monospace' }}>
+                          {(c.actual_coef/100).toFixed(2)} / {(c.ideal/100).toFixed(2)} ({pct}%)
                         </span>
                       </div>
                     );

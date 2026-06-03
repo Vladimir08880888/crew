@@ -88,44 +88,37 @@ export default function FamilySettings() {
         }}>
           <b>{t('settings.howTitle', 'Comment ça marche')}</b>
           <p style={{ margin: '0.35rem 0 0' }}>
-            {t('settings.how1', 'Chaque équipier apporte un nombre de « points de couverture » selon son niveau. Le confirmé est la référence (100 points).')}
+            {t('settings.how1', 'Chaque équipier apporte un poids strictement inférieur à 1. Chaque poste (cuisine, salle) vise une somme de 1,00 = 100 % de l\'équipe idéale.')}
           </p>
           <p style={{ margin: '0.35rem 0 0' }}>
-            {t('settings.how2', 'Sur chaque (service, poste) le solver vise un total de points = idéal. 100 % = idéal atteint ; en dessous = il manque du monde, au-dessus = renfort confortable.')}
+            {t('settings.how2', 'La couverture globale d\'un service est la moyenne des couvertures de cuisine et salle. Au-dessous = il manque du monde, au-dessus = renfort confortable.')}
           </p>
         </div>
 
-        {/* Bloc 1 : coefficients par niveau */}
+        {/* Bloc 1 : coefficients par niveau — saisie en centièmes, affichage en fraction */}
         <fieldset className="setup-step">
-          <legend>1. {t('settings.coefsTitle', 'Points de couverture par niveau')}</legend>
+          <legend>1. {t('settings.coefsTitle', 'Poids par niveau (sur 1,00)')}</legend>
           <p className="muted" style={{ fontSize: '0.85rem' }}>
-            {t('settings.coefsHint', 'Contribution d\'un équipier à un service. Référence : Confirmé = 100.')}
+            {t('settings.coefsHint', 'Combien chaque équipier apporte à la couverture d\'un poste. Tous les poids sont < 1.')}
           </p>
           <div className="row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 130 }}>
-              <label>{t('levels.junior', 'Junior')}</label>
-              <input type="number" min={0} max={500} value={form.junior_coef}
-                     onChange={(e) => setField('junior_coef', e.target.value)} />
-              <p className="muted" style={{ fontSize: '0.72rem', margin: '0.2rem 0 0' }}>
-                = {form.confirme_coef ? Math.round((form.junior_coef / form.confirme_coef) * 100) : 0}% {t('settings.ofConfirme', 'd\'un confirmé')}
-              </p>
-            </div>
-            <div style={{ flex: 1, minWidth: 130 }}>
-              <label>{t('levels.confirme', 'Confirmé')}</label>
-              <input type="number" min={0} max={500} value={form.confirme_coef}
-                     onChange={(e) => setField('confirme_coef', e.target.value)} />
-              <p className="muted" style={{ fontSize: '0.72rem', margin: '0.2rem 0 0' }}>
-                = 100% {t('settings.reference', '(référence)')}
-              </p>
-            </div>
-            <div style={{ flex: 1, minWidth: 130 }}>
-              <label>{t('levels.chef', 'Chef')}</label>
-              <input type="number" min={0} max={500} value={form.chef_coef}
-                     onChange={(e) => setField('chef_coef', e.target.value)} />
-              <p className="muted" style={{ fontSize: '0.72rem', margin: '0.2rem 0 0' }}>
-                = {form.confirme_coef ? Math.round((form.chef_coef / form.confirme_coef) * 100) : 0}% {t('settings.ofConfirme', 'd\'un confirmé')}
-              </p>
-            </div>
+            {[
+              { key: 'junior_coef',   label: t('levels.junior',   'Junior') },
+              { key: 'confirme_coef', label: t('levels.confirme', 'Confirmé') },
+              { key: 'chef_coef',     label: t('levels.chef',     'Chef') },
+            ].map(({ key, label }) => (
+              <div key={key} style={{ flex: 1, minWidth: 130 }}>
+                <label>{label}</label>
+                <input
+                  type="number" min={0} max={99} step={1}
+                  value={form[key]}
+                  onChange={(e) => setField(key, e.target.value)}
+                />
+                <p className="muted" style={{ fontSize: '0.72rem', margin: '0.2rem 0 0' }}>
+                  = <b>{(form[key] / 100).toFixed(2)}</b> {t('settings.perPoste', 'sur 1,00 par poste')}
+                </p>
+              </div>
+            ))}
           </div>
         </fieldset>
 
@@ -152,24 +145,20 @@ export default function FamilySettings() {
             const ch = Number(form.chef_coef) || 1;
             const example = (target) => {
               const combos = [];
-              // 2 confirmés ?
-              if (Math.abs(2 * c - target) <= 10) combos.push(`2 ${t('levels.confirme', 'Confirmé')}`);
-              // 1 chef + 1 confirmé ?
-              if (Math.abs(ch + c - target) <= 10) combos.push(`1 ${t('levels.chef', 'Chef')} + 1 ${t('levels.confirme', 'Confirmé')}`);
-              // 1 confirmé + 2 juniors ?
-              if (Math.abs(c + 2 * j - target) <= 10) combos.push(`1 ${t('levels.confirme', 'Confirmé')} + 2 ${t('levels.junior', 'Junior')}`);
-              // 1 chef + 1 junior ?
-              if (Math.abs(ch + j - target) <= 10) combos.push(`1 ${t('levels.chef', 'Chef')} + 1 ${t('levels.junior', 'Junior')}`);
+              if (Math.abs(2 * c - target) <= 5) combos.push(`2 ${t('levels.confirme', 'Confirmé')}`);
+              if (Math.abs(ch + c - target) <= 5) combos.push(`1 ${t('levels.chef', 'Chef')} + 1 ${t('levels.confirme', 'Confirmé')}`);
+              if (Math.abs(c + 2 * j - target) <= 5) combos.push(`1 ${t('levels.confirme', 'Confirmé')} + 2 ${t('levels.junior', 'Junior')}`);
+              if (Math.abs(ch + j - target) <= 5) combos.push(`1 ${t('levels.chef', 'Chef')} + 1 ${t('levels.junior', 'Junior')}`);
               return combos.slice(0, 3).join(' · ') || `≈ ${(target / c).toFixed(1)} ${t('levels.confirme', 'Confirmé')}`;
             };
             return (
               <div className="card" style={{ background: 'var(--bg-soft, rgba(0,0,0,0.04))', fontSize: '0.78rem', marginTop: '0.4rem', marginBottom: '0.6rem' }}>
-                <b>{t('settings.examplesTitle', 'Exemples d\'équipes à 100 %')}</b>
+                <b>{t('settings.examplesTitle', 'Exemples d\'équipes à 1,00 (= 100 %) sur chaque poste')}</b>
                 <ul style={{ margin: '0.3rem 0 0', paddingLeft: '1.1rem' }}>
-                  <li>midi cuisine ({form.midi_cuisine_ideal}) : {example(form.midi_cuisine_ideal)}</li>
-                  <li>midi salle ({form.midi_salle_ideal}) : {example(form.midi_salle_ideal)}</li>
-                  <li>soir cuisine ({form.soir_cuisine_ideal}) : {example(form.soir_cuisine_ideal)}</li>
-                  <li>soir salle ({form.soir_salle_ideal}) : {example(form.soir_salle_ideal)}</li>
+                  <li>midi cuisine ({(form.midi_cuisine_ideal/100).toFixed(2)}) : {example(form.midi_cuisine_ideal)}</li>
+                  <li>midi salle ({(form.midi_salle_ideal/100).toFixed(2)}) : {example(form.midi_salle_ideal)}</li>
+                  <li>soir cuisine ({(form.soir_cuisine_ideal/100).toFixed(2)}) : {example(form.soir_cuisine_ideal)}</li>
+                  <li>soir salle ({(form.soir_salle_ideal/100).toFixed(2)}) : {example(form.soir_salle_ideal)}</li>
                 </ul>
               </div>
             );
