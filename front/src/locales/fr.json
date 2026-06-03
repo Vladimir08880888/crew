@@ -286,7 +286,9 @@
     "extras": "Extras",
     "extrasHint": "manque sur ce poste",
     "extraTitle": "{{service}} : il manque {{deficit}} coef pour atteindre l'idéal — prévoir un extra.",
-    "extrasAlertTitle": "{{n}} créneau(x) nécessitent un extra cette semaine"
+    "extrasAlertTitle": "{{n}} créneau(x) nécessitent un extra cette semaine",
+    "fatigueTitle": "Surcharge soutenue détectée",
+    "hcrTitle": "Non-conformités HCR / santé au travail"
   },
   "smartPlanner": {
     "title": "Planificateur automatique",

@@ -90,6 +90,15 @@ export default function Planning() {
     return idx;
   }, [summary]);
 
+  // Index santé service par (date, service).
+  const healthIndex = useMemo(() => {
+    const idx = {};
+    for (const h of summary?.serviceHealth || []) {
+      idx[`${h.date}|${h.service}`] = h;
+    }
+    return idx;
+  }, [summary]);
+
   // Slots nécessitant un extra (sous l'idéal ET densité ≥ 100 %).
   // Pour l'instant on signale TOUT slot sous-idéal — le seuil sera affiné
   // si besoin par jour. coverage est rempli par le back en fonction de la
@@ -283,6 +292,49 @@ export default function Planning() {
         </div>
       </div>
 
+      {/* Alerte science-based : surcharge soutenue (KC & Terwiesch 2009) */}
+      {isManager && summary?.fatigueAlerts?.length > 0 && (
+        <div className="card" style={{
+          marginTop: '0.5rem',
+          borderLeft: '4px solid var(--danger)',
+          background: 'rgba(239,68,68,0.08)',
+        }}>
+          <div className="row" style={{ gap: '0.5rem' }}>
+            <AlertTriangle size={16} style={{ color: 'var(--danger)' }} />
+            <b>{t('planning.fatigueTitle', 'Surcharge soutenue détectée')}</b>
+          </div>
+          {summary.fatigueAlerts.map((a, i) => (
+            <div key={i} style={{ fontSize: '0.82rem', marginTop: '0.35rem' }}>
+              <div>{a.date && <b>{new Date(a.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })} — </b>}{a.reason}</div>
+              <div className="muted" style={{ fontSize: '0.72rem', fontStyle: 'italic' }}>📚 {a.citation}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Alerte conformité HCR */}
+      {isManager && summary?.hcrViolations?.length > 0 && (
+        <div className="card" style={{
+          marginTop: '0.5rem',
+          borderLeft: '4px solid var(--danger)',
+          background: 'rgba(239,68,68,0.08)',
+        }}>
+          <div className="row" style={{ gap: '0.5rem' }}>
+            <AlertTriangle size={16} style={{ color: 'var(--danger)' }} />
+            <b>{t('planning.hcrTitle', 'Non-conformités HCR / santé au travail')}</b>
+          </div>
+          {summary.hcrViolations.slice(0, 6).map((v, i) => (
+            <div key={i} style={{ fontSize: '0.82rem', marginTop: '0.35rem' }}>
+              <div><b>{v.name} : </b>{v.reason}</div>
+              <div className="muted" style={{ fontSize: '0.72rem', fontStyle: 'italic' }}>📚 {v.citation}</div>
+            </div>
+          ))}
+          {summary.hcrViolations.length > 6 && (
+            <div className="muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>+ {summary.hcrViolations.length - 6} autres</div>
+          )}
+        </div>
+      )}
+
       {/* Alerte « extras nécessaires » : créneaux sous l'idéal */}
       {isManager && extrasNeeded.length > 0 && (
         <div className="card" style={{
@@ -324,11 +376,31 @@ export default function Planning() {
             <thead>
               <tr>
                 <th>{t('planning.member')}</th>
-                {weekDays.map((d) => (
-                  <th key={iso(d)} className={iso(d) === iso(new Date()) ? 'today' : ''}>
-                    {fmt(d)}
-                  </th>
-                ))}
+                {weekDays.map((d) => {
+                  const dateStr = iso(d);
+                  const hMidi = healthIndex[`${dateStr}|midi`];
+                  const hSoir = healthIndex[`${dateStr}|soir`];
+                  const dot = (h) => {
+                    if (!h) return null;
+                    const c = h.level === 'saine' ? 'var(--success)'
+                            : h.level === 'tendue' ? 'var(--warning)'
+                            : 'var(--danger)';
+                    return (
+                      <span title={`${h.service} ${h.level} (${h.score}/100, ${h.load_pct}%)`}
+                            style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: c, margin: '0 1px' }} />
+                    );
+                  };
+                  return (
+                    <th key={dateStr} className={dateStr === iso(new Date()) ? 'today' : ''}>
+                      <div>{fmt(d)}</div>
+                      {(hMidi || hSoir) && (
+                        <div style={{ fontSize: '0.65rem', marginTop: '0.1rem', opacity: 0.9 }}>
+                          {dot(hMidi)} {dot(hSoir)}
+                        </div>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>

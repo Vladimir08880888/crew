@@ -286,7 +286,9 @@
     "extras": "Extras",
     "extrasHint": "missing on this station",
     "extraTitle": "{{service}}: {{deficit}} coef missing to reach ideal — plan for an extra.",
-    "extrasAlertTitle": "{{n}} slot(s) need an extra this week"
+    "extrasAlertTitle": "{{n}} slot(s) need an extra this week",
+    "fatigueTitle": "Sustained overload detected",
+    "hcrTitle": "Labour law / health compliance issues"
   },
   "smartPlanner": {
     "title": "Auto planner",

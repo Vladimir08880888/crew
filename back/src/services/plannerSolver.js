@@ -91,6 +91,7 @@ export function generatePlan(input) {
     closedDays = DEFAULT_CLOSED_DAYS,
     capacityByDate = {},
     capacityByService = {},
+    capacityByDateAndService = {},
   } = input;
 
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
@@ -137,10 +138,13 @@ export function generatePlan(input) {
     if (closedDays.includes(dow)) continue;
 
     for (const service of PLANNING_SHIFTS) {
-      // Capacité = service > date > 100. Le service prime sur le date pour
-      // pouvoir dire « tous les midi à 80 %, tous les soir à 120 % ».
+      // Priorité de la prévision : per-(date,service) > per-service > per-date > 100.
+      // Cela permet au manager de poser une prévision fine « ven midi 110 % »
+      // tout en gardant un fallback grossier.
       let capacityPct;
-      if (capacityByService[service] != null) capacityPct = Number(capacityByService[service]);
+      const perCell = capacityByDateAndService?.[date]?.[service];
+      if (perCell != null) capacityPct = Number(perCell);
+      else if (capacityByService[service] != null) capacityPct = Number(capacityByService[service]);
       else if (capacityByDate[date] != null) capacityPct = Number(capacityByDate[date]);
       else capacityPct = 100;
       const capacityFactor = Math.max(0, Math.min(200, capacityPct)) / 100;
@@ -231,7 +235,7 @@ export function generatePlan(input) {
  * Retourne memberStats (heures/cibles) et coverage par (date,service,poste)
  * pour le dashboard.
  */
-export function computeSummary({ members, weekDates, existingShifts, settings = DEFAULT_SETTINGS, closedDays = DEFAULT_CLOSED_DAYS, capacityByDate = {}, capacityByService = {} }) {
+export function computeSummary({ members, weekDates, existingShifts, settings = DEFAULT_SETTINGS, closedDays = DEFAULT_CLOSED_DAYS, capacityByDate = {}, capacityByService = {}, capacityByDateAndService = {} }) {
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
   const memberById = new Map();
   for (const m of members) memberById.set(m.user_id, m);
@@ -291,5 +295,100 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
   }
 
-  return { memberStats, coverage };
+  // ── 1. Détecteur de surcharge soutenue (KC & Terwiesch 2009 — K=4h).
+  //    Si midi ET soir d'un même jour sont chargés à >120 %, on considère
+  //    que la fenêtre d'overwork de 4h est franchie : la productivité de
+  //    l'équipe commence à décrocher. Idem si 3 services chargés sur 4 jours
+  //    consécutifs (signal de surcharge soutenue à l'échelle hebdo).
+  const fatigueAlerts = [];
+  const dayLoad = {}; // date -> { midi: %, soir: % }
+  for (const c of coverage) {
+    const pct = c.ideal > 0 ? Math.round((c.actual_coef / c.ideal) * 100) : 0;
+    if (!dayLoad[c.date]) dayLoad[c.date] = {};
+    // On garde le max entre cuisine et salle (le poste le plus tendu).
+    dayLoad[c.date][c.service] = Math.max(dayLoad[c.date][c.service] || 0, pct);
+  }
+  for (const [date, ld] of Object.entries(dayLoad)) {
+    if ((ld.midi || 0) >= 120 && (ld.soir || 0) >= 120) {
+      fatigueAlerts.push({
+        date, type: 'double_charge_day',
+        severity: 'high',
+        reason: `Midi (${ld.midi} %) ET soir (${ld.soir} %) au-dessus de 120 % le même jour.`,
+        citation: 'KC & Terwiesch (2009), Management Science 55(9):1486-1498 — fenêtre d\'overwork K=4h.',
+      });
+    }
+  }
+  // Surcharge hebdomadaire : ≥3 services Chargé (≥130 %) sur 7 jours.
+  const chargedCount = Object.values(dayLoad).reduce(
+    (n, ld) => n + ((ld.midi || 0) >= 130 ? 1 : 0) + ((ld.soir || 0) >= 130 ? 1 : 0),
+    0
+  );
+  if (chargedCount >= 3) {
+    fatigueAlerts.push({
+      type: 'weekly_overload',
+      severity: chargedCount >= 5 ? 'high' : 'medium',
+      count: chargedCount,
+      reason: `${chargedCount} services chargés (≥130 %) cette semaine — burnout cumulatif probable.`,
+      citation: 'Wen et al. (2020), Front. Psychol. — surcharge soutenue → burnout β=0,83.',
+    });
+  }
+
+  // ── 2. Conformité HCR (convention collective + Matre 2021).
+  const hcrViolations = [];
+  for (const m of members) {
+    const userShifts = existingShifts.filter((s) => s.user_id === m.user_id);
+    const distinctDays = new Set(userShifts.map((s) => s.date.slice(0, 10)));
+    const weekHours = userShifts.reduce((sum, s) => sum + (SHIFT_DURATIONS[s.shift_type] || 0), 0);
+    // Heures par jour : on additionne les durées des shifts du même jour.
+    const hoursPerDay = {};
+    for (const s of userShifts) {
+      const d = s.date.slice(0, 10);
+      hoursPerDay[d] = (hoursPerDay[d] || 0) + (SHIFT_DURATIONS[s.shift_type] || 0);
+    }
+    const maxDayHours = Math.max(0, ...Object.values(hoursPerDay));
+    const restDays = Math.max(0, weekDates.length - distinctDays.size);
+
+    if (weekHours > 55) hcrViolations.push({
+      user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
+      type: 'weekly_hours', value: weekHours, threshold: 55, severity: 'high',
+      reason: `${weekHours} h cette semaine — au-dessus du seuil de risque accidentogène.`,
+      citation: 'Matre et al. (2021), Scand. J. Work Env. Health — RR=1,24 au-delà de 55 h/sem.',
+    });
+    if (maxDayHours > 12) hcrViolations.push({
+      user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
+      type: 'daily_hours', value: maxDayHours, threshold: 12, severity: 'high',
+      reason: `${maxDayHours} h dans une seule journée — fatigue critique.`,
+      citation: 'Matre et al. (2021) — RR=1,24 au-delà de 12 h/jour.',
+    });
+    if (m.weekly_hours_target > 0 && restDays < 2 && weekDates.length >= 7) hcrViolations.push({
+      user_id: m.user_id, name: `${m.first_name} ${m.last_name || ''}`.trim(),
+      type: 'rest_days', value: restDays, threshold: 2, severity: 'high',
+      reason: `Seulement ${restDays} jour(s) de repos cette semaine — non-conforme.`,
+      citation: 'Convention collective HCR — minimum 2 jours de repos par semaine.',
+    });
+  }
+
+  // ── 3. Score de santé du service (composite 0-100).
+  //    Combine couverture (pénalité si < idéal), surcharge (pénalité si > 150 %)
+  //    et présence d'une violation HCR sur ce shift.
+  const serviceHealth = [];
+  for (const [date, ld] of Object.entries(dayLoad)) {
+    for (const service of PLANNING_SHIFTS) {
+      const pct = ld[service];
+      if (pct == null) continue;
+      let score = 100;
+      if (pct < 50)      score -= 60;       // sous-couverture critique
+      else if (pct < 80) score -= 30;       // tension visible
+      else if (pct > 150) score -= 25;      // surcharge
+      else if (pct > 130) score -= 10;
+      // Si une violation HCR concerne ce service.
+      const todaysHCR = hcrViolations.filter((v) => v.type === 'daily_hours' || v.type === 'rest_days').length;
+      if (todaysHCR > 0) score -= 15;
+      score = Math.max(0, Math.min(100, score));
+      const level = score >= 75 ? 'saine' : score >= 45 ? 'tendue' : 'risque';
+      serviceHealth.push({ date, service, load_pct: pct, score, level });
+    }
+  }
+
+  return { memberStats, coverage, fatigueAlerts, hcrViolations, serviceHealth };
 }
