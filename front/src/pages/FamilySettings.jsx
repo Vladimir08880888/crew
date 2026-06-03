@@ -4,35 +4,47 @@ import { useTranslation } from 'react-i18next';
 import { Save, ArrowLeft } from 'lucide-react';
 import { familiesApi } from '../api/families.api.js';
 import { useToast } from '../context/ToastContext.jsx';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 /**
  * Page de configuration de l'équipe (manager only).
  * Trois blocs : coefficients par niveau, capacité de référence,
  * répartition idéale par service et par poste.
+ *
+ * Le statut « manager » est dérivé du retour /families/:id (rôle effectif
+ * dans cette équipe) plutôt que de l'état du sidebar, sinon un accès
+ * direct par URL côté admin pouvait être bloqué à tort.
  */
 export default function FamilySettings() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { active } = useFamily();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const familyId = Number(id);
-  const isManager = active?.id === familyId && active?.role === 'parent';
 
   const [form, setForm] = useState(null);
+  const [isManager, setIsManager] = useState(null);   // null = inconnu, true/false = chargé
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    familiesApi.getSettings(familyId)
-      .then((data) => { if (!cancelled) setForm(data); })
-      .catch((err) => toast.fromError(err))
+    Promise.all([
+      familiesApi.getSettings(familyId),
+      familiesApi.detail(familyId),
+    ])
+      .then(([settings, family]) => {
+        if (cancelled) return;
+        setForm(settings);
+        const me = (family.members || []).find((m) => m.user_id === user?.id);
+        setIsManager(!!me && me.role === 'parent' && me.status === 'active');
+      })
+      .catch((err) => { toast.fromError(err); setIsManager(false); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [familyId]);
+  }, [familyId, user?.id]);
 
   function setField(key, value) {
     setForm((f) => ({ ...f, [key]: value === '' ? '' : Number(value) }));
@@ -51,11 +63,11 @@ export default function FamilySettings() {
     }
   }
 
+  if (loading || !form || isManager === null) return <div className="card"><p>{t('common.loading')}</p></div>;
+
   if (!isManager) {
     return <div className="card"><p>{t('settings.managerOnly', 'Seul un manager peut configurer l\'équipe.')}</p></div>;
   }
-
-  if (loading || !form) return <div className="card"><p>{t('common.loading')}</p></div>;
 
   return (
     <>
