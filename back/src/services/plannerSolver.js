@@ -46,6 +46,8 @@ export function generatePlan(input) {
   const hours = {};
   for (const m of members) {
     hours[m.user_id] = {
+      first_name: m.first_name,
+      last_name: m.last_name,
       target: m.weekly_hours_target || 0,
       planned: 0,
     };
