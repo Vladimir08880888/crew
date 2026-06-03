@@ -78,34 +78,36 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
 
-            {/* Capacité par service : un slider pour midi, un pour soir.
-                S'applique uniformément à tous les jours de la semaine. */}
+            {/* Densité de service par preset.
+                Calme 50 % / Normal 100 % / Chargé 150 %. */}
             <div style={{ marginTop: '0.5rem' }}>
               <p className="muted" style={{ fontSize: '0.72rem', marginBottom: '0.3rem' }}>
-                {t('smartPlanner.capacityHint', '50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.')}
+                {t('smartPlanner.densityHint', "L'estimation du manager basée sur les réservations et l'historique.")}
               </p>
-              <div className="row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 220 }}>
-                  <label style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>🍽️ {t('shifts.midi', 'Midi')}</span>
-                    <strong>{capMidi} %</strong>
-                  </label>
-                  <input type="range" min={50} max={150} step={10}
-                         value={capMidi}
-                         onChange={(e) => setCapMidi(Number(e.target.value))}
-                         style={{ width: '100%' }} />
+              {[
+                { key: 'midi', label: t('shifts.midi', 'Midi'), emoji: '🍽️', value: capMidi, set: setCapMidi },
+                { key: 'soir', label: t('shifts.soir', 'Soir'), emoji: '🌙', value: capSoir, set: setCapSoir },
+              ].map(({ key, label, emoji, value, set }) => (
+                <div key={key} className="row" style={{ gap: '0.5rem', alignItems: 'center', margin: '0.25rem 0' }}>
+                  <span style={{ minWidth: 80, fontSize: '0.85rem' }}>{emoji} {label}</span>
+                  {[
+                    { preset: 50,  label: t('smartPlanner.calme',   'Calme'),   color: 'var(--info)'    },
+                    { preset: 100, label: t('smartPlanner.normal',  'Normal'),  color: 'var(--success)' },
+                    { preset: 150, label: t('smartPlanner.charge',  'Chargé'),  color: 'var(--danger)'  },
+                  ].map(({ preset, label, color }) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className={value === preset ? '' : 'secondary'}
+                      onClick={() => set(preset)}
+                      style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.8rem',
+                               ...(value === preset ? { background: color, borderColor: color } : {}) }}
+                    >
+                      {label} <span style={{ opacity: 0.75, fontSize: '0.72rem' }}>{preset}%</span>
+                    </button>
+                  ))}
                 </div>
-                <div style={{ flex: 1, minWidth: 220 }}>
-                  <label style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>🌙 {t('shifts.soir', 'Soir')}</span>
-                    <strong>{capSoir} %</strong>
-                  </label>
-                  <input type="range" min={50} max={150} step={10}
-                         value={capSoir}
-                         onChange={(e) => setCapSoir(Number(e.target.value))}
-                         style={{ width: '100%' }} />
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Stats globales */}
