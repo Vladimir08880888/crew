@@ -53,6 +53,8 @@ export default function Planning() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null); // { date, user_id, shift, ... } or null
   const [showSmart, setShowSmart] = useState(false);
+  const [draggedShift, setDraggedShift] = useState(null);
+  const [dragOverKey, setDragOverKey] = useState(null);
 
   const isManager = active?.role === 'parent';
 
@@ -188,6 +190,20 @@ export default function Planning() {
     }
   }
 
+  async function moveShift(shift, newDate, newUserId) {
+    if (shift.date.slice(0, 10) === newDate && shift.user_id === newUserId) return;
+    // Optimistic update
+    const prev = shifts;
+    setShifts(shifts.map((s) => (s.id === shift.id ? { ...s, date: newDate, user_id: newUserId } : s)));
+    try {
+      await shiftsApi.update(shift.id, { date: newDate, user_id: newUserId });
+      load();
+    } catch (err) {
+      setShifts(prev);
+      toast.fromError(err);
+    }
+  }
+
   async function saveShift(data) {
     try {
       if (data.id) {
@@ -301,12 +317,35 @@ export default function Planning() {
                   {weekDays.map((d) => {
                     const dateStr = iso(d);
                     const cellShifts = shiftsAt(dateStr, m.user_id);
+                    const cellKey = `${m.user_id}-${dateStr}`;
+                    const canDropHere = isManager && draggedShift && cellShifts.length < 2 &&
+                      !(draggedShift.user_id === m.user_id && draggedShift.date.slice(0, 10) === dateStr);
                     return (
-                      <td key={dateStr} className="planning-cell">
+                      <td
+                        key={dateStr}
+                        className={`planning-cell ${canDropHere && dragOverKey === cellKey ? 'drop-target' : ''}`}
+                        onDragOver={(e) => {
+                          if (canDropHere) { e.preventDefault(); setDragOverKey(cellKey); }
+                        }}
+                        onDragLeave={() => setDragOverKey((k) => (k === cellKey ? null : k))}
+                        onDrop={(e) => {
+                          if (!canDropHere) return;
+                          e.preventDefault();
+                          setDragOverKey(null);
+                          moveShift(draggedShift, dateStr, m.user_id);
+                          setDraggedShift(null);
+                        }}
+                      >
                         {cellShifts.map((s) => (
                           <div
                             key={s.id}
-                            className={`shift-pill shift-${s.shift_type} ${isManager ? 'clickable' : ''}`}
+                            className={`shift-pill shift-${s.shift_type} ${isManager ? 'clickable draggable' : ''} ${draggedShift?.id === s.id ? 'dragging' : ''}`}
+                            draggable={isManager}
+                            onDragStart={(e) => {
+                              setDraggedShift(s);
+                              e.dataTransfer.effectAllowed = 'move';
+                            }}
+                            onDragEnd={() => { setDraggedShift(null); setDragOverKey(null); }}
                             onClick={() => isManager && openEdit(s)}
                             title={s.note || ''}
                           >

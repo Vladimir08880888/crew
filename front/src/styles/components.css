@@ -754,6 +754,14 @@
 }
 .shift-pill.clickable { cursor: pointer; }
 .shift-pill.clickable:hover { background: var(--primary-light); filter: brightness(0.95); }
+.shift-pill.draggable { cursor: grab; }
+.shift-pill.draggable:active { cursor: grabbing; }
+.shift-pill.dragging { opacity: 0.4; }
+.planning-cell.drop-target {
+  outline: 2px dashed var(--primary);
+  outline-offset: -2px;
+  background: var(--primary-light);
+}
 .shift-pill.shift-midi   { border-left-color: var(--warning); background: var(--warning-bg); color: var(--warning); }
 .shift-pill.shift-soir   { border-left-color: var(--primary); }
 .shift-pill.shift-matin  { border-left-color: var(--info); background: var(--info-bg); color: var(--info); }
