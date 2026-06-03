@@ -48,6 +48,14 @@ export function validateMemberUpdate(body) {
     if (!LEVELS.includes(body.level)) errors.level = 'Niveau invalide';
     else out.level = body.level;
   }
+  if (body.coef_override !== undefined) {
+    if (body.coef_override === null || body.coef_override === '') out.coef_override = null;
+    else {
+      const n = Number(body.coef_override);
+      if (Number.isInteger(n) && n >= 0 && n <= 500) out.coef_override = n;
+      else errors.coef_override = 'Coefficient personnel : entier entre 0 et 500 (vide pour utiliser le niveau)';
+    }
+  }
   if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
   return out;
 }

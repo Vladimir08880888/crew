@@ -240,6 +240,18 @@
     "confirme": "Confirmed",
     "chef": "Chef"
   },
+  "profiles": {
+    "apprenti": "Trainee",
+    "apprentiDesc": "Learning",
+    "debutant": "Beginner",
+    "debutantDesc": "Just past trial",
+    "autonome": "Autonomous",
+    "autonomeDesc": "Reference",
+    "pilier": "Pillar",
+    "pilierDesc": "Versatile",
+    "referent": "Lead",
+    "referentDesc": "Service lead"
+  },
   "settings": {
     "title": "Team configuration",
     "managerOnly": "Only a manager can configure the team.",

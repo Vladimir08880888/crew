@@ -67,20 +67,28 @@ export function MemberList({ members, currentUserId, isAdmin, onApprove, onUpdat
                         <Hash size={10} /> {m.weekly_hours_target}h/sem
                       </span>
                     )}
-                    {m.level && (
-                      <span
-                        className="role-tag"
-                        style={
-                          m.level === 'chef'
-                            ? { background: 'rgba(99,102,241,0.18)', color: 'var(--primary)' }
-                            : m.level === 'junior'
-                            ? { background: 'rgba(245,158,11,0.15)', color: 'var(--warning)' }
-                            : { background: 'rgba(16,185,129,0.15)', color: 'var(--success)' }
-                        }
-                      >
-                        ★ {t(`levels.${m.level}`, m.level)}
-                      </span>
-                    )}
+                    {m.level && (() => {
+                      // Derive profile label from (level, coef_override).
+                      const c = m.coef_override;
+                      let key;
+                      if (m.level === 'junior' && c === 50) key = 'apprenti';
+                      else if (m.level === 'junior' && c === 75) key = 'debutant';
+                      else if (m.level === 'confirme' && c === 100) key = 'autonome';
+                      else if (m.level === 'confirme' && c === 125) key = 'pilier';
+                      else if (m.level === 'chef' && c === 150) key = 'referent';
+                      else key = m.level === 'chef' ? 'referent' : m.level === 'junior' ? 'apprenti' : 'autonome';
+                      const ico = key === 'apprenti' ? '🌱' : key === 'debutant' ? '🌿' : key === 'autonome' ? '🌳' : key === 'pilier' ? '⭐' : '👑';
+                      const style = key === 'referent' || key === 'pilier'
+                        ? { background: 'rgba(99,102,241,0.18)', color: 'var(--primary)' }
+                        : key === 'apprenti' || key === 'debutant'
+                        ? { background: 'rgba(245,158,11,0.15)', color: 'var(--warning)' }
+                        : { background: 'rgba(16,185,129,0.15)', color: 'var(--success)' };
+                      return (
+                        <span className="role-tag" style={style}>
+                          {ico} {t(`profiles.${key}`, key)}
+                        </span>
+                      );
+                    })()}
                     {incomplete && (
                       <span className="role-tag" style={{ background: 'rgba(245,158,11,0.15)', color: 'var(--warning)' }}>
                         ⚠ {t('memberList.setupIncomplete')}

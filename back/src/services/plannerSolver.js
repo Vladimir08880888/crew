@@ -47,6 +47,8 @@ const DEFAULT_SETTINGS = {
 };
 
 function coefOf(member, settings) {
+  // Override personnel prime sur la valeur du niveau.
+  if (member.coef_override != null) return Number(member.coef_override);
   switch (member.level) {
     case 'junior':   return settings.junior_coef;
     case 'chef':     return settings.chef_coef;

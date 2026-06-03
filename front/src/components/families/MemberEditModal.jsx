@@ -22,6 +22,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
     shift_default: member.shift_default || '',
     weekly_hours_target: member.weekly_hours_target ?? '',
     level: member.level || 'confirme',
+    coef_override: member.coef_override ?? '',
   });
 
   const isFirstSetup = !member.poste || member.weekly_hours_target == null;
@@ -38,6 +39,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
       shift_default: form.shift_default || null,
       weekly_hours_target: form.weekly_hours_target === '' ? null : Number(form.weekly_hours_target),
       level: form.level || 'confirme',
+      coef_override: form.coef_override === '' ? null : Number(form.coef_override),
     });
   }
 
@@ -101,27 +103,38 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
               </div>
             </div>
 
-            <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.level', 'Niveau')}</label>
-            <div className="row" style={{ gap: '0.4rem', flexWrap: 'wrap' }}>
+            <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.profile', 'Profil')}</label>
+            <div className="row" style={{ gap: '0.3rem', flexWrap: 'wrap' }}>
               {[
-                { key: 'junior',   pct: '~50 %' },
-                { key: 'confirme', pct: '100 %' },
-                { key: 'chef',     pct: '~150 %' },
-              ].map(({ key, pct }) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={form.level === key ? '' : 'secondary'}
-                  onClick={() => setForm({ ...form, level: key })}
-                  style={{ flex: 1, minWidth: 100, display: 'flex', flexDirection: 'column', gap: '0.1rem', padding: '0.45rem 0.5rem' }}
-                >
-                  <span>{t(`levels.${key}`, key)}</span>
-                  <span style={{ fontSize: '0.7rem', opacity: 0.85 }}>{pct}</span>
-                </button>
-              ))}
+                { key: 'apprenti', level: 'junior',   coef: 50,  icon: '🌱', label: t('profiles.apprenti', 'Apprenti'),  desc: t('profiles.apprentiDesc', 'En formation') },
+                { key: 'debutant', level: 'junior',   coef: 75,  icon: '🌿', label: t('profiles.debutant', 'Débutant'),  desc: t('profiles.debutantDesc', 'Fin d\'essai')   },
+                { key: 'autonome', level: 'confirme', coef: 100, icon: '🌳', label: t('profiles.autonome', 'Autonome'),  desc: t('profiles.autonomeDesc', 'Référence')     },
+                { key: 'pilier',   level: 'confirme', coef: 125, icon: '⭐', label: t('profiles.pilier',   'Pilier'),    desc: t('profiles.pilierDesc',   'Polyvalent')    },
+                { key: 'referent', level: 'chef',     coef: 150, icon: '👑', label: t('profiles.referent', 'Référent'),  desc: t('profiles.referentDesc', 'Lead service') },
+              ].map(({ key, level, coef, icon, label, desc }) => {
+                // Détection profil courant : match exact sur (level, coef_override).
+                const currentCoef = form.coef_override !== '' && form.coef_override != null
+                  ? Number(form.coef_override)
+                  : (form.level === 'junior' ? 50 : form.level === 'chef' ? 150 : 100);
+                const active = form.level === level && currentCoef === coef;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={active ? '' : 'secondary'}
+                    onClick={() => setForm({ ...form, level, coef_override: coef })}
+                    style={{ flex: 1, minWidth: 90, display: 'flex', flexDirection: 'column', gap: '0.05rem', padding: '0.4rem 0.3rem', fontSize: '0.8rem' }}
+                    title={`${label} — ${coef} points de couverture`}
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+                    <span><b>{label}</b></span>
+                    <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>{desc}</span>
+                  </button>
+                );
+              })}
             </div>
-            <p className="muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-              {t('memberEdit.levelHint', 'Vaut un pourcentage de la force d\'un confirmé. Le solver vise une somme idéale par service (cf. Configuration).')}
+            <p className="muted" style={{ fontSize: '0.72rem', marginTop: '0.25rem' }}>
+              {t('memberEdit.profileHint', 'Cinq profils qui pondèrent la couverture du service. Apprenti = demi-puissance, Référent = lead.')}
             </p>
           </fieldset>
 
