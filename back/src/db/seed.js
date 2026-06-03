@@ -146,10 +146,10 @@ async function run() {
     // depuis l'écran « Configuration » plus tard).
     await pool.query(
       `UPDATE families SET
-         junior_coef = 50, confirme_coef = 100, chef_coef = 150,
+         junior_coef = 15, confirme_coef = 40, chef_coef = 60,
          max_couverts = 100,
-         midi_cuisine_ideal = 200, midi_salle_ideal = 300,
-         soir_cuisine_ideal = 300, soir_salle_ideal = 400
+         midi_cuisine_ideal = 100, midi_salle_ideal = 100,
+         soir_cuisine_ideal = 100, soir_salle_ideal = 100
        WHERE id = ?`,
       [team]
     );

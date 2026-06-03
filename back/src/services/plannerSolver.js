@@ -35,15 +35,18 @@ const HCR_DAILY_MAX_BY_POSTE = {       // h effectives par jour
 };
 function hcrDailyCap(poste) { return HCR_DAILY_MAX_BY_POSTE[poste] ?? 11.5; }
 
+// Référence : chaque poste vise 100 (centièmes, soit 1,00 = 100 %).
+// Les poids individuels sont strictement < 100 → tout est en fraction
+// d'« équipe pleine » par poste.
 const DEFAULT_SETTINGS = {
-  junior_coef: 50,
-  confirme_coef: 100,
-  chef_coef: 150,
+  junior_coef: 15,
+  confirme_coef: 40,
+  chef_coef: 60,
   max_couverts: 100,
-  midi_cuisine_ideal: 200,
-  midi_salle_ideal:   300,
-  soir_cuisine_ideal: 300,
-  soir_salle_ideal:   400,
+  midi_cuisine_ideal: 100,
+  midi_salle_ideal:   100,
+  soir_cuisine_ideal: 100,
+  soir_salle_ideal:   100,
 };
 
 function coefOf(member, settings) {
@@ -325,17 +328,35 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
   }
 
+  // Couverture par service = moyenne des couvertures (cuisine + salle).
+  // Chaque poste vise 1,0 (100 %) indépendamment. La couverture globale du
+  // service est leur moyenne, ce qui donne au manager une vision agrégée
+  // tout en gardant la lecture détaillée par poste dans la table coverage.
+  const overallService = []; // [{ date, service, posteCount, sum_pct, avg_pct }]
+  const overallAcc = {}; // key date|service -> { sum, count }
+  for (const c of coverage) {
+    const key = `${c.date}|${c.service}`;
+    if (!overallAcc[key]) overallAcc[key] = { sum: 0, count: 0 };
+    const pct = c.ideal > 0 ? (c.actual_coef / c.ideal) * 100 : 0;
+    overallAcc[key].sum += pct;
+    overallAcc[key].count += 1;
+  }
+  for (const [key, v] of Object.entries(overallAcc)) {
+    const [date, service] = key.split('|');
+    const avg = v.count ? Math.round(v.sum / v.count) : 0;
+    overallService.push({ date, service, posteCount: v.count, avg_pct: avg });
+  }
+
   // ── 1. Détecteur de surcharge soutenue (KC & Terwiesch 2009 — K=4h).
   //    Si midi ET soir d'un même jour sont chargés à >120 %, on considère
   //    que la fenêtre d'overwork de 4h est franchie : la productivité de
   //    l'équipe commence à décrocher. Idem si 3 services chargés sur 4 jours
   //    consécutifs (signal de surcharge soutenue à l'échelle hebdo).
   const fatigueAlerts = [];
-  const dayLoad = {}; // date -> { midi: %, soir: % }
+  const dayLoad = {}; // date -> { midi: % max sur postes, soir: ... }
   for (const c of coverage) {
     const pct = c.ideal > 0 ? Math.round((c.actual_coef / c.ideal) * 100) : 0;
     if (!dayLoad[c.date]) dayLoad[c.date] = {};
-    // On garde le max entre cuisine et salle (le poste le plus tendu).
     dayLoad[c.date][c.service] = Math.max(dayLoad[c.date][c.service] || 0, pct);
   }
   for (const [date, ld] of Object.entries(dayLoad)) {
@@ -433,5 +454,5 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
   }
 
-  return { memberStats, coverage, fatigueAlerts, hcrViolations, serviceHealth };
+  return { memberStats, coverage, overallService, fatigueAlerts, hcrViolations, serviceHealth };
 }

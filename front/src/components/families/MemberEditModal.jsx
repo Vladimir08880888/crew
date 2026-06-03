@@ -106,16 +106,15 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
             <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.profile', 'Profil')}</label>
             <div className="row" style={{ gap: '0.3rem', flexWrap: 'wrap' }}>
               {[
-                { key: 'apprenti', level: 'junior',   coef: 50,  icon: '🌱', label: t('profiles.apprenti', 'Apprenti'),  desc: t('profiles.apprentiDesc', 'En formation') },
-                { key: 'debutant', level: 'junior',   coef: 75,  icon: '🌿', label: t('profiles.debutant', 'Débutant'),  desc: t('profiles.debutantDesc', 'Fin d\'essai')   },
-                { key: 'autonome', level: 'confirme', coef: 100, icon: '🌳', label: t('profiles.autonome', 'Autonome'),  desc: t('profiles.autonomeDesc', 'Référence')     },
-                { key: 'pilier',   level: 'confirme', coef: 125, icon: '⭐', label: t('profiles.pilier',   'Pilier'),    desc: t('profiles.pilierDesc',   'Polyvalent')    },
-                { key: 'referent', level: 'chef',     coef: 150, icon: '👑', label: t('profiles.referent', 'Référent'),  desc: t('profiles.referentDesc', 'Lead service') },
+                { key: 'apprenti', level: 'junior',   coef: 15, icon: '🌱', label: t('profiles.apprenti', 'Apprenti'),  desc: t('profiles.apprentiDesc', 'En formation') },
+                { key: 'debutant', level: 'junior',   coef: 25, icon: '🌿', label: t('profiles.debutant', 'Débutant'),  desc: t('profiles.debutantDesc', 'Fin d\'essai')   },
+                { key: 'autonome', level: 'confirme', coef: 40, icon: '🌳', label: t('profiles.autonome', 'Autonome'),  desc: t('profiles.autonomeDesc', 'Référence')     },
+                { key: 'pilier',   level: 'confirme', coef: 50, icon: '⭐', label: t('profiles.pilier',   'Pilier'),    desc: t('profiles.pilierDesc',   'Polyvalent')    },
+                { key: 'referent', level: 'chef',     coef: 60, icon: '👑', label: t('profiles.referent', 'Référent'),  desc: t('profiles.referentDesc', 'Lead service') },
               ].map(({ key, level, coef, icon, label, desc }) => {
-                // Détection profil courant : match exact sur (level, coef_override).
                 const currentCoef = form.coef_override !== '' && form.coef_override != null
                   ? Number(form.coef_override)
-                  : (form.level === 'junior' ? 50 : form.level === 'chef' ? 150 : 100);
+                  : (form.level === 'junior' ? 15 : form.level === 'chef' ? 60 : 40);
                 const active = form.level === level && currentCoef === coef;
                 return (
                   <button
@@ -124,11 +123,12 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
                     className={active ? '' : 'secondary'}
                     onClick={() => setForm({ ...form, level, coef_override: coef })}
                     style={{ flex: 1, minWidth: 90, display: 'flex', flexDirection: 'column', gap: '0.05rem', padding: '0.4rem 0.3rem', fontSize: '0.8rem' }}
-                    title={`${label} — ${coef} points de couverture`}
+                    title={`${label} — apporte ${(coef / 100).toFixed(2)} sur 1,00 par poste`}
                   >
                     <span style={{ fontSize: '1.1rem' }}>{icon}</span>
                     <span><b>{label}</b></span>
                     <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>{desc}</span>
+                    <span style={{ fontSize: '0.62rem', opacity: 0.7 }}>{(coef / 100).toFixed(2)}</span>
                   </button>
                 );
               })}
