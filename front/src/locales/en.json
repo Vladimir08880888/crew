@@ -350,6 +350,8 @@
     "weeklyHoursHint": "Used by the auto-planner. Set to 0 to exclude (executives, owner).",
     "presetExclude": "Excluded (0h)",
     "level": "Level",
-    "levelHint": "Weights service coverage. Junior = half-power, Chef = lead."
+    "levelHint": "Weights service coverage. Junior = half-power, Chef = lead.",
+    "polyvalence": "Versatility (stations mastered)",
+    "polyvalenceHint": "Primary station (★) is mandatory. Check additional stations this member can cover — the solver will assign them only if no specialist is eligible."
   }
 }

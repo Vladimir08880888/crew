@@ -56,6 +56,15 @@ export function validateMemberUpdate(body) {
       else errors.coef_override = 'Coefficient personnel : entier entre 0 et 500 (vide pour utiliser le niveau)';
     }
   }
+  if (body.skills_mask !== undefined) {
+    if (body.skills_mask === null || body.skills_mask === '') out.skills_mask = null;
+    else {
+      const n = Number(body.skills_mask);
+      // 5 bits → 0..31
+      if (Number.isInteger(n) && n >= 0 && n <= 31) out.skills_mask = n;
+      else errors.skills_mask = 'Polyvalence : entier entre 0 et 31 (bitmask postes)';
+    }
+  }
   if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
   return out;
 }

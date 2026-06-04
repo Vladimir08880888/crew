@@ -18,7 +18,7 @@
  * tranquilles — la cible est multipliée par ce pourcentage.
  */
 
-import { SHIFT_DURATIONS, DEFAULT_CLOSED_DAYS, PLANNING_SHIFTS, PLANNING_POSTES } from '../config/constants.js';
+import { SHIFT_DURATIONS, DEFAULT_CLOSED_DAYS, PLANNING_SHIFTS, PLANNING_POSTES, POSTES } from '../config/constants.js';
 
 const MAX_CONSECUTIVE_DAYS = 6;
 
@@ -64,7 +64,23 @@ function idealOf(settings, service, poste) {
   return settings[`${service}_${poste}_ideal`] || 0;
 }
 
-// Un poste = même valeur OU plonge → assimilée à cuisine.
+// Polyvalence : un équipier peut tenir un poste s'il a la compétence.
+//   - skills_mask = bitmask des postes (POSTES) qu'il maîtrise.
+//   - NULL → on retombe sur l'ancien comportement (poste primaire +
+//     plonge → cuisine pour le seed historique).
+function canFill(member, slotPoste) {
+  if (member.skills_mask != null) {
+    const slotIdx = POSTES.indexOf(slotPoste);
+    if (slotIdx < 0) return false;
+    return ((Number(member.skills_mask) >> slotIdx) & 1) === 1;
+  }
+  // Fallback legacy.
+  if (member.poste === slotPoste) return true;
+  if (slotPoste === 'cuisine' && member.poste === 'plonge') return true;
+  return false;
+}
+// Alias rétro-compat pour la lecture sur existingShifts (qui n'ont pas
+// de skills_mask) : c'est le poste enregistré sur le shift qui décide.
 function posteMatches(memberPoste, slotPoste) {
   if (memberPoste === slotPoste) return true;
   if (slotPoste === 'cuisine' && memberPoste === 'plonge') return true;
@@ -188,7 +204,7 @@ export function generatePlan(input) {
           const candidates = members
             .filter((m) => {
               if (!m.weekly_hours_target || m.weekly_hours_target === 0) return false;
-              if (!posteMatches(m.poste, poste)) return false;
+              if (!canFill(m, poste)) return false;
               const akey = `${m.user_id}-${date}`;
               if (assignedByUserDay.get(akey)?.has(service)) return false;
               const shiftDur = SHIFT_DURATIONS[service] || 0;

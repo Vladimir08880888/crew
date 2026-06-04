@@ -23,7 +23,21 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
     weekly_hours_target: member.weekly_hours_target ?? '',
     level: member.level || 'confirme',
     coef_override: member.coef_override ?? '',
+    skills_mask: member.skills_mask ?? null,
   });
+
+  // POSTES enum côté front (idx = bit du skills_mask).
+  const POSTES_FOR_SKILLS = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];
+  const primaryBit = POSTES_FOR_SKILLS.indexOf(form.poste);
+  // Mask effectif : si non défini, dérivé du poste primaire seul.
+  const effectiveMask = form.skills_mask != null
+    ? Number(form.skills_mask)
+    : (primaryBit >= 0 ? (1 << primaryBit) : 0);
+  function toggleSkill(idx) {
+    if (idx === primaryBit) return; // primaire toujours inclus
+    const next = effectiveMask ^ (1 << idx);
+    setForm({ ...form, skills_mask: next });
+  }
 
   const isFirstSetup = !member.poste || member.weekly_hours_target == null;
 
@@ -33,6 +47,9 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
 
   function submit(e) {
     e.preventDefault();
+    // S'assurer que le poste primaire est dans skills_mask.
+    let mask = form.skills_mask;
+    if (primaryBit >= 0) mask = (mask == null ? 0 : Number(mask)) | (1 << primaryBit);
     onSave({
       ...form,
       poste: form.poste || null,
@@ -40,6 +57,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
       weekly_hours_target: form.weekly_hours_target === '' ? null : Number(form.weekly_hours_target),
       level: form.level || 'confirme',
       coef_override: form.coef_override === '' ? null : Number(form.coef_override),
+      skills_mask: mask,
     });
   }
 
@@ -135,6 +153,35 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
             </div>
             <p className="muted" style={{ fontSize: '0.72rem', marginTop: '0.25rem' }}>
               {t('memberEdit.profileHint', 'Cinq profils qui pondèrent la couverture du service. Apprenti = demi-puissance, Référent = lead.')}
+            </p>
+
+            <label style={{ marginTop: '0.6rem' }}>{t('memberEdit.polyvalence', 'Polyvalence (postes maîtrisés)')}</label>
+            <div className="row" style={{ gap: '0.3rem', flexWrap: 'wrap' }}>
+              {POSTES_FOR_SKILLS.map((p, i) => {
+                const checked = ((effectiveMask >> i) & 1) === 1;
+                const isPrimary = i === primaryBit;
+                return (
+                  <label key={p} style={{
+                    flex: '1 1 110px', display: 'flex', alignItems: 'center', gap: '0.35rem',
+                    padding: '0.35rem 0.5rem',
+                    border: '1px solid var(--glass-border)', borderRadius: 'var(--r-sm)',
+                    background: isPrimary ? 'rgba(99,102,241,0.10)' : checked ? 'rgba(16,185,129,0.10)' : 'transparent',
+                    cursor: isPrimary ? 'default' : 'pointer',
+                    fontSize: '0.78rem',
+                    opacity: isPrimary ? 0.85 : 1,
+                  }}>
+                    <input type="checkbox"
+                           checked={checked}
+                           disabled={isPrimary}
+                           onChange={() => toggleSkill(i)} />
+                    <span style={{ textTransform: 'capitalize' }}>{t(`postes.${p}`, p)}</span>
+                    {isPrimary && <span style={{ fontSize: '0.65rem', opacity: 0.65 }}>★</span>}
+                  </label>
+                );
+              })}
+            </div>
+            <p className="muted" style={{ fontSize: '0.72rem', marginTop: '0.2rem' }}>
+              {t('memberEdit.polyvalenceHint', "Le poste primaire (★) est imposé. Cochez les postes supplémentaires que cet équipier peut tenir en cas de besoin — le solver l'y enverra seulement si aucun spécialiste n'est éligible.")}
             </p>
           </fieldset>
 

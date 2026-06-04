@@ -350,6 +350,8 @@
     "weeklyHoursHint": "Utilisé par le planificateur automatique. Mettre 0 pour exclure (cadres, patron).",
     "presetExclude": "Exclu (0h)",
     "level": "Niveau",
-    "levelHint": "Pondère la couverture du service. Junior = demi-puissance, Chef = lead."
+    "levelHint": "Pondère la couverture du service. Junior = demi-puissance, Chef = lead.",
+    "polyvalence": "Polyvalence (postes maîtrisés)",
+    "polyvalenceHint": "Le poste primaire (★) est imposé. Cochez les postes supplémentaires que cet équipier peut tenir en cas de besoin — le solver l'y enverra seulement si aucun spécialiste n'est éligible."
   }
 }

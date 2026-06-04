@@ -57,6 +57,25 @@ export function MemberList({ members, currentUserId, isAdmin, onApprove, onUpdat
                         {POSTE_EMOJI[m.poste] || <Briefcase size={10} />} {t(`postes.${m.poste}`, m.poste)}
                       </span>
                     )}
+                    {(() => {
+                      // Skills supplémentaires (polyvalence) — affichées en petite icône.
+                      const POSTES_FOR_SKILLS = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];
+                      const primaryBit = POSTES_FOR_SKILLS.indexOf(m.poste);
+                      const mask = m.skills_mask;
+                      if (mask == null) return null;
+                      const extras = [];
+                      for (let i = 0; i < POSTES_FOR_SKILLS.length; i++) {
+                        if (i === primaryBit) continue;
+                        if (((mask >> i) & 1) === 1) extras.push(POSTES_FOR_SKILLS[i]);
+                      }
+                      if (extras.length === 0) return null;
+                      return (
+                        <span className="role-tag" title={t('memberList.polyvalence', 'Polyvalence : peut aussi tenir ces postes')}
+                              style={{ background: 'rgba(16,185,129,0.12)', color: 'var(--success)' }}>
+                          + {extras.map((p) => POSTE_EMOJI[p] || p[0]).join(' ')}
+                        </span>
+                      );
+                    })()}
                     {m.shift_default && (
                       <span className="role-tag">
                         <Clock size={10} /> {t(`shifts.${m.shift_default}`, m.shift_default)}
