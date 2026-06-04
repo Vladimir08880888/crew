@@ -170,3 +170,88 @@ Exécution automatisée via Playwright (`@playwright/test`) contre :
   **Correctif** : route réorientée vers `calendarController.export` qui
   produit déjà le bon flux personnel.
   Re-test : 200 OK, `Content-Type: text/calendar; charset=utf-8`.
+
+---
+
+## 10. Solver enrichi (évolutions v2)
+
+> Tests automatisés sur les fonctionnalités v2 (migrations 006-012).
+> Scripts de référence dans `back/scripts/` ; tous exécutés contre
+> `https://crew-back.fly.dev` en juin 2026.
+
+### 10.1 Profils normalisés et fractions [0;1]
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.1.1| Migrer un settings legacy (50/100/150)                         | Valeurs renormalisées (15/40/60) après migration 009          | ☑      |
+| 10.1.2| Chaque poste vise 1,00 = 100 %                                 | API summary : ideal == 100 par défaut                         | ☑      |
+| 10.1.3| Profil Apprenti → coef_override = 15                           | Membre badgé 🌱 Apprenti dans MemberList                      | ☑      |
+| 10.1.4| Overall service = moyenne (cuisine + salle) / 2                | `overallService[].avg_pct` cohérent vs sum/n des postes       | ☑      |
+
+### 10.2 HCR — contraintes dures dans le solver
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.2.1| Solver ne dépasse jamais 48 h/semaine par équipier             | `max_hours <= 48` sur toute proposition                       | ☑      |
+| 10.2.2| Cap quotidien 11 h cuisinier / 11h30 salle                     | Aucune journée > cap par poste primaire                       | ☑      |
+| 10.2.3| Minimum 2 jours de repos hebdomadaire                          | `7 - distinct_days_worked >= 2` pour chaque membre actif      | ☑      |
+| 10.2.4| Slots non couvrables → uncovered avec motif HCR                | `reason` contient « Convention HCR »                          | ☑      |
+| 10.2.5| Modification manuelle qui dépasse 48 h → bandeau d'alerte      | `hcrViolations[]` non vide + citation L3121-20                | ☑      |
+
+### 10.3 Densité prévisionnelle par (jour, service)
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.3.1| Cellule midi vendredi = 1,3 → ideal multiplié par 1,3          | `coverage[].ideal == base × 1,3` ce jour-là                   | ☑      |
+| 10.3.2| Cellule à 0 → service désactivé                                | Aucun slot créé pour ce (date, service)                       | ☑      |
+| 10.3.3| Priorité : per-cell > per-service > per-date > 100             | Override fin grain effectif quand multiple sources            | ☑      |
+| 10.3.4| Preset « Tous → 1,0 » remplit toute la colonne                 | UI : 7 cellules d'une colonne passent à 100                   | ☑      |
+
+### 10.4 Jours d'ouverture configurables
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.4.1| Lundi décoché → aucun slot ce jour                             | `coverage` ne contient aucune ligne pour ce dow               | ☑      |
+| 10.4.2| Settings sauvegardés → solver respecte immédiatement           | Generate-plan suivant skip les jours fermés                   | ☑      |
+
+### 10.5 Polyvalence (multi-skill)
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.5.1| `skills_mask = NULL` → comportement legacy (poste seul)        | Sophie 8 shifts tous salle, Ahmed 8 shifts tous cuisine       | ☑      |
+| 10.5.2| Hard-negative : Sophie skills = cuisine seule                  | 0 shift salle assigné à Sophie (canFill rejette)              | ☑      |
+| 10.5.3| Spécialiste primaire préféré au polyvalent (bonus +3)          | Sophie (spécialiste salle) > Mehdi (polyvalent) sur les shifts salle | ☑ |
+| 10.5.4| Polyvalence se déclenche en sous-effectif                      | Mehdi cuisine+salle absorbe shifts salle quand Lucas absent   | ☑      |
+| 10.5.5| Couverture salle ↑ avec polyvalence vs sans                    | +18 % observé sur seed démo (800 vs 680 coef cumulé)          | ☑      |
+
+### 10.6 Cost-aware (taux horaires)
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.6.1| Settings expose junior_rate / confirme_rate / chef_rate        | API `/settings` retourne 1200 / 1400 / 1900 par défaut        | ☑      |
+| 10.6.2| Override personnel prime sur niveau                            | `rate_override` utilisé par `rateOf()` si non NULL            | ☑      |
+| 10.6.3| À déficit hebdomadaire égal, solver choisit le moins cher      | Sur slots interchangeables, confirmé préféré au chef          | ☑      |
+| 10.6.4| Pénalité coût n'écrase jamais le besoin de couverture          | Aucun slot n'est dégradé pour économiser                      | ☑      |
+| 10.6.5| Masse salariale calculée et exposée                            | `laborCostTotal` cohérent vs sum(planned × rate) des membres  | ☑      |
+| 10.6.6| Affichage UI Planning : `💶 Masse salariale : XXX €`           | Visible manager uniquement                                    | ☑      |
+
+### 10.7 Alertes science-based
+
+| #     | Scénario                                                       | Attendu                                                       | Statut |
+| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| 10.7.1| midi + soir > 120 % le même jour → fatigueAlerts               | Bandeau rouge avec citation KC & Terwiesch 2009               | ☑      |
+| 10.7.2| ≥3 services chargés ≥ 130 % sur 7 jours                        | Alerte « weekly_overload » avec citation Wen et al. 2020      | ☑      |
+| 10.7.3| Service Health Score 🟢 / 🟠 / 🔴 dans l'en-tête de colonne     | Pastilles affichées par (jour, service)                       | ☑      |
+
+### Bilan v2
+
+| Bloc           | PASS  | Total | Notes                                                  |
+| -------------- | ----- | ----- | ------------------------------------------------------ |
+| 10.1 Profils   | 4/4   | 4     | Migration 009 idempotente                              |
+| 10.2 HCR       | 5/5   | 5     | Code du travail L3121-20 + Convention HCR              |
+| 10.3 Densité   | 4/4   | 4     | Priorité hiérarchique respectée                        |
+| 10.4 Open days | 2/2   | 2     | Bitmask 7 bits                                         |
+| 10.5 Multi-skill| 5/5  | 5     | Jordan & Graves 1995 chaîne courte                     |
+| 10.6 Cost      | 6/6   | 6     | HCR 2026 minima sectoriels                             |
+| 10.7 Alertes   | 3/3   | 3     | Citations peer-reviewed inline                         |
+| **Total**      | **29/29** | **29** | Tous les scripts archivés dans `back/scripts/`     |

@@ -294,3 +294,106 @@ smart planner immédiatement sans configuration manuelle.
 
 Tests : couverture manuelle documentée en annexe, comptes de démo pour
 chaque rôle, scénarios de cas nominal et cas d'erreur tracés.
+
+---
+
+## 11. Évolutions v2 — solver enrichi (migrations 006-012)
+
+Au-delà du périmètre initial décrit dans les sections 1 à 10, le projet
+a évolué pour intégrer six dimensions métier supplémentaires demandées
+en cours de développement. Ces évolutions sont entièrement documentées
+dans `annexes/JUSTIFICATION_SCIENTIFIQUE.md` (12 références
+peer-reviewed). Le schéma SQL final est synchronisé dans
+`annexes/SCHEMA_BDD.md`.
+
+### 11.1 Profils normalisés (migration 006)
+
+Chaque équipier porte un **niveau** (`junior` / `confirme` / `chef`)
+auquel l'UI applique une grille de **5 profils nommés** :
+🌱 Apprenti (0,15), 🌿 Débutant (0,25), 🌳 Autonome (0,40),
+⭐ Pilier (0,50), 👑 Référent (0,60). Tous les poids sont
+strictement inférieurs à 1 ; chaque poste vise une couverture de 1,00
+(= 100 %).
+
+### 11.2 Paramètres d'établissement (migration 007)
+
+La table `families` reçoit 8 colonnes de configuration métier :
+coefficients par niveau (`junior_coef`, `confirme_coef`, `chef_coef`),
+capacité de référence (`max_couverts`) et idéal de couverture par
+service et par poste (`midi_cuisine_ideal`, `midi_salle_ideal`,
+`soir_cuisine_ideal`, `soir_salle_ideal`). Le manager les édite via
+la page Configuration. Anciennes constantes hardcodées supprimées.
+
+### 11.3 Override personnel et coverage agrégée (008, fractions)
+
+`family_members.coef_override` (nullable) permet de surcharger le
+poids d'un équipier au cas par cas. L'API `summary` expose
+`overallService` (moyenne cuisine + salle par service) et la
+couverture par poste reste accessible via `coverage`.
+
+### 11.4 Jours d'ouverture et densité prévue (010)
+
+`families.closed_days_mask` (bitmask 7 bits, défaut = lundi fermé)
+remplace l'ancienne constante. La modale Smart Planner expose un
+tableau (date × service) où le manager déclare la densité prévue
+de chaque service de la semaine (Calme 0,5 / Normal 1,0 / Chargé 1,3
+ou valeur libre). Le solver scale l'idéal par cette densité.
+
+### 11.5 Conformité HCR comme contrainte dure
+
+Le solver applique en filtre quatre garde-fous légaux non
+contournables : 48 h hebdomadaires (Code du travail L3121-20),
+11 h quotidiennes pour cuisinier (HCR niveau I-III) ou 11h30 pour
+salle/bar (HCR « autre personnel »), 2 jours de repos hebdomadaire
+(HCR art. 23), maximum 6 jours consécutifs. Aucune suggestion
+n'enfreint ces seuils ; les modifications manuelles déclenchent
+des bandeaux d'alerte sur la page Planning citant le texte légal.
+
+### 11.6 Polyvalence (multi-skill, migration 011)
+
+`family_members.skills_mask` (bitmask 5 bits sur les valeurs de
+l'enum POSTES). Le solver `canFill(member, slotPoste)` lit ce mask
+en priorité ; le scoring conserve un bonus `+3` pour le poste
+primaire, si bien qu'**un équipier polyvalent n'est mobilisé hors
+de sa spécialité que si aucun spécialiste primaire n'est éligible**.
+Théorème de la chaîne courte (Jordan & Graves 1995, *Management
+Science*) appliqué : 2-3 postes/équipier captent ~95 % des gains
+d'une flexibilité totale.
+
+### 11.7 Optimisation économique cost-aware (migration 012)
+
+Trois colonnes `*_rate` sur `families` (taux horaire par niveau, en
+centimes/€) + `family_members.rate_override`. Valeurs par défaut
+alignées sur les minima de la **Convention HCR 2026** : Junior 12 €,
+Confirmé 14 €, Chef 19 €. Le solver intègre une pénalité de coût
+dans le score de candidature, calibrée pour rester sous-dominante
+face au déficit hebdomadaire — le coût discrimine seulement entre
+candidats à besoins équivalents. La masse salariale prévisionnelle
+(`laborCostTotal`) s'affiche dans l'en-tête de la page Planning.
+
+### 11.8 Alertes science-based intégrées
+
+Le solver produit trois familles d'indicateurs visibles dans l'UI,
+chacun adossé à une source peer-reviewed ou réglementaire (voir
+annexe scientifique) :
+
+- **fatigueAlerts** — surcharge soutenue (KC & Terwiesch 2009,
+  *Management Science*) : midi + soir > 120 % ou ≥3 services à
+  130 %+ sur la semaine.
+- **hcrViolations** — non-conformités Convention HCR / Code du
+  travail / Matre et al. 2021 (RR=1,24 sur seuils dépassés).
+- **serviceHealth** — score composite 0-100 par (jour, service) avec
+  pastille 🟢 Saine / 🟠 Tendue / 🔴 Risque dans l'en-tête des
+  colonnes du planning.
+
+### 11.9 Récapitulatif des migrations
+
+| #   | Sujet                                  | Tables impactées      |
+| --- | -------------------------------------- | --------------------- |
+| 006 | Niveaux Junior / Confirmé / Chef       | `family_members`      |
+| 007 | Paramètres d'équipe (coef, ideal, capacité) | `families`       |
+| 008 | Coef override personnel                | `family_members`      |
+| 009 | Normalisation [0;1] des poids et idéals| `families`, `family_members` |
+| 010 | Jours d'ouverture (closed_days_mask)   | `families`            |
+| 011 | Polyvalence (skills_mask)              | `family_members`      |
+| 012 | Taux horaires + override               | `families`, `family_members` |
