@@ -7,10 +7,12 @@
 ## Résumé exécutif
 
 Le solver de Crew quantifie la couverture d'un service par une somme de
-coefficients par poste (cuisine/salle), pondérée par le niveau d'expérience
-des équipiers (Junior 50, Confirmé 100, Chef 150), avec trois paliers de
-densité (Calme 50 %, Normal 100 %, Chargé 150 %). Cette structure n'est
-pas arbitraire : elle s'appuie sur quatre corpus convergents.
+coefficients normalisés par poste (cuisine et salle visent chacune 1,00),
+pondérée par le profil de l'équipier (Apprenti 0,15 à Référent 0,60),
+avec trois paliers de densité (Calme 0,5 ; Normal 1,0 ; Chargé 1,3).
+La polyvalence (multi-skill) permet à un équipier de couvrir plusieurs
+postes, le solver gardant la priorité au poste primaire. Cette structure
+n'est pas arbitraire : elle s'appuie sur **cinq** corpus convergents.
 
 1. **Sciences des opérations** — la vitesse de service est endogène à la
    charge (KC & Terwiesch, *Management Science* 2009).
@@ -21,6 +23,9 @@ pas arbitraire : elle s'appuie sur quatre corpus convergents.
    fatigue comme un risque mesurable (NIOSH 2023 ; INRS ED 880).
 4. **Statistiques sectorielles françaises** — ratios staff/couverts et
    coûts personnels documentés (UMIH/CHR ; études Accor).
+5. **Workforce flexibility** — la polyvalence en chaîne courte capture
+   l'essentiel des gains de flexibilité totale (Jordan & Graves 1995,
+   Hopp et al. 2004).
 
 ---
 
@@ -299,21 +304,121 @@ s'enclenche.
 
 ---
 
-## 6. Limites assumées et perspectives
+## 6. Polyvalence (multi-skill workforce flexibility)
+
+### 6.1 Cadre académique
+
+La gestion de la polyvalence (« cross-training » ou « workforce
+flexibility ») est un sujet établi en recherche opérationnelle depuis
+les années 1990. La littérature montre que **quelques équipiers
+polyvalents suffisent à capturer l'essentiel des gains d'une
+flexibilité totale** — résultat connu sous le nom de *chaining theorem*.
+
+> Jordan, W. C. & Graves, S. C. (1995). « Principles on the Benefits of
+> Manufacturing Process Flexibility », *Management Science* 41(4):577-594.
+> DOI : [10.1287/mnsc.41.4.577](https://doi.org/10.1287/mnsc.41.4.577)
+
+Ce papier fondateur démontre qu'**une chaîne courte de polyvalence
+(chaque équipier maîtrise 2-3 postes adjacents) capture ~95 % des gains
+d'une polyvalence totale**, pour un coût de formation très inférieur.
+C'est exactement la stratégie de Crew : chaque équipier déclare son
+poste primaire **plus** un ou deux postes de secours, pas la maîtrise
+exhaustive de tous.
+
+### 6.2 Application à la restauration
+
+> Hopp, W. J., Tekin, E. & Van Oyen, M. P. (2004). « Benefits of Skill
+> Chaining in Serial Production Lines with Cross-Trained Workers »,
+> *Management Science* 50(1):83-98.
+> DOI : [10.1287/mnsc.1030.0166](https://doi.org/10.1287/mnsc.1030.0166)
+
+Hopp et al. montrent que la polyvalence en chaîne réduit la variance
+du débit et améliore la résilience face aux absences. Transposé au
+bistrot :
+
+- une absence de serveur ne paralyse plus la salle si le commis cuisine
+  est formé à servir,
+- la qualité de service est plus stable jour après jour parce que les
+  pics ponctuels sont absorbés,
+- le manager garde sa marge de planning même quand un équipier prend
+  un congé court.
+
+### 6.3 Implémentation dans Crew
+
+Chaque équipier porte deux informations :
+
+- **`poste`** — son poste primaire (sa spécialité, son contrat).
+- **`skills_mask`** — un bitmask des postes qu'il maîtrise (NULL = le
+  primaire seul, par rétro-compatibilité).
+
+Le solver applique ensuite deux principes simples :
+
+1. **Filtrage par compétence** : un équipier n'est candidat sur un
+   slot que si le bit correspondant est positionné dans son
+   `skills_mask`.
+2. **Priorité au primaire** : le score d'affectation conserve un bonus
+   `+3` si le slot correspond au poste primaire. Conséquence opérationnelle :
+   un équipier polyvalent **n'est mobilisé hors de sa spécialité que
+   si aucun spécialiste primaire n'est éligible** (heures saturées,
+   repos hebdo, absent). C'est l'inverse de la cannibalisation : la
+   polyvalence reste un filet de sécurité.
+
+Cette implémentation respecte la **chaîne courte** recommandée par
+Jordan & Graves (1995) — la plupart des équipiers déclarent 1-2
+postes secondaires, pas la totalité.
+
+### 6.4 Vérification empirique sur le seed
+
+Scénario simulé via le script `back/scripts/multiskill_test6.mjs` :
+
+- Lucas (serveur confirmé) en arrêt maladie → `target = 0 h`.
+- Elena (serveuse) en formation → `target = 24 h`.
+- Ahmed et Mehdi déclarés polyvalents cuisine + salle.
+
+| Mesure                                  | Avec polyvalence | Sans polyvalence | Δ      |
+| --------------------------------------- | ---------------- | ---------------- | ------ |
+| Couverture salle (somme `actual_coef`)  | 800 / 1200       | 680 / 1200       | +18 %  |
+| Shifts salle absorbés par cuisiniers    | 3                | 0                | +3     |
+| Shifts salle pour Sophie (spécialiste)  | 8                | 8                | =      |
+
+Lecture : Sophie reste prioritaire (8 shifts inchangés) ; la
+polyvalence **complète** la couverture sans déplacer les spécialistes.
+Sans polyvalence, le bistrot perdrait 18 % de capacité salle cette
+semaine — soit ~25 couverts servis en moins par service à pleine
+capacité (UMIH benchmark).
+
+### 6.5 Limites du modèle multi-skill
+
+- **Pas de calibration de productivité par poste** — un Ahmed
+  polyvalent en salle apporte le même coefficient que son coefficient
+  cuisine (0,60). Or un cuisinier en salle est typiquement 20-30 %
+  moins productif que sur sa spécialité. Cette nuance pourra être
+  ajoutée via un coefficient secondaire par paire (membre, poste).
+- **Pas de modélisation du coût de formation** — le manager déclare
+  les polyvalences déjà acquises ; la planification de la formation
+  croisée n'est pas dans le scope.
+
+---
+
+## 7. Limites assumées et perspectives
 
 Le modèle Crew est volontairement simple :
 
-- **Pas de skill matrix** — un confirmé en salle ne peut pas dépanner
-  en cuisine. Les modèles industriels (workforce flexibility) gèrent
-  cette polyvalence ; intégration possible en V2.
 - **Densité unique par service par jour** — pas de granularité
   intra-service (pic 12 h 30 vs 14 h en midi). La littérature
   (KC & Terwiesch) suggère une fenêtre K = 4 h ce qui couvre déjà un
   service entier.
 - **Coefficients fixes par niveau** — un Junior très autonome n'est
   pas distingué d'un Junior débutant. Une calibration personnalisée
-  par membre est possible (le solver accepte déjà un override par
-  shift au niveau back-end).
+  par membre est possible (le `coef_override` est déjà stocké en base
+  et exposé via le profil).
+- **Pas d'optimisation économique** — le solver vise la couverture
+  idéale, pas la minimisation de la masse salariale. Une extension
+  « cost-aware » est documentée comme prochaine itération.
+- **Pas d'auto-suggestion de densité** — le manager doit déclarer la
+  densité prévue de chaque service. Une intégration future avec un
+  système de réservation ou un module historique permettrait
+  d'auto-remplir le tableau hebdomadaire.
 
 Ces limitations sont assumées et permettent à Crew de rester
 compréhensible et configurable, ce qui est la condition d'usage réel.
@@ -359,3 +464,14 @@ compréhensible et configurable, ce qui est la condition d'usage réel.
 8. **Convention collective nationale HCR** (Hôtels, Cafés, Restaurants),
    accord du 30 avril 1997 étendu. Repos hebdomadaire et heures
    supplémentaires (Articles 4 et 5).
+
+9. **Jordan, W. C., Graves, S. C.** (1995). « Principles on the Benefits
+   of Manufacturing Process Flexibility », *Management Science*
+   41(4):577-594. Théorème de la chaîne courte de polyvalence.
+   [DOI: 10.1287/mnsc.41.4.577](https://doi.org/10.1287/mnsc.41.4.577)
+
+10. **Hopp, W. J., Tekin, E., Van Oyen, M. P.** (2004). « Benefits of
+    Skill Chaining in Serial Production Lines with Cross-Trained
+    Workers », *Management Science* 50(1):83-98. Application industrielle
+    de la polyvalence en chaîne.
+    [DOI: 10.1287/mnsc.1030.0166](https://doi.org/10.1287/mnsc.1030.0166)
