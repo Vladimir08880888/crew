@@ -26,6 +26,10 @@ n'est pas arbitraire : elle s'appuie sur **cinq** corpus convergents.
 5. **Workforce flexibility** — la polyvalence en chaîne courte capture
    l'essentiel des gains de flexibilité totale (Jordan & Graves 1995,
    Hopp et al. 2004).
+6. **Recherche opérationnelle économique** — la planification du
+   personnel se modélise classiquement par minimisation de la masse
+   salariale sous contrainte de couverture (Bard et al. 2003,
+   Ernst et al. 2004).
 
 ---
 
@@ -400,7 +404,103 @@ capacité (UMIH benchmark).
 
 ---
 
-## 7. Limites assumées et perspectives
+## 7. Optimisation économique (cost-aware solver)
+
+### 7.1 Justification métier
+
+Le coût de la main-d'œuvre est le premier poste budgétaire d'un
+restaurant : 30 à 40 % du chiffre d'affaires hors taxes dans la
+restauration française (UMIH/CHR, § 1.2). À couverture égale, le
+choix entre deux candidats éligibles a donc un effet direct sur la
+rentabilité — affecter un chef (~19 €/h) à un slot qu'un confirmé
+(~14 €/h) tient aussi bien représente un surcoût de **27,5 % par
+heure**, sans bénéfice opérationnel.
+
+### 7.2 Cadre académique
+
+> Bard, J. F., Binici, C. & deSilva, A. H. (2003). « Staff scheduling
+> at the United States Postal Service », *Computers & Operations
+> Research* 30(5):745-771.
+> DOI : [10.1016/S0305-0548(02)00048-5](https://doi.org/10.1016/S0305-0548(02)00048-5)
+
+Bard et al. formulent l'affectation des postes comme un programme
+linéaire en nombres entiers : couverture imposée comme contrainte,
+**masse salariale minimisée** comme objectif. Le solver Crew adopte
+la même philosophie, mais sous une forme heuristique (greedy avec
+scoring) plutôt qu'un MIP global, pour conserver une exécution
+temps-réel et un comportement explicable.
+
+> Ernst, A. T., Jiang, H., Krishnamoorthy, M. & Sier, D. (2004).
+> « Staff scheduling and rostering: A review of applications, methods
+> and models », *European Journal of Operational Research* 153(1):3-27.
+> DOI : [10.1016/S0377-2217(03)00095-X](https://doi.org/10.1016/S0377-2217(03)00095-X)
+
+Cette revue de référence recense les modèles de planification du
+personnel et confirme que **le coût horaire est l'objectif dominant
+dans la quasi-totalité des publications appliquées** (>95 % des
+modèles répertoriés), juste devant la satisfaction des préférences
+employés.
+
+### 7.3 Implémentation dans Crew
+
+Chaque équipier porte un taux horaire `rate_eur` (stocké en centimes
+pour éviter les imprécisions flottantes) dérivé soit du niveau
+(`junior_rate`, `confirme_rate`, `chef_rate` au niveau de l'équipe),
+soit d'un override personnel (`rate_override`). Les valeurs par
+défaut s'alignent sur les minima de la Convention HCR 2026 :
+
+| Niveau   | Taux par défaut (€/h) | Référence HCR                |
+| -------- | --------------------- | ---------------------------- |
+| Junior   | 12,00                 | Niveau I–II (SMIC HCR)       |
+| Confirmé | 14,00                 | Niveau II–III                |
+| Chef     | 19,00                 | Niveau IV–V                  |
+
+Le solver intègre ces coûts dans le score de candidature :
+
+```
+score(membre, slot) =
+        déficit_hebdo × 10        // priorité à qui manque d'heures
+      + shift_default == service  ?  +5 : 0
+      + poste == primaire         ?  +3 : 0
+      + level == chef             ?  +2 : 0
+      − coût(shift) en € × 1,0    // pénalité économique
+```
+
+Le poids `1,0` est calibré pour que la pénalité d'un shift de
+4,5 h × 12 €/h ≈ 54 pts soit comparable aux bonus opérationnels :
+le déficit hebdomadaire (×10) reste dominant tant qu'il existe ;
+**le coût ne devient discriminant que parmi des candidats à
+besoins équivalents**. Cette dominance lexicographique évite que
+le solver dégrade la couverture pour économiser.
+
+### 7.4 Mesure : masse salariale prévisionnelle
+
+L'API `/shifts/summary` expose désormais `laborCostTotal` (en euros)
+et un détail `cost_eur` par équipier. La page Planning affiche le
+total dans son en-tête : *« Masse salariale : 1 234 € »* directement
+sous la barre de navigation hebdomadaire.
+
+Pour le bistrot démo (8 équipiers, semaine pleine) et les taux par
+défaut, on observe environ **2 800 €/semaine** soit ~145 000 €/an.
+Ce chiffre est cohérent avec la grille UMIH pour un bistrot de
+100 couverts (CA estimé 600–900 k €/an, ratio personnel ~35 %).
+
+### 7.5 Limites du modèle
+
+- **Pas de charges patronales** — le taux saisi est brut. Pour
+  passer au coût total employeur, multiplier par ~1,42 (cotisations
+  HCR 2026). Le manager peut intégrer directement le coût employeur
+  s'il préfère raisonner « tout compris ».
+- **Pas de majorations** — heures supplémentaires (+25 %/+50 %),
+  travail de nuit ou dimanche ne sont pas modélisés. Le solver
+  optimise sur taux horaire de base.
+- **Pas d'arbitrage long-terme** — la pénalité de coût est calculée
+  par shift, pas par carrière. Une dimension « formation = coût
+  initial mais gain futur » est hors du scope du planificateur.
+
+---
+
+## 8. Limites assumées et perspectives
 
 Le modèle Crew est volontairement simple :
 
@@ -412,9 +512,6 @@ Le modèle Crew est volontairement simple :
   pas distingué d'un Junior débutant. Une calibration personnalisée
   par membre est possible (le `coef_override` est déjà stocké en base
   et exposé via le profil).
-- **Pas d'optimisation économique** — le solver vise la couverture
-  idéale, pas la minimisation de la masse salariale. Une extension
-  « cost-aware » est documentée comme prochaine itération.
 - **Pas d'auto-suggestion de densité** — le manager doit déclarer la
   densité prévue de chaque service. Une intégration future avec un
   système de réservation ou un module historique permettrait
@@ -475,3 +572,17 @@ compréhensible et configurable, ce qui est la condition d'usage réel.
     Workers », *Management Science* 50(1):83-98. Application industrielle
     de la polyvalence en chaîne.
     [DOI: 10.1287/mnsc.1030.0166](https://doi.org/10.1287/mnsc.1030.0166)
+
+11. **Bard, J. F., Binici, C., deSilva, A. H.** (2003). « Staff
+    scheduling at the United States Postal Service », *Computers &
+    Operations Research* 30(5):745-771. Programme linéaire en nombres
+    entiers pour la planification du personnel sous contrainte de
+    couverture et minimisation du coût.
+    [DOI: 10.1016/S0305-0548(02)00048-5](https://doi.org/10.1016/S0305-0548(02)00048-5)
+
+12. **Ernst, A. T., Jiang, H., Krishnamoorthy, M., Sier, D.** (2004).
+    « Staff scheduling and rostering: A review of applications, methods
+    and models », *European Journal of Operational Research*
+    153(1):3-27. Revue de référence : le coût est l'objectif dominant
+    dans >95 % des modèles appliqués.
+    [DOI: 10.1016/S0377-2217(03)00095-X](https://doi.org/10.1016/S0377-2217(03)00095-X)

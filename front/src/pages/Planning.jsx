@@ -375,6 +375,12 @@ export default function Planning() {
           from: weekDays[0].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }),
           to:   weekDays[6].toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
         })}
+        {isManager && summary?.laborCostTotal != null && (
+          <span style={{ marginLeft: '0.75rem' }}>
+            · 💶 {t('planning.laborCost', 'Masse salariale')} :{' '}
+            <b>{summary.laborCostTotal.toFixed(2)} €</b>
+          </span>
+        )}
       </p>
 
       {loading && <p className="muted">{t('common.loading')}</p>}

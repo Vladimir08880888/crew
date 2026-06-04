@@ -261,6 +261,8 @@
     "ofConfirme": "of a confirmed",
     "reference": "(reference)",
     "examplesTitle": "Examples of 100% teams",
+    "ratesTitle": "Hourly rates (HCR convention)",
+    "ratesHint": "Gross hourly cost per level. The solver targets ideal coverage while minimising labour cost at equivalent skill. Initial values: HCR 2026 minimum rates.",
     "coefsTitle": "Coverage points per level",
     "coefsHint": "Member contribution to a service. Reference: Confirmed = 100.",
     "capacityTitle": "Service capacity (100 % reference)",

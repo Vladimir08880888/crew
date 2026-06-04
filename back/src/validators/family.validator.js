@@ -60,9 +60,17 @@ export function validateMemberUpdate(body) {
     if (body.skills_mask === null || body.skills_mask === '') out.skills_mask = null;
     else {
       const n = Number(body.skills_mask);
-      // 5 bits → 0..31
       if (Number.isInteger(n) && n >= 0 && n <= 31) out.skills_mask = n;
       else errors.skills_mask = 'Polyvalence : entier entre 0 et 31 (bitmask postes)';
+    }
+  }
+  if (body.rate_override !== undefined) {
+    if (body.rate_override === null || body.rate_override === '') out.rate_override = null;
+    else {
+      const n = Number(body.rate_override);
+      // En centimes : 0..10000 (jusqu'à 100 €/h) — bornes larges.
+      if (Number.isInteger(n) && n >= 0 && n <= 10000) out.rate_override = n;
+      else errors.rate_override = 'Taux personnel : entier 0..10000 (centimes/h)';
     }
   }
   if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
@@ -74,6 +82,7 @@ const SETTING_FIELDS = [
   'midi_cuisine_ideal', 'midi_salle_ideal',
   'soir_cuisine_ideal', 'soir_salle_ideal',
   'closed_days_mask',
+  'junior_rate', 'confirme_rate', 'chef_rate',
 ];
 
 export function validateFamilySettings(body) {

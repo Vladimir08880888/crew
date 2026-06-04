@@ -227,6 +227,33 @@ export default function FamilySettings() {
           </table>
         </fieldset>
 
+        {/* Bloc 5 : taux horaires par niveau (cost-aware) */}
+        <fieldset className="setup-step">
+          <legend>5. {t('settings.ratesTitle', 'Taux horaires (Convention HCR)')}</legend>
+          <p className="muted" style={{ fontSize: '0.85rem' }}>
+            {t('settings.ratesHint', 'Coût horaire brut par niveau. Le solver vise la couverture idéale tout en minimisant la masse salariale à compétence équivalente. Valeurs initiales : minima Convention HCR 2026.')}
+          </p>
+          <div className="row" style={{ gap: '1rem', flexWrap: 'wrap' }}>
+            {[
+              { key: 'junior_rate',   label: t('levels.junior',   'Junior') },
+              { key: 'confirme_rate', label: t('levels.confirme', 'Confirmé') },
+              { key: 'chef_rate',     label: t('levels.chef',     'Chef') },
+            ].map(({ key, label }) => (
+              <div key={key} style={{ flex: 1, minWidth: 130 }}>
+                <label>{label} (€/h)</label>
+                <input
+                  type="number" min={0} max={10000} step={10}
+                  value={form[key] ?? ''}
+                  onChange={(e) => setField(key, e.target.value)}
+                />
+                <p className="muted" style={{ fontSize: '0.72rem', margin: '0.2rem 0 0' }}>
+                  = <b>{((form[key] ?? 0) / 100).toFixed(2)} €/h</b>
+                </p>
+              </div>
+            ))}
+          </div>
+        </fieldset>
+
         <div className="row" style={{ marginTop: '1.25rem' }}>
           <button type="submit" disabled={saving}>
             <Save size={14} /> {saving ? t('common.loading') : t('common.save')}

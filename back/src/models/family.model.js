@@ -48,7 +48,8 @@ export const familyModel = {
       `SELECT junior_coef, confirme_coef, chef_coef, max_couverts,
               midi_cuisine_ideal, midi_salle_ideal,
               soir_cuisine_ideal, soir_salle_ideal,
-              closed_days_mask
+              closed_days_mask,
+              junior_rate, confirme_rate, chef_rate
        FROM families WHERE id = ?`,
       [id]
     );

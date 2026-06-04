@@ -47,7 +47,17 @@ const DEFAULT_SETTINGS = {
   midi_salle_ideal:   100,
   soir_cuisine_ideal: 100,
   soir_salle_ideal:   100,
+  // Taux horaires en centimes d'euro (Convention HCR 2026, minima sectoriels).
+  junior_rate:   1200,
+  confirme_rate: 1400,
+  chef_rate:     1900,
 };
+// Poids de la pénalité « coût » dans le score de candidature.
+// 1.0 = un shift Junior à 12 €/h ≈ -12 pts de score → comparable au
+// bonus shift_default (+5) et poste exact (+3). En pratique, le déficit
+// hebdo (×10) reste dominant tant qu'il existe ; le coût départage les
+// candidats à déficit comparable. Configurable côté serveur si besoin.
+const COST_PENALTY_WEIGHT = 1.0;
 
 function coefOf(member, settings) {
   // Override personnel prime sur la valeur du niveau.
@@ -58,6 +68,22 @@ function coefOf(member, settings) {
     case 'confirme':
     default:         return settings.confirme_coef;
   }
+}
+
+// Taux horaire en centimes/€. Override personnel prime sur le taux du
+// niveau défini en settings de l'équipe.
+function rateOf(member, settings) {
+  if (member.rate_override != null) return Number(member.rate_override);
+  switch (member.level) {
+    case 'junior':   return settings.junior_rate ?? 1200;
+    case 'chef':     return settings.chef_rate ?? 1900;
+    case 'confirme':
+    default:         return settings.confirme_rate ?? 1400;
+  }
+}
+// Coût d'un shift en centimes : rate (cents/h) × durée (h).
+function shiftCost(member, service, settings) {
+  return rateOf(member, settings) * (SHIFT_DURATIONS[service] || 0);
 }
 
 function idealOf(settings, service, poste) {
@@ -235,6 +261,10 @@ export function generatePlan(input) {
               if (m.shift_default === service) score += 5;
               if (m.poste === poste) score += 3;             // poste exact (pas plonge sur cuisine)
               if (m.level === 'chef') score += 2;            // chef léger bonus en cuisine
+              // Pénalité coût : un shift coûteux baisse le score → à déficit
+              // égal, le solver choisit le moins cher.
+              const costEuros = shiftCost(m, service, cfg) / 100;
+              score -= costEuros * COST_PENALTY_WEIGHT;
               return { member: m, score };
             })
             .sort((a, b) => b.score - a.score);
@@ -309,6 +339,18 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
       h.shifts_count += 1;
     }
   }
+
+  // Masse salariale : par équipier et total semaine (en euros).
+  let laborCostTotal = 0;
+  for (const m of members) {
+    const h = hours[m.user_id];
+    if (!h) continue;
+    const rate = rateOf(m, cfg);
+    h.rate_eur = rate / 100;
+    h.cost_eur = +((h.planned * rate) / 100).toFixed(2);
+    laborCostTotal += h.cost_eur;
+  }
+  laborCostTotal = +laborCostTotal.toFixed(2);
 
   const memberStats = Object.values(hours).map((h) => ({
     ...h,
@@ -470,5 +512,5 @@ export function computeSummary({ members, weekDates, existingShifts, settings = 
     }
   }
 
-  return { memberStats, coverage, overallService, fatigueAlerts, hcrViolations, serviceHealth };
+  return { memberStats, coverage, overallService, laborCostTotal, fatigueAlerts, hcrViolations, serviceHealth };
 }
