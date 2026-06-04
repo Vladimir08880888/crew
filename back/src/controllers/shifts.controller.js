@@ -172,7 +172,7 @@ export const shiftsController = {
     const activeMembers = members.filter((m) => m.status === 'active');
     const settings = await familyModel.getSettings(familyId);
     const closedDays = maskToClosedDays(settings?.closed_days_mask);
-    const { memberStats, coverage, overallService, fatigueAlerts, hcrViolations, serviceHealth } = computeSummary({
+    const { memberStats, coverage, overallService, laborCostTotal, fatigueAlerts, hcrViolations, serviceHealth } = computeSummary({
       members: activeMembers,
       weekDates,
       existingShifts: shifts,
@@ -185,7 +185,7 @@ export const shiftsController = {
       .filter((c) => c.actual_coef < c.ideal / 2)
       .map((c) => ({ date: c.date, shift_type: c.service, poste: c.poste, missing: 1 }));
 
-    res.json({ memberStats, coverage, overallService, coverageGaps, fatigueAlerts, hcrViolations, serviceHealth, totalShifts: shifts.length });
+    res.json({ memberStats, coverage, overallService, laborCostTotal, coverageGaps, fatigueAlerts, hcrViolations, serviceHealth, totalShifts: shifts.length });
   },
 
   /**
