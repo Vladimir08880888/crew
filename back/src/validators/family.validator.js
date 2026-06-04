@@ -64,6 +64,7 @@ const SETTING_FIELDS = [
   'junior_coef', 'confirme_coef', 'chef_coef', 'max_couverts',
   'midi_cuisine_ideal', 'midi_salle_ideal',
   'soir_cuisine_ideal', 'soir_salle_ideal',
+  'closed_days_mask',
 ];
 
 export function validateFamilySettings(body) {

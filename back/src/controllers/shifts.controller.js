@@ -6,6 +6,14 @@ import { forbidden, notFound, badRequest } from '../utils/httpError.js';
 import { generatePlan, computeSummary } from '../services/plannerSolver.js';
 import { pool } from '../db/pool.js';
 
+// Bitmask 7 bits → tableau de day-of-week fermés. Bit i = 1 → jour i fermé.
+function maskToClosedDays(mask) {
+  if (mask == null) return [1]; // défaut : lundi
+  const arr = [];
+  for (let i = 0; i < 7; i++) if ((mask >> i) & 1) arr.push(i);
+  return arr;
+}
+
 /**
  * Vérifie que l'utilisateur est manager (parent) de la famille donnée.
  * Un équipier (child) ne peut pas créer/modifier/supprimer un shift.
@@ -163,11 +171,13 @@ export const shiftsController = {
 
     const activeMembers = members.filter((m) => m.status === 'active');
     const settings = await familyModel.getSettings(familyId);
+    const closedDays = maskToClosedDays(settings?.closed_days_mask);
     const { memberStats, coverage, overallService, fatigueAlerts, hcrViolations, serviceHealth } = computeSummary({
       members: activeMembers,
       weekDates,
       existingShifts: shifts,
       settings,
+      closedDays,
     });
 
     // Rétro-compat : coverageGaps est dérivé de coverage (slots sous le seuil min).
@@ -206,11 +216,15 @@ export const shiftsController = {
 
     const activeMembers = members.filter((m) => m.status === 'active');
     const settings = await familyModel.getSettings(familyId);
+    const closedDays = maskToClosedDays(settings?.closed_days_mask);
     const capacityByDate = req.body.capacityByDate && typeof req.body.capacityByDate === 'object'
       ? req.body.capacityByDate
       : {};
     const capacityByService = req.body.capacityByService && typeof req.body.capacityByService === 'object'
       ? req.body.capacityByService
+      : {};
+    const capacityByDateAndService = req.body.capacityByDateAndService && typeof req.body.capacityByDateAndService === 'object'
+      ? req.body.capacityByDateAndService
       : {};
     const result = generatePlan({
       members: activeMembers,
@@ -221,8 +235,10 @@ export const shiftsController = {
         family_id: familyId,
       })),
       settings,
+      closedDays,
       capacityByDate,
       capacityByService,
+      capacityByDateAndService,
     });
 
     res.json(result);

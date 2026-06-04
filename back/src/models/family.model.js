@@ -47,7 +47,8 @@ export const familyModel = {
     const [rows] = await pool.query(
       `SELECT junior_coef, confirme_coef, chef_coef, max_couverts,
               midi_cuisine_ideal, midi_salle_ideal,
-              soir_cuisine_ideal, soir_salle_ideal
+              soir_cuisine_ideal, soir_salle_ideal,
+              closed_days_mask
        FROM families WHERE id = ?`,
       [id]
     );

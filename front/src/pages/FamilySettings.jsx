@@ -122,9 +122,42 @@ export default function FamilySettings() {
           </div>
         </fieldset>
 
-        {/* Bloc 2 : capacité de référence */}
+        {/* Bloc 2 : jours d'ouverture */}
         <fieldset className="setup-step">
-          <legend>2. {t('settings.capacityTitle', 'Capacité de service (référence 100 %)')}</legend>
+          <legend>2. {t('settings.openDaysTitle', "Jours d'ouverture")}</legend>
+          <p className="muted" style={{ fontSize: '0.85rem' }}>
+            {t('settings.openDaysHint', "Décochez les jours où l'établissement est fermé. Le solver ne proposera aucun shift ces jours-là.")}
+          </p>
+          <div className="row" style={{ gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+            {['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'].map((day, i) => {
+              // dow = 0..6 où 0=dim ; map index 0..6 (Lun..Dim) → dow
+              const dow = (i + 1) % 7;
+              const mask = form.closed_days_mask ?? 2;
+              const isClosed = (mask >> dow) & 1;
+              return (
+                <label key={day} style={{
+                  flex: '1 1 100px', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.4rem 0.6rem',
+                  border: '1px solid var(--glass-border)', borderRadius: 'var(--r-sm)',
+                  background: isClosed ? 'rgba(239,68,68,0.08)' : 'transparent',
+                  cursor: 'pointer',
+                }}>
+                  <input type="checkbox"
+                         checked={!isClosed}
+                         onChange={() => {
+                           const m = isClosed ? (mask & ~(1 << dow)) : (mask | (1 << dow));
+                           setField('closed_days_mask', m);
+                         }} />
+                  <span style={{ textTransform: 'capitalize', fontSize: '0.85rem' }}>{day}</span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        {/* Bloc 3 : capacité de référence */}
+        <fieldset className="setup-step">
+          <legend>3. {t('settings.capacityTitle', 'Capacité de service (référence 100 %)')}</legend>
           <label>{t('settings.maxCouverts', 'Couverts servis à pleine capacité')}</label>
           <input type="number" min={1} max={1000} value={form.max_couverts}
                  onChange={(e) => setField('max_couverts', e.target.value)} />
@@ -133,9 +166,9 @@ export default function FamilySettings() {
           </p>
         </fieldset>
 
-        {/* Bloc 3 : staffing idéal par service par poste */}
+        {/* Bloc 4 : staffing idéal par service par poste */}
         <fieldset className="setup-step">
-          <legend>3. {t('settings.idealsTitle', 'Configuration idéale par service (= 100 % à pleine capacité)')}</legend>
+          <legend>4. {t('settings.idealsTitle', 'Configuration idéale par service (= 100 % à pleine capacité)')}</legend>
           <p className="muted" style={{ fontSize: '0.85rem' }}>
             {t('settings.idealsHint', 'Total de points visé par le solver pour chaque (service, poste). Plonge est intégrée à la cuisine.')}
           </p>

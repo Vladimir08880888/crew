@@ -27,19 +27,33 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [data, setData] = useState(null);
-  const [capMidi, setCapMidi] = useState(100);
-  const [capSoir, setCapSoir] = useState(100);
+  // Densité par (date, service). Initialisé à 100 partout via lazy init.
+  const [perCell, setPerCell] = useState(() => {
+    const map = {};
+    for (const d of dateRange(from, to)) map[d] = { midi: 100, soir: 100 };
+    return map;
+  });
 
   const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
-  const capacityByService = useMemo(() => ({ midi: capMidi, soir: capSoir }), [capMidi, capSoir]);
+
+  function setCell(date, service, value) {
+    setPerCell((prev) => ({ ...prev, [date]: { ...prev[date], [service]: value } }));
+  }
+  function setAll(service, value) {
+    setPerCell((prev) => {
+      const next = { ...prev };
+      for (const d of Object.keys(next)) next[d] = { ...next[d], [service]: value };
+      return next;
+    });
+  }
 
   useEffect(() => {
     setLoading(true);
-    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByService })
+    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByDateAndService: perCell })
       .then(setData)
       .catch((err) => { toast.fromError(err); onClose(); })
       .finally(() => setLoading(false));
-  }, [familyId, from, to, capMidi, capSoir]);
+  }, [familyId, from, to, perCell]);
 
   async function apply() {
     setApplying(true);
@@ -78,44 +92,65 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
 
-            {/* Densité de service par preset.
-                Calme 50 % / Normal 100 % / Chargé 150 %. */}
+            {/* Densité par (jour, service) — manager prévoit chaque service de la semaine */}
             <div style={{ marginTop: '0.5rem' }}>
               <p className="muted" style={{ fontSize: '0.72rem', marginBottom: '0.3rem' }}>
-                {t('smartPlanner.densityHint2', '1,0 = service standard. 0,5 = calme (réservations en baisse). 1,3 = chargé (terrasse pleine). Au-delà : exceptionnel.')}
+                {t('smartPlanner.densityHint3', "Densité prévue de chaque service. 1,0 = standard, 0,5 = calme, 1,3 = chargé.")}
               </p>
-              {[
-                { key: 'midi', label: t('shifts.midi', 'Midi'), emoji: '🍽️', value: capMidi, set: setCapMidi },
-                { key: 'soir', label: t('shifts.soir', 'Soir'), emoji: '🌙', value: capSoir, set: setCapSoir },
-              ].map(({ key, label, emoji, value, set }) => (
-                <div key={key} className="row" style={{ gap: '0.5rem', alignItems: 'center', margin: '0.25rem 0', flexWrap: 'wrap' }}>
-                  <span style={{ minWidth: 80, fontSize: '0.85rem' }}>{emoji} {label}</span>
-                  {[
-                    { preset: 50,  label: t('smartPlanner.calme',  'Calme'),  color: 'var(--info)'    },
-                    { preset: 100, label: t('smartPlanner.normal', 'Normal'), color: 'var(--success)' },
-                    { preset: 130, label: t('smartPlanner.charge', 'Chargé'), color: 'var(--danger)'  },
-                  ].map(({ preset, label, color }) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      className={value === preset ? '' : 'secondary'}
-                      onClick={() => set(preset)}
-                      style={{ flex: 1, padding: '0.4rem 0.5rem', fontSize: '0.8rem', minWidth: 90,
-                               ...(value === preset ? { background: color, borderColor: color } : {}) }}
-                    >
-                      {label} <span style={{ opacity: 0.75, fontSize: '0.72rem' }}>{(preset/100).toFixed(1)}</span>
-                    </button>
-                  ))}
-                  {/* Custom value pour les cas rares (banquet, pointe) */}
-                  <input
-                    type="number" min={30} max={200} step={5}
-                    value={value}
-                    onChange={(e) => set(Number(e.target.value))}
-                    style={{ width: 70, padding: '0.35rem', fontSize: '0.8rem' }}
-                    title={t('smartPlanner.customCap', 'Valeur personnalisée (0,30 à 2,00)')}
-                  />
-                </div>
-              ))}
+              <table style={{ width: '100%', fontSize: '0.78rem', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left' }}>{t('smartPlanner.day', 'Jour')}</th>
+                    <th style={{ textAlign: 'center' }}>🍽️ {t('shifts.midi', 'Midi')}</th>
+                    <th style={{ textAlign: 'center' }}>🌙 {t('shifts.soir', 'Soir')}</th>
+                  </tr>
+                  <tr style={{ fontSize: '0.7rem', opacity: 0.75 }}>
+                    <td>{t('smartPlanner.applyAll', 'Tous')} →</td>
+                    {['midi', 'soir'].map((sv) => (
+                      <td key={sv} style={{ textAlign: 'center' }}>
+                        {[50, 100, 130].map((p) => (
+                          <button key={p} type="button" className="secondary"
+                                  onClick={() => setAll(sv, p)}
+                                  style={{ fontSize: '0.65rem', padding: '0.15rem 0.3rem', margin: '0 0.1rem' }}>
+                            {(p/100).toFixed(1)}
+                          </button>
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dateRange(from, to).map((date) => {
+                    const dow = new Date(date).getDay();
+                    const wdayShort = new Date(date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric' });
+                    return (
+                      <tr key={date}>
+                        <td style={{ padding: '0.2rem 0' }}>{wdayShort}</td>
+                        {['midi', 'soir'].map((sv) => {
+                          const v = perCell[date]?.[sv] ?? 100;
+                          const color = v >= 130 ? 'var(--danger)' : v >= 100 ? 'var(--success)' : 'var(--info)';
+                          return (
+                            <td key={sv} style={{ textAlign: 'center', padding: '0.2rem 0.3rem' }}>
+                              <input
+                                type="number" min={0} max={200} step={10}
+                                value={v}
+                                onChange={(e) => setCell(date, sv, Number(e.target.value))}
+                                style={{
+                                  width: 55, padding: '0.2rem 0.3rem', fontSize: '0.78rem',
+                                  color, fontWeight: 600, textAlign: 'center',
+                                  border: `1px solid ${color}`,
+                                }}
+                                title={`${(v/100).toFixed(2)}`}
+                              />
+                              <span style={{ marginLeft: '0.2rem', fontSize: '0.65rem', opacity: 0.65 }}>{(v/100).toFixed(2)}</span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
             {/* Stats globales */}
