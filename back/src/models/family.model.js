@@ -20,8 +20,16 @@ export const familyModel = {
   },
 
   async listForUser(userId) {
+    // pending_count : nombre de demandes en attente pour chaque
+    // équipe — utile pour afficher un badge côté manager. Renvoyé
+    // pour toutes les équipes mais n'a de sens visuel que sur celles
+    // dont fm.role = 'parent'.
     const [rows] = await pool.query(
-      `SELECT f.*, fm.role, fm.is_admin, fm.status
+      `SELECT f.*, fm.role, fm.is_admin, fm.status,
+              COALESCE((
+                SELECT COUNT(*) FROM family_members
+                WHERE family_id = f.id AND status = 'pending'
+              ), 0) AS pending_count
        FROM families f
        JOIN family_members fm ON fm.family_id = f.id
        WHERE fm.user_id = ?

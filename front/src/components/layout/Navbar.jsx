@@ -22,6 +22,11 @@ export function Navbar() {
 
   const activeFamilies = families.filter((f) => f.status === 'active');
   const isManagerSomewhere = activeFamilies.some((f) => f.role === 'parent');
+  // Somme des demandes en attente sur les équipes que je manage.
+  // Sert au badge « Équipes (N) » qui pousse le manager à approuver.
+  const totalPending = activeFamilies
+    .filter((f) => f.role === 'parent')
+    .reduce((sum, f) => sum + (Number(f.pending_count) || 0), 0);
 
   return (
     <header className="navbar">
@@ -47,7 +52,14 @@ export function Navbar() {
                 <BarChart3 size={16} /> <span>{t('nav.stats')}</span>
               </NavLink>
               <NavLink to="/teams">
-                <Users size={16} /> <span>{t('nav.teams')}</span>
+                <Users size={16} />
+                <span>{t('nav.teams')}</span>
+                {totalPending > 0 && (
+                  <span className="navbar-badge"
+                        title={t('nav.pendingTitle', { count: totalPending })}>
+                    {totalPending}
+                  </span>
+                )}
               </NavLink>
               <NavLink to="/help">
                 <HelpCircle size={16} /> <span>{t('nav.help')}</span>

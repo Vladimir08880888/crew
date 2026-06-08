@@ -14,7 +14,8 @@
     "login": "Sign in",
     "register": "Sign up",
     "activeTeam": "Active team",
-    "noTeam": "No team"
+    "noTeam": "No team",
+    "pendingTitle": "{{count}} request(s) pending approval"
   },
   "auth": {
     "login": {
@@ -84,6 +85,9 @@
     "welcomeHint": "You don't belong to any team yet. Create one to get started, or join an existing one with an invite code.",
     "createTeam": "Create a team",
     "join": "Join",
+    "pendingTitle": "Request pending approval",
+    "pendingHint": "The manager must approve your request before you can access the schedule.",
+    "pendingRefreshHint": "This page will update automatically as soon as your request is approved.",
     "parentGreeting": "Hello {{name}}, you are a manager.",
     "openPlanning": "Open schedule",
     "hoursPlanned": "Hours planned",
