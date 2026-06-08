@@ -327,6 +327,7 @@
     "hoursPerMember": "Heures par équipier (après application)",
     "uncoveredTitle": "Services non pourvus (en dessous du seuil mini)",
     "coverageTitle": "Couverture par service et poste",
+    "clearFirst": "Repartir d'un planning vierge (efface les shifts existants de la semaine avant d'appliquer)",
     "capacityLabel": "Densité de service",
     "capacityHint": "50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.",
     "densityHint": "L'estimation du manager basée sur les réservations et l'historique.",

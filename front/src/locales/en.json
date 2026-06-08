@@ -326,6 +326,7 @@
     "hoursPerMember": "Hours per member (after applying)",
     "uncoveredTitle": "Unstaffed shifts (below min threshold)",
     "coverageTitle": "Coverage per service and station",
+    "clearFirst": "Start from an empty schedule (existing shifts of the week will be erased before applying)",
     "capacityLabel": "Service density",
     "capacityHint": "50 % = quiet service (target halved). 100 % = full day. 150 % = heavy load.",
     "densityHint": "Manager's estimate based on reservations and history.",

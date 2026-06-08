@@ -107,23 +107,41 @@ async function run() {
     const shiftPlan = [];
     // Seule la semaine en cours est pré-remplie : la suivante reste vide
     // pour que la démo du Smart Planner ait quelque chose à proposer.
+    //
+    // Conformité HCR : Ahmed (cuisine) et Sophie (salle) ont
+    // chacun des doubles services (midi + soir = 10 h/jour). Pour
+    // rester ≤ 48 h/sem et ≥ 2 jours de repos, ils ne sont
+    // affectés que 4 jours / 6 ouverts (≈ 40 h/sem, sous leur cible
+    // contractuelle de 42 h). Mardi et samedi : repos d'Ahmed,
+    // Sophie prend le service. Mercredi et dimanche : repos Sophie,
+    // Ahmed prend le service. Jeudi / vendredi : tous les deux.
+    const ahmedDays = new Set([3, 4, 5, 0]);   // mer, jeu, ven, dim
+    const sophieDays = new Set([2, 4, 5, 6]);  // mar, jeu, ven, sam
     for (let offset = 0; offset < 7; offset++) {
       const dow = dayOfWeek(offset);
       if (dow === 1) continue;
 
-      // Service midi : 1 chef cuisine + 1 confirmé salle = couverture minimale.
-      shiftPlan.push([offset, ahmed,  'midi', 'cuisine', null]);
-      shiftPlan.push([offset, sophie, 'midi', 'salle',   null]);
-      shiftPlan.push([offset, elena,  'midi', 'salle',   null]);
+      // Cuisine — Ahmed les jours où il bosse, sinon Mehdi.
+      const cuisineLead = ahmedDays.has(dow) ? ahmed : mehdi;
+      // Salle — Sophie les jours où elle bosse, sinon Elena en lead.
+      const salleLead = sophieDays.has(dow) ? sophie : elena;
 
-      // Service soir : un peu plus de monde + renfort vendredi.
-      shiftPlan.push([offset, ahmed,  'soir', 'cuisine', null]);
-      shiftPlan.push([offset, samir,  'soir', 'plonge',  null]);
-      shiftPlan.push([offset, lucas,  'soir', 'salle',   null]);
-      shiftPlan.push([offset, sophie, 'soir', 'salle',   null]);
+      // Service midi : lead cuisine + lead salle + un appui salle.
+      shiftPlan.push([offset, cuisineLead, 'midi', 'cuisine', null]);
+      shiftPlan.push([offset, salleLead,   'midi', 'salle',   null]);
+      if (salleLead !== elena) {
+        shiftPlan.push([offset, elena,     'midi', 'salle',   null]);
+      }
+
+      // Service soir : lead cuisine + plonge + 2 salle (dont lead).
+      shiftPlan.push([offset, cuisineLead, 'soir', 'cuisine', null]);
+      shiftPlan.push([offset, samir,       'soir', 'plonge',  null]);
+      shiftPlan.push([offset, lucas,       'soir', 'salle',   null]);
+      if (salleLead !== lucas) {
+        shiftPlan.push([offset, salleLead, 'soir', 'salle',   null]);
+      }
       if (dow === 5) {
         shiftPlan.push([offset, clara, 'soir', 'cuisine', 'Renfort vendredi soir']);
-        shiftPlan.push([offset, elena, 'soir', 'salle',   'Renfort vendredi soir']);
       }
     }
 

@@ -33,6 +33,10 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
     for (const d of dateRange(from, to)) map[d] = { midi: 100, soir: 100 };
     return map;
   });
+  // Quand activé : le solver ignore les shifts existants (plan vierge)
+  // et l'application supprime ces shifts avant de poser les nouveaux.
+  // Évite l'effet « cumul » qui pousse certains équipiers >48 h.
+  const [clearFirst, setClearFirst] = useState(false);
 
   const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
 
@@ -49,15 +53,26 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
 
   useEffect(() => {
     setLoading(true);
-    shiftsApi.generatePlan({ family_id: familyId, from, to, capacityByDateAndService: perCell })
+    shiftsApi.generatePlan({
+      family_id: familyId, from, to,
+      capacityByDateAndService: perCell,
+      // En mode « repartir vierge » : on demande au solver d'ignorer
+      // les shifts existants pour construire un plan optimal sans
+      // hériter de dépassements antérieurs (ex. semaine manuellement
+      // bourrée >48h).
+      ignoreExisting: clearFirst,
+    })
       .then(setData)
       .catch((err) => { toast.fromError(err); onClose(); })
       .finally(() => setLoading(false));
-  }, [familyId, from, to, perCell]);
+  }, [familyId, from, to, perCell, clearFirst]);
 
   async function apply() {
     setApplying(true);
     try {
+      if (clearFirst) {
+        await shiftsApi.clearWeek({ family_id: familyId, from, to });
+      }
       const result = await shiftsApi.applyPlan({
         family_id: familyId,
         shifts: data.suggested,
@@ -91,6 +106,13 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               from: new Date(from).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.4rem 0', fontSize: '0.85rem', cursor: 'pointer' }}>
+              <input type="checkbox" checked={clearFirst}
+                     onChange={(e) => setClearFirst(e.target.checked)} />
+              <span>{t('smartPlanner.clearFirst')}</span>
+            </label>
 
             {/* Densité par (jour, service) — manager prévoit chaque service de la semaine */}
             <div style={{ marginTop: '0.5rem' }}>

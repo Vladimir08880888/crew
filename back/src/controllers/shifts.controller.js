@@ -226,10 +226,16 @@ export const shiftsController = {
     const capacityByDateAndService = req.body.capacityByDateAndService && typeof req.body.capacityByDateAndService === 'object'
       ? req.body.capacityByDateAndService
       : {};
+    // Mode « repartir vierge » : on demande au solver d'ignorer les
+    // shifts existants. Utile quand la semaine a été pré-remplie au
+    // dessus du cap HCR (ex. saisie manuelle à 60 h) et qu'on veut un
+    // plan propre. La suppression effective des anciens shifts se fait
+    // côté client juste avant applyPlan, via clearWeek.
+    const ignoreExisting = Boolean(req.body.ignoreExisting);
     const result = generatePlan({
       members: activeMembers,
       weekDates,
-      existingShifts: existingShifts.map((s) => ({
+      existingShifts: ignoreExisting ? [] : existingShifts.map((s) => ({
         ...s,
         date: s.date.toISOString ? s.date.toISOString().slice(0, 10) : s.date,
         family_id: familyId,
