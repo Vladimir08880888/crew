@@ -118,7 +118,7 @@
     "resetPassword": "Réinitialiser le mot de passe",
     "leave": "Quitter l'équipe",
     "empty": "Aucune équipe pour l'instant",
-    "emptyHint": "Créez votre équipe pour planifier les services, ou rejoignez-en une existante avec un code.",
+    "emptyHint": "Vous n'êtes manager d'aucune équipe. Si vous êtes patron, recréez un compte en choisissant « Patron de restaurant » à l'inscription.",
     "statusPending": "En attente"
   },
   "familyCreate": {

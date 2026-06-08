@@ -118,7 +118,7 @@
     "resetPassword": "Reset password",
     "leave": "Leave team",
     "empty": "No teams yet",
-    "emptyHint": "Create a team to plan shifts, or join an existing one with a code.",
+    "emptyHint": "You don't manage any team. If you're a restaurant owner, sign up again choosing « restaurant owner » at registration.",
     "statusPending": "Pending"
   },
   "familyCreate": {

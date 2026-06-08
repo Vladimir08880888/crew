@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus, Users, Shield, Clock } from 'lucide-react';
+import { Users, Shield, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useFamily } from '../context/FamilyContext.jsx';
 
@@ -11,8 +11,11 @@ export default function Families() {
     <>
       <div className="page-header">
         <h1>{t('families.title')}</h1>
+        {/* Pas de bouton « Créer une équipe » : la création se fait
+            au moment de l'inscription (choix « Patron de restaurant »).
+            Le bouton « Rejoindre » reste pour les rares cas où un
+            manager est invité comme co-manager sur une autre équipe. */}
         <div className="row">
-          <Link to="/teams/new"><button><Plus size={16} /> {t('families.create')}</button></Link>
           <Link to="/teams/join"><button className="secondary"><Users size={16} /> {t('families.join')}</button></Link>
         </div>
       </div>
