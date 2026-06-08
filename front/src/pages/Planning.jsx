@@ -60,6 +60,7 @@ export default function Planning() {
   const [shifts, setShifts] = useState([]);
   const [members, setMembers] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null); // { date, user_id, shift, ... } or null
   const [showSmart, setShowSmart] = useState(false);
@@ -130,20 +131,38 @@ export default function Planning() {
     if (!active) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [shiftsData, fam, summaryData] = await Promise.all([
+      const [shiftsData, fam, summaryData, settingsData] = await Promise.all([
         shiftsApi.list({ family_id: active.id, from, to }),
         familiesApi.detail(active.id),
         isManager ? shiftsApi.summary({ family_id: active.id, from, to }) : Promise.resolve(null),
+        isManager ? familiesApi.getSettings(active.id) : Promise.resolve(null),
       ]);
       setShifts(shiftsData);
       setMembers((fam.members || []).filter((m) => m.status === 'active'));
       setSummary(summaryData);
+      setSettings(settingsData);
     } catch (err) {
       toast.fromError(err);
     } finally {
       setLoading(false);
     }
   }, [active?.id, from, to, isManager]);
+
+  // Bascule un jour ouvert/fermé et persiste en base.
+  async function toggleClosedDay(dow) {
+    if (!isManager || !settings) return;
+    const mask = settings.closed_days_mask ?? 2;
+    const newMask = (mask >> dow) & 1
+      ? (mask & ~(1 << dow))   // était fermé → on ouvre
+      : (mask | (1 << dow));    // était ouvert → on ferme
+    try {
+      await familiesApi.updateSettings(active.id, { closed_days_mask: newMask });
+      setSettings({ ...settings, closed_days_mask: newMask });
+      toast.success(t('planning.openDaysSaved', "Jours d'ouverture mis à jour"));
+    } catch (err) {
+      toast.fromError(err);
+    }
+  }
 
   function memberStats(userId) {
     return summary?.memberStats?.find((m) => m.user_id === userId);
@@ -310,6 +329,55 @@ export default function Planning() {
           )}
         </div>
       </div>
+
+      {/* Toggle jours d'ouverture — directement sur le Planning pour
+          que le manager bascule un jour fermé/ouvert d'un clic, sans
+          devoir naviguer dans /settings. Sauvegarde instantanée. */}
+      {isManager && settings && (
+        <div className="card" style={{
+          marginTop: '0.5rem',
+          padding: '0.6rem 0.8rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+            {t('planning.openDaysLabel', "Jours d'ouverture :")}
+          </span>
+          {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((label, i) => {
+            const dow = (i + 1) % 7;  // 0=Dim, 1=Lun, …, 6=Sam
+            const mask = settings.closed_days_mask ?? 2;
+            const isClosed = (mask >> dow) & 1;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => toggleClosedDay(dow)}
+                title={isClosed
+                  ? t('planning.openDayTitle', "Cliquer pour ouvrir")
+                  : t('planning.closeDayTitle', "Cliquer pour fermer")}
+                style={{
+                  padding: '0.3rem 0.7rem',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  border: '1px solid',
+                  borderColor: isClosed ? 'var(--danger)' : 'var(--success)',
+                  background: isClosed
+                    ? 'rgba(239,68,68,0.12)'
+                    : 'rgba(34,197,94,0.12)',
+                  color: isClosed ? 'var(--danger)' : 'var(--success)',
+                  borderRadius: 'var(--r-sm)',
+                  cursor: 'pointer',
+                  textDecoration: isClosed ? 'line-through' : 'none',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Alerte science-based : surcharge soutenue (KC & Terwiesch 2009) */}
       {isManager && summary?.fatigueAlerts?.length > 0 && (
