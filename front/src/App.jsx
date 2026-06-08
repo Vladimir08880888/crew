@@ -1,6 +1,9 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/layout/ProtectedRoute.jsx';
+import { ManagerOnly } from './components/layout/ManagerOnly.jsx';
+import { HideFromEquipier } from './components/layout/HideFromEquipier.jsx';
 import { AppLayout } from './components/layout/AppLayout.jsx';
+import { RoleRedirect } from './components/layout/RoleRedirect.jsx';
 
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -23,17 +26,26 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Racine : redirige vers /dashboard pour les managers, /planning pour les équipiers */}
+        <Route path="/" element={<RoleRedirect />} />
+
+        {/* Pages accessibles à tous (équipier + manager) */}
         <Route path="/planning" element={<Planning />} />
-        <Route path="/stats" element={<Stats />} />
-        <Route path="/teams" element={<Families />} />
-        <Route path="/teams/new" element={<FamilyCreate />} />
-        <Route path="/teams/join" element={<FamilyJoin />} />
-        <Route path="/teams/:id" element={<FamilyDetail />} />
-        <Route path="/teams/:id/settings" element={<FamilySettings />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/help" element={<ManagerHelp />} />
+
+        {/* Pages cachées à l'équipier déjà dans une équipe, mais ouvertes
+            aux managers ET aux utilisateurs sans équipe (nouvel inscrit
+            qui doit rejoindre via code ou créer son équipe). */}
+        <Route path="/dashboard" element={<HideFromEquipier><Dashboard /></HideFromEquipier>} />
+        <Route path="/teams/new" element={<HideFromEquipier><FamilyCreate /></HideFromEquipier>} />
+        <Route path="/teams/join" element={<HideFromEquipier><FamilyJoin /></HideFromEquipier>} />
+
+        {/* Pages strictement réservées aux managers d'une équipe */}
+        <Route path="/stats"     element={<ManagerOnly><Stats /></ManagerOnly>} />
+        <Route path="/teams"     element={<ManagerOnly><Families /></ManagerOnly>} />
+        <Route path="/teams/:id" element={<ManagerOnly><FamilyDetail /></ManagerOnly>} />
+        <Route path="/teams/:id/settings" element={<ManagerOnly><FamilySettings /></ManagerOnly>} />
+        <Route path="/help"      element={<ManagerOnly><ManagerHelp /></ManagerOnly>} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

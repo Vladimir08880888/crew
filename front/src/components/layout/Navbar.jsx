@@ -32,22 +32,27 @@ export function Navbar() {
         </Link>
 
         <nav className="navbar-links">
-          <NavLink to="/dashboard">
-            <Home size={16} /> <span>{t('nav.dashboard')}</span>
-          </NavLink>
+          {/* Sections manager : tableau de bord, planning, stats, équipes, aide */}
+          {isManagerSomewhere && (
+            <NavLink to="/dashboard">
+              <Home size={16} /> <span>{t('nav.dashboard')}</span>
+            </NavLink>
+          )}
           <NavLink to="/planning">
             <CalendarDays size={16} /> <span>{t('nav.planning')}</span>
           </NavLink>
-          <NavLink to="/stats">
-            <BarChart3 size={16} /> <span>{t('nav.stats')}</span>
-          </NavLink>
-          <NavLink to="/teams">
-            <Users size={16} /> <span>{t('nav.teams')}</span>
-          </NavLink>
           {isManagerSomewhere && (
-            <NavLink to="/help">
-              <HelpCircle size={16} /> <span>{t('nav.help')}</span>
-            </NavLink>
+            <>
+              <NavLink to="/stats">
+                <BarChart3 size={16} /> <span>{t('nav.stats')}</span>
+              </NavLink>
+              <NavLink to="/teams">
+                <Users size={16} /> <span>{t('nav.teams')}</span>
+              </NavLink>
+              <NavLink to="/help">
+                <HelpCircle size={16} /> <span>{t('nav.help')}</span>
+              </NavLink>
+            </>
           )}
         </nav>
 
