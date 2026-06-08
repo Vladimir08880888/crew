@@ -244,18 +244,25 @@ export function generatePlan(input) {
   // soit possible. Garantit que toutes les journées reçoivent leur
   // « premier équipier » avant qu'un slot n'en obtienne un second.
   // ────────────────────────────────────────────────────────────────────
-  function findBest(slot) {
+  function findBest(slot, targetTolerance = 2) {
     return members
       .filter((m) => {
         if (!m.weekly_hours_target || m.weekly_hours_target === 0) return false;
         if (!canFill(m, slot.poste)) return false;
         const akey = `${m.user_id}-${slot.date}`;
         if (assignedByUserDay.get(akey)?.has(slot.service)) return false;
+        // Anti-overshoot : ne pas pousser un slot au-dessus de 130 %
+        // juste pour combler un déficit ; mieux vaut laisser un autre
+        // équipier moins gradé compléter (ou laisser le slot à 80 %).
+        // Évite le « chef 60 ajouté sur slot à 80 % → 140 % ».
+        const wouldBeCoverage = slot.coefSum + coefOf(m, cfg);
+        if (wouldBeCoverage > slot.ideal * 1.3) return false;
         const shiftDur = SHIFT_DURATIONS[slot.service] || 0;
         const wouldBeWeek = hours[m.user_id].planned + shiftDur;
-        // Cible contractuelle (préférence) — tolérance +2h.
-        if (wouldBeWeek > m.weekly_hours_target + 2) return false;
-        // HCR : plafond hebdomadaire absolu 48 h.
+        // Cible contractuelle (préférence) — tolérance paramétrée
+        // (par défaut +2 h ; relâchée à +5 h en phase de rattrapage).
+        if (wouldBeWeek > m.weekly_hours_target + targetTolerance) return false;
+        // HCR : plafond hebdomadaire absolu 48 h — JAMAIS relâché.
         if (wouldBeWeek > HCR_WEEKLY_MAX) return false;
         // HCR : plafond quotidien selon poste.
         const dayShifts = assignedByUserDay.get(akey) || new Set();
@@ -288,42 +295,53 @@ export function generatePlan(input) {
   }
 
   // Boucle multi-pass : au moins un essai par slot tant qu'on progresse.
-  let progressed = true;
-  let safetyGuard = 100;
-  while (progressed && safetyGuard-- > 0) {
-    progressed = false;
-    // À chaque passe, on traite d'abord les slots les plus sous-couverts
-    // (en proportion de leur idéal) : ainsi un slot vide est servi avant
-    // un slot déjà à 70 % qui cherche son deuxième équipier.
-    const ordered = [...slots]
-      .filter((s) => s.coefSum < s.ideal)
-      .sort((a, b) => (a.coefSum / a.ideal) - (b.coefSum / b.ideal));
-    for (const slot of ordered) {
-      const chosen = findBest(slot);
-      if (!chosen) continue;
-      suggested.push({
-        family_id: familyId,
-        user_id: chosen.user_id,
-        first_name: chosen.first_name,
-        date: slot.date,
-        shift_type: slot.service,
-        poste: slot.poste,
-        note: 'Proposé par le solver',
-        _suggested: true,
-      });
-      slot.slotMembers.push({
-        user_id: chosen.user_id, level: chosen.level,
-        first_name: chosen.first_name, source: 'suggested',
-      });
-      slot.coefSum += coefOf(chosen, cfg);
-      if (isSenior(chosen)) slot.seniorPresent = true;
-      hours[chosen.user_id].planned += SHIFT_DURATIONS[slot.service] || 0;
-      const akey = `${chosen.user_id}-${slot.date}`;
-      if (!assignedByUserDay.has(akey)) assignedByUserDay.set(akey, new Set());
-      assignedByUserDay.get(akey).add(slot.service);
-      if (!daysWorked.has(chosen.user_id)) daysWorked.set(chosen.user_id, new Set());
-      daysWorked.get(chosen.user_id).add(slot.date);
-      progressed = true;
+  // Deux phases avec tolérance horaire croissante pour atteindre la
+  // meilleure couverture possible sans jamais franchir le mur HCR 48 h.
+  //   Phase 1 (confort) : tolérance +2 h sur la cible contractuelle.
+  //   Phase 2 (rattrapage) : tolérance étendue à +5 h pour couvrir les
+  //     slots restants ; chacun voit son alerte « +X h » dans le récap.
+  function assign(slot, chosen) {
+    suggested.push({
+      family_id: familyId,
+      user_id: chosen.user_id,
+      first_name: chosen.first_name,
+      date: slot.date,
+      shift_type: slot.service,
+      poste: slot.poste,
+      note: 'Proposé par le solver',
+      _suggested: true,
+    });
+    slot.slotMembers.push({
+      user_id: chosen.user_id, level: chosen.level,
+      first_name: chosen.first_name, source: 'suggested',
+    });
+    slot.coefSum += coefOf(chosen, cfg);
+    if (isSenior(chosen)) slot.seniorPresent = true;
+    hours[chosen.user_id].planned += SHIFT_DURATIONS[slot.service] || 0;
+    const akey = `${chosen.user_id}-${slot.date}`;
+    if (!assignedByUserDay.has(akey)) assignedByUserDay.set(akey, new Set());
+    assignedByUserDay.get(akey).add(slot.service);
+    if (!daysWorked.has(chosen.user_id)) daysWorked.set(chosen.user_id, new Set());
+    daysWorked.get(chosen.user_id).add(slot.date);
+  }
+
+  for (const tolerance of [2, 5]) {
+    let progressed = true;
+    let safetyGuard = 100;
+    while (progressed && safetyGuard-- > 0) {
+      progressed = false;
+      // À chaque passe, on traite d'abord les slots les plus sous-couverts
+      // (en proportion de leur idéal) — un slot vide est servi avant un
+      // slot déjà à 70 % qui cherche son deuxième équipier.
+      const ordered = [...slots]
+        .filter((s) => s.coefSum < s.ideal)
+        .sort((a, b) => (a.coefSum / a.ideal) - (b.coefSum / b.ideal));
+      for (const slot of ordered) {
+        const chosen = findBest(slot, tolerance);
+        if (!chosen) continue;
+        assign(slot, chosen);
+        progressed = true;
+      }
     }
   }
 
