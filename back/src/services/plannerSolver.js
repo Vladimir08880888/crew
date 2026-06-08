@@ -193,14 +193,15 @@ export function generatePlan(input) {
   const uncovered = [];
   const coverage  = []; // [{date, service, poste, ideal, actual_coef, members: [...] }]
 
+  // ────────────────────────────────────────────────────────────────────
+  // Construction de la liste des slots ouverts.
+  // ────────────────────────────────────────────────────────────────────
+  const slots = [];
   for (const date of weekDates) {
     const dow = new Date(date).getDay();
     if (closedDays.includes(dow)) continue;
 
     for (const service of PLANNING_SHIFTS) {
-      // Priorité de la prévision : per-(date,service) > per-service > per-date > 100.
-      // Cela permet au manager de poser une prévision fine « ven midi 110 % »
-      // tout en gardant un fallback grossier.
       let capacityPct;
       const perCell = capacityByDateAndService?.[date]?.[service];
       if (perCell != null) capacityPct = Number(perCell);
@@ -211,98 +212,133 @@ export function generatePlan(input) {
 
       for (const poste of PLANNING_POSTES) {
         const ideal = Math.round(idealOf(cfg, service, poste) * capacityFactor);
-        if (ideal === 0) continue; // poste désactivé ce service
+        if (ideal === 0) continue;
 
-        // Membres déjà présents sur ce slot (issus de existingShifts).
         const presentUsers = existingShifts
           .filter((s) => s.date.startsWith(date) && s.shift_type === service && posteMatches(s.poste, poste))
           .map((s) => memberById.get(s.user_id))
           .filter(Boolean);
 
-        let coefSum = presentUsers.reduce((sum, m) => sum + coefOf(m, cfg), 0);
-        const seniorPresent = presentUsers.some(isSenior);
-        const slotMembers = [...presentUsers.map((m) => ({ user_id: m.user_id, level: m.level, first_name: m.first_name, source: 'existing' }))];
-
-        // Boucle d'ajout : on essaie d'atteindre ideal.
-        while (coefSum < ideal) {
-          // Candidats éligibles : poste compatible, hours OK, conséc. OK,
-          // pas déjà assigné à (date, service).
-          const candidates = members
-            .filter((m) => {
-              if (!m.weekly_hours_target || m.weekly_hours_target === 0) return false;
-              if (!canFill(m, poste)) return false;
-              const akey = `${m.user_id}-${date}`;
-              if (assignedByUserDay.get(akey)?.has(service)) return false;
-              const shiftDur = SHIFT_DURATIONS[service] || 0;
-              const wouldBeWeek = hours[m.user_id].planned + shiftDur;
-              // Cible contractuelle (préférence) — tolérance +2h.
-              if (wouldBeWeek > m.weekly_hours_target + 2) return false;
-              // HCR : plafond hebdomadaire absolu 48 h.
-              if (wouldBeWeek > HCR_WEEKLY_MAX) return false;
-              // HCR : plafond quotidien selon poste.
-              const dayShifts = assignedByUserDay.get(akey) || new Set();
-              const dayHours = [...dayShifts].reduce((sum, st) => sum + (SHIFT_DURATIONS[st] || 0), 0);
-              if (dayHours + shiftDur > hcrDailyCap(m.poste)) return false;
-              // HCR : minimum 2 jours de repos hebdo.
-              const userDays = daysWorked.get(m.user_id) || new Set();
-              const wouldDays = new Set([...userDays, date]).size;
-              if (weekDates.length >= 7 && weekDates.length - wouldDays < HCR_MIN_REST_DAYS) return false;
-              // Max 6 jours consécutifs (cohérent avec repos hebdo).
-              if (countConsecutive([...userDays, date]) > MAX_CONSECUTIVE_DAYS) return false;
-              // Junior seul interdit.
-              if (!seniorPresent && !isSenior(m) && !slotMembers.some((sm) => isSenior(memberById.get(sm.user_id)))) {
-                return false;
-              }
-              return true;
-            })
-            .map((m) => {
-              const deficit = m.weekly_hours_target - hours[m.user_id].planned;
-              let score = deficit * 10;
-              if (m.shift_default === service) score += 5;
-              if (m.poste === poste) score += 3;             // poste exact (pas plonge sur cuisine)
-              if (m.level === 'chef') score += 2;            // chef léger bonus en cuisine
-              // Pénalité coût : un shift coûteux baisse le score → à déficit
-              // égal, le solver choisit le moins cher.
-              const costEuros = shiftCost(m, service, cfg) / 100;
-              score -= costEuros * COST_PENALTY_WEIGHT;
-              return { member: m, score };
-            })
-            .sort((a, b) => b.score - a.score);
-
-          if (candidates.length === 0) break;
-
-          const chosen = candidates[0].member;
-          const shift = {
-            family_id: familyId,
-            user_id:   chosen.user_id,
-            first_name: chosen.first_name,
-            date,
-            shift_type: service,
-            poste,
-            note: 'Proposé par le solver',
-            _suggested: true,
-          };
-          suggested.push(shift);
-          slotMembers.push({ user_id: chosen.user_id, level: chosen.level, first_name: chosen.first_name, source: 'suggested' });
-
-          // Update trackers
-          coefSum += coefOf(chosen, cfg);
-          hours[chosen.user_id].planned += SHIFT_DURATIONS[service] || 0;
-          const akey = `${chosen.user_id}-${date}`;
-          if (!assignedByUserDay.has(akey)) assignedByUserDay.set(akey, new Set());
-          assignedByUserDay.get(akey).add(service);
-          if (!daysWorked.has(chosen.user_id)) daysWorked.set(chosen.user_id, new Set());
-          daysWorked.get(chosen.user_id).add(date);
-        }
-
-        coverage.push({ date, service, poste, ideal, actual_coef: coefSum, members: slotMembers });
-        if (coefSum < ideal / 2) {
-          uncovered.push({
-            date, service, poste, ideal, actual_coef: coefSum,
-            reason: 'Aucun équipier éligible sans enfreindre la Convention HCR (heures, repos hebdo, junior seul).',
-          });
-        }
+        slots.push({
+          date, service, poste, ideal,
+          coefSum: presentUsers.reduce((sum, m) => sum + coefOf(m, cfg), 0),
+          seniorPresent: presentUsers.some(isSenior),
+          slotMembers: presentUsers.map((m) => ({
+            user_id: m.user_id, level: m.level, first_name: m.first_name, source: 'existing',
+          })),
+        });
       }
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  // Solver multi-pass round-robin.
+  //
+  // Pourquoi pas du jour par jour ? Si on remplit Mardi → Mercredi → …,
+  // les premiers jours saturent les heures de l'équipe (chacun arrive
+  // près de sa cible contractuelle), et il ne reste rien pour Samedi /
+  // Dimanche. Résultat : >120 % en début de semaine, 0 % en fin.
+  //
+  // À la place : à chaque passe, chaque slot encore sous-couvert reçoit
+  // AU PLUS un équipier. On répète jusqu'à ce qu'aucune progression ne
+  // soit possible. Garantit que toutes les journées reçoivent leur
+  // « premier équipier » avant qu'un slot n'en obtienne un second.
+  // ────────────────────────────────────────────────────────────────────
+  function findBest(slot) {
+    return members
+      .filter((m) => {
+        if (!m.weekly_hours_target || m.weekly_hours_target === 0) return false;
+        if (!canFill(m, slot.poste)) return false;
+        const akey = `${m.user_id}-${slot.date}`;
+        if (assignedByUserDay.get(akey)?.has(slot.service)) return false;
+        const shiftDur = SHIFT_DURATIONS[slot.service] || 0;
+        const wouldBeWeek = hours[m.user_id].planned + shiftDur;
+        // Cible contractuelle (préférence) — tolérance +2h.
+        if (wouldBeWeek > m.weekly_hours_target + 2) return false;
+        // HCR : plafond hebdomadaire absolu 48 h.
+        if (wouldBeWeek > HCR_WEEKLY_MAX) return false;
+        // HCR : plafond quotidien selon poste.
+        const dayShifts = assignedByUserDay.get(akey) || new Set();
+        const dayHours = [...dayShifts].reduce((sum, st) => sum + (SHIFT_DURATIONS[st] || 0), 0);
+        if (dayHours + shiftDur > hcrDailyCap(m.poste)) return false;
+        // HCR : minimum 2 jours de repos hebdo.
+        const userDays = daysWorked.get(m.user_id) || new Set();
+        const wouldDays = new Set([...userDays, slot.date]).size;
+        if (weekDates.length >= 7 && weekDates.length - wouldDays < HCR_MIN_REST_DAYS) return false;
+        // Max 6 jours consécutifs.
+        if (countConsecutive([...userDays, slot.date]) > MAX_CONSECUTIVE_DAYS) return false;
+        // Junior seul interdit.
+        if (!slot.seniorPresent && !isSenior(m)
+            && !slot.slotMembers.some((sm) => isSenior(memberById.get(sm.user_id)))) {
+          return false;
+        }
+        return true;
+      })
+      .map((m) => {
+        const deficit = m.weekly_hours_target - hours[m.user_id].planned;
+        let score = deficit * 10;
+        if (m.shift_default === slot.service) score += 5;
+        if (m.poste === slot.poste) score += 3;
+        if (m.level === 'chef') score += 2;
+        const costEuros = shiftCost(m, slot.service, cfg) / 100;
+        score -= costEuros * COST_PENALTY_WEIGHT;
+        return { member: m, score };
+      })
+      .sort((a, b) => b.score - a.score)[0]?.member ?? null;
+  }
+
+  // Boucle multi-pass : au moins un essai par slot tant qu'on progresse.
+  let progressed = true;
+  let safetyGuard = 100;
+  while (progressed && safetyGuard-- > 0) {
+    progressed = false;
+    // À chaque passe, on traite d'abord les slots les plus sous-couverts
+    // (en proportion de leur idéal) : ainsi un slot vide est servi avant
+    // un slot déjà à 70 % qui cherche son deuxième équipier.
+    const ordered = [...slots]
+      .filter((s) => s.coefSum < s.ideal)
+      .sort((a, b) => (a.coefSum / a.ideal) - (b.coefSum / b.ideal));
+    for (const slot of ordered) {
+      const chosen = findBest(slot);
+      if (!chosen) continue;
+      suggested.push({
+        family_id: familyId,
+        user_id: chosen.user_id,
+        first_name: chosen.first_name,
+        date: slot.date,
+        shift_type: slot.service,
+        poste: slot.poste,
+        note: 'Proposé par le solver',
+        _suggested: true,
+      });
+      slot.slotMembers.push({
+        user_id: chosen.user_id, level: chosen.level,
+        first_name: chosen.first_name, source: 'suggested',
+      });
+      slot.coefSum += coefOf(chosen, cfg);
+      if (isSenior(chosen)) slot.seniorPresent = true;
+      hours[chosen.user_id].planned += SHIFT_DURATIONS[slot.service] || 0;
+      const akey = `${chosen.user_id}-${slot.date}`;
+      if (!assignedByUserDay.has(akey)) assignedByUserDay.set(akey, new Set());
+      assignedByUserDay.get(akey).add(slot.service);
+      if (!daysWorked.has(chosen.user_id)) daysWorked.set(chosen.user_id, new Set());
+      daysWorked.get(chosen.user_id).add(slot.date);
+      progressed = true;
+    }
+  }
+
+  // Construction de la coverage / uncovered à partir de l'état final.
+  for (const slot of slots) {
+    coverage.push({
+      date: slot.date, service: slot.service, poste: slot.poste,
+      ideal: slot.ideal, actual_coef: slot.coefSum, members: slot.slotMembers,
+    });
+    if (slot.coefSum < slot.ideal / 2) {
+      uncovered.push({
+        date: slot.date, service: slot.service, poste: slot.poste,
+        ideal: slot.ideal, actual_coef: slot.coefSum,
+        reason: 'Aucun équipier éligible sans enfreindre la Convention HCR (heures, repos hebdo, junior seul).',
+      });
     }
   }
 
