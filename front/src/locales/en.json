@@ -35,7 +35,12 @@
       "passwordHint": "At least 8 characters",
       "submit": "Create my account",
       "haveAccount": "Already have an account?",
-      "login": "Sign in"
+      "login": "Sign in",
+      "accountTypeLabel": "I am…",
+      "accountEmployee": "An employee (I have a code)",
+      "accountOwner": "A restaurant owner",
+      "accountEmployeeHint": "Your manager gave you an invite code. You're joining an existing team — after signing up you'll enter the code to request to join.",
+      "accountOwnerHint": "You own or run a restaurant. After signing up you'll create your own team and get the code to share with your staff."
     },
     "errors": {
       "invalid": "Invalid credentials",
@@ -82,9 +87,10 @@
   },
   "dashboard": {
     "welcomeTitle": "Welcome, {{name}}!",
-    "welcomeHint": "You don't belong to any team yet. Create one to get started, or join an existing one with an invite code.",
+    "welcomeHint": "You don't belong to any team yet. Ask your manager for the invite code to join yours.",
     "createTeam": "Create a team",
-    "join": "Join",
+    "join": "Join a team",
+    "ownerHint": "Are you a restaurant owner? Sign in again choosing « restaurant owner » at registration to create your own team.",
     "pendingTitle": "Request pending approval",
     "pendingHint": "The manager must approve your request before you can access the schedule.",
     "pendingRefreshHint": "This page will update automatically as soon as your request is approved.",

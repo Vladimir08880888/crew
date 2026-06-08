@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Users, Clock } from 'lucide-react';
+import { Users, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { statsApi } from '../api/stats.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -58,9 +58,13 @@ export default function Dashboard() {
         <h3>{t('dashboard.welcomeTitle', { name: user.first_name })}</h3>
         <p>{t('dashboard.welcomeHint')}</p>
         <div className="row" style={{ justifyContent: 'center' }}>
-          <Link to="/teams/new"><button><Plus size={16} /> {t('dashboard.createTeam')}</button></Link>
-          <Link to="/teams/join"><button className="secondary"><Users size={16} /> {t('dashboard.join')}</button></Link>
+          <Link to="/teams/join">
+            <button><Users size={16} /> {t('dashboard.join')}</button>
+          </Link>
         </div>
+        <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
+          {t('dashboard.ownerHint')}
+        </p>
       </div>
     );
   }

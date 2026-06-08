@@ -35,7 +35,12 @@
       "passwordHint": "Au moins 8 caractères",
       "submit": "Créer mon compte",
       "haveAccount": "Déjà un compte ?",
-      "login": "Se connecter"
+      "login": "Se connecter",
+      "accountTypeLabel": "Tu es ?",
+      "accountEmployee": "Employé (j'ai un code)",
+      "accountOwner": "Patron de restaurant",
+      "accountEmployeeHint": "Ton manager t'a donné un code d'invitation. Tu rejoins une équipe existante — après ton inscription tu pourras saisir le code pour demander à rejoindre.",
+      "accountOwnerHint": "Tu es propriétaire ou gérant d'un restaurant. Après ton inscription tu créeras ta propre équipe et tu obtiendras le code à partager avec ton personnel."
     },
     "errors": {
       "invalid": "Identifiants incorrects",
@@ -82,9 +87,10 @@
   },
   "dashboard": {
     "welcomeTitle": "Bienvenue, {{name}} !",
-    "welcomeHint": "Vous n'êtes encore dans aucune équipe. Créez-en une pour démarrer, ou rejoignez-en une avec un code d'invitation.",
+    "welcomeHint": "Vous n'êtes encore dans aucune équipe. Demandez le code d'invitation à votre manager pour rejoindre la vôtre.",
     "createTeam": "Créer une équipe",
-    "join": "Rejoindre",
+    "join": "Rejoindre une équipe",
+    "ownerHint": "Vous êtes patron de restaurant ? Reconnectez-vous en choisissant « Patron de restaurant » à l'inscription pour créer votre propre équipe.",
     "pendingTitle": "Demande en attente de validation",
     "pendingHint": "Le manager doit approuver votre demande pour que vous puissiez accéder au planning.",
     "pendingRefreshHint": "Cette page se mettra à jour automatiquement dès que la demande sera validée.",

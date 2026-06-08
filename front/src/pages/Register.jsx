@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Crown, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
@@ -12,6 +13,9 @@ export default function Register() {
   const [form, setForm] = useState({
     first_name: '', last_name: '', email: '', password: '',
   });
+  // 'owner' = patron qui va créer son équipe.
+  // 'employee' = employé qui rejoint avec un code donné par son manager.
+  const [accountType, setAccountType] = useState('employee');
   const [busy, setBusy] = useState(false);
 
   function update(k, v) { setForm({ ...form, [k]: v }); }
@@ -22,7 +26,9 @@ export default function Register() {
     try {
       await register(form);
       toast.success(t('auth.register.submit'));
-      navigate('/teams');
+      // Redirection contextuelle : patron → création d'équipe,
+      // employé → saisie du code d'invitation.
+      navigate(accountType === 'owner' ? '/teams/new' : '/teams/join');
     } catch (err) {
       toast.fromError(err);
     } finally {
@@ -35,6 +41,31 @@ export default function Register() {
       <form onSubmit={submit} className="auth-card">
         <h1>{t('auth.register.title')}</h1>
         <p className="auth-sub">{t('app.tagline')}</p>
+
+        <label>{t('auth.register.accountTypeLabel')}</label>
+        <div className="row" style={{ gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            type="button"
+            className={accountType === 'employee' ? '' : 'secondary'}
+            onClick={() => setAccountType('employee')}
+            style={{ flex: 1, padding: '0.6rem', justifyContent: 'center' }}
+          >
+            <UserPlus size={16} /> {t('auth.register.accountEmployee')}
+          </button>
+          <button
+            type="button"
+            className={accountType === 'owner' ? '' : 'secondary'}
+            onClick={() => setAccountType('owner')}
+            style={{ flex: 1, padding: '0.6rem', justifyContent: 'center' }}
+          >
+            <Crown size={16} /> {t('auth.register.accountOwner')}
+          </button>
+        </div>
+        <p className="muted" style={{ fontSize: '0.82rem', marginTop: '-0.5rem' }}>
+          {accountType === 'owner'
+            ? t('auth.register.accountOwnerHint')
+            : t('auth.register.accountEmployeeHint')}
+        </p>
 
         <label>{t('auth.register.firstName')}</label>
         <input value={form.first_name} onChange={(e) => update('first_name', e.target.value)} required autoFocus autoComplete="given-name" />
