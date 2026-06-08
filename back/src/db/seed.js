@@ -94,71 +94,20 @@ async function run() {
     console.log('[seed] Équipe « Bistrot du Vieux Port » créée (8 membres avec postes + heures cibles)');
 
     // ─────────────────────────────────────────────────────────────────
-    // Planning de service — 14 jours à venir.
-    // Lundi fermé. Mardi-Dimanche : service midi + soir.
-    // Vendredi soir : renfort.
-    // ─────────────────────────────────────────────────────────────────
-    const dayOfWeek = (offset) => {
-      const d = new Date();
-      d.setDate(d.getDate() + offset);
-      return d.getDay();
-    };
-
-    const shiftPlan = [];
-    // Seule la semaine en cours est pré-remplie : la suivante reste vide
-    // pour que la démo du Smart Planner ait quelque chose à proposer.
+    // Planning de service — VOLONTAIREMENT VIDE.
     //
-    // Conformité HCR : Ahmed (cuisine) et Sophie (salle) ont
-    // chacun des doubles services (midi + soir = 10 h/jour). Pour
-    // rester ≤ 48 h/sem et ≥ 2 jours de repos, ils ne sont
-    // affectés que 4 jours / 6 ouverts (≈ 40 h/sem, sous leur cible
-    // contractuelle de 42 h). Mardi et samedi : repos d'Ahmed,
-    // Sophie prend le service. Mercredi et dimanche : repos Sophie,
-    // Ahmed prend le service. Jeudi / vendredi : tous les deux.
-    const ahmedDays = new Set([3, 4, 5, 0]);   // mer, jeu, ven, dim
-    const sophieDays = new Set([2, 4, 5, 6]);  // mar, jeu, ven, sam
-    for (let offset = 0; offset < 7; offset++) {
-      const dow = dayOfWeek(offset);
-      if (dow === 1) continue;
-
-      // Cuisine — Ahmed les jours où il bosse, sinon Mehdi.
-      const cuisineLead = ahmedDays.has(dow) ? ahmed : mehdi;
-      // Salle — Sophie les jours où elle bosse, sinon Elena en lead.
-      const salleLead = sophieDays.has(dow) ? sophie : elena;
-
-      // Service midi : lead cuisine + lead salle + un appui salle.
-      shiftPlan.push([offset, cuisineLead, 'midi', 'cuisine', null]);
-      shiftPlan.push([offset, salleLead,   'midi', 'salle',   null]);
-      if (salleLead !== elena) {
-        shiftPlan.push([offset, elena,     'midi', 'salle',   null]);
-      }
-
-      // Service soir : lead cuisine + plonge + 2 salle (dont lead).
-      shiftPlan.push([offset, cuisineLead, 'soir', 'cuisine', null]);
-      shiftPlan.push([offset, samir,       'soir', 'plonge',  null]);
-      shiftPlan.push([offset, lucas,       'soir', 'salle',   null]);
-      if (salleLead !== lucas) {
-        shiftPlan.push([offset, salleLead, 'soir', 'salle',   null]);
-      }
-      if (dow === 5) {
-        shiftPlan.push([offset, clara, 'soir', 'cuisine', 'Renfort vendredi soir']);
-      }
-    }
-
-    for (const [offset, userId, shiftType, poste, note] of shiftPlan) {
-      const date = dateInDays(offset);
-      try {
-        await pool.query(
-          `INSERT INTO shifts
-             (family_id, user_id, date, shift_type, poste, note, created_by)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [team, userId, date, shiftType, poste, note, sophie]
-        );
-      } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY') throw err;
-      }
-    }
-    console.log(`[seed] ${shiftPlan.length} shifts planifiés sur la semaine courante (la suivante reste vide pour la démo Smart Planner)`);
+    // Avant on pré-remplissait la semaine courante avec un plan figé.
+    // Mais ça parasitait la démo du Smart Planner : sur une semaine
+    // déjà couverte, le solver ne pouvait presque rien ajouter
+    // (équipiers déjà proches de leur cible / cap HCR), ce qui donnait
+    // l'impression que « Smart Planner ne fait rien ».
+    //
+    // Décision : aucun shift n'est plus inséré au seed. Le manager
+    // démarre sur un planning vide et fait tourner Smart Planner pour
+    // voir le solver remplir l'ensemble de la semaine de façon
+    // optimale dès le premier clic.
+    // ─────────────────────────────────────────────────────────────────
+    console.log('[seed] aucun shift préinséré — Smart Planner remplira la semaine au premier clic');
 
     // Paramètres de l'établissement : valeurs par défaut (manager pourra les changer
     // depuis l'écran « Configuration » plus tard).
