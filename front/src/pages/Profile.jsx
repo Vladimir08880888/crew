@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Save, Copy, Check, Calendar, Lock, User as UserIcon, Smartphone, Users, Home } from 'lucide-react';
+import { Save, Copy, Check, Calendar, Lock, User as UserIcon, Smartphone } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { authApi } from '../api/auth.api.js';
 import { usersApi } from '../api/users.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useFamily } from '../context/FamilyContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { API_BASE } from '../config/api.js';
 import { QRCodeView } from '../components/ui/QRCode.jsx';
@@ -58,7 +57,6 @@ function CalendarFeed({ label, icon: Icon, url, color = 'var(--primary)' }) {
 
 export default function Profile() {
   const { user, setUser } = useAuth();
-  const { families } = useFamily();
   const toast = useToast();
   const { t } = useTranslation();
   const [form, setForm] = useState({ first_name: user.first_name, last_name: user.last_name });
@@ -85,9 +83,7 @@ export default function Profile() {
   const base = API_BASE.startsWith('http')
     ? `${API_BASE}/calendar/${user.calendar_token}`
     : `${window.location.origin}${API_BASE}/calendar/${user.calendar_token}`;
-  const allUrl   = `${base}.ics`;
-  const persoUrl = `${base}/perso.ics`;
-  const activeFamilies = families.filter((f) => f.status === 'active');
+  const allUrl = `${base}.ics`;
 
   return (
     <>
@@ -130,26 +126,6 @@ export default function Profile() {
             url={allUrl}
             color="#6366f1"
           />
-
-          <div style={{ marginTop: '1rem' }}>
-            <CalendarFeed
-              label={t('profile.feedPerso')}
-              icon={Home}
-              url={persoUrl}
-              color="#6366f1"
-            />
-          </div>
-
-          {activeFamilies.map((f) => (
-            <div key={f.id} style={{ marginTop: '1rem' }}>
-              <CalendarFeed
-                label={t('profile.feedFamily', { name: f.name })}
-                icon={Users}
-                url={`${base}/family/${f.id}.ics`}
-                color="#ec4899"
-              />
-            </div>
-          ))}
 
           <div className="card" style={{ marginTop: '1rem' }}>
             <h3>{t('profile.howToSubscribe')}</h3>
