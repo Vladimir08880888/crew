@@ -30,7 +30,7 @@ export const familiesController = {
   async detail(req, res) {
     const id = Number(req.params.familyId);
     const family = await familyModel.findById(id);
-    if (!family) throw notFound('Famille introuvable');
+    if (!family) throw notFound('Équipe introuvable');
     const members = await familyMemberModel.listByFamily(id);
     res.json({ ...family, members });
   },
@@ -40,7 +40,7 @@ export const familiesController = {
     const family = await familyModel.findByInviteCode(invite_code);
     if (!family) throw notFound('Code invalide');
     const existing = await familyMemberModel.findByFamilyAndUser(family.id, req.user.id);
-    if (existing) throw conflict('Vous appartenez déjà à cette famille (ou demande en attente)');
+    if (existing) throw conflict('Vous appartenez déjà à cette équipe (ou demande en attente)');
     await familyMemberModel.add({
       family_id: family.id,
       user_id: req.user.id,
@@ -48,7 +48,7 @@ export const familiesController = {
       is_admin: false,
       status: 'pending',
     });
-    res.status(201).json({ message: 'Demande envoyée, en attente de validation par un parent', family_id: family.id });
+    res.status(201).json({ message: 'Demande envoyée, en attente de validation par le manager', family_id: family.id });
   },
 
   async approve(req, res) {
@@ -104,19 +104,19 @@ export const familiesController = {
   async leave(req, res) {
     const familyId = Number(req.params.familyId);
     const member = await familyMemberModel.findByFamilyAndUser(familyId, req.user.id);
-    if (!member) throw notFound('Pas membre de cette famille');
+    if (!member) throw notFound('Pas membre de cette équipe');
     if (member.is_admin) {
       const admins = await familyMemberModel.countAdmins(familyId);
       if (admins <= 1) throw badRequest('Vous êtes le dernier administrateur — désignez un autre admin avant de quitter');
     }
     await familyMemberModel.remove(familyId, req.user.id);
-    res.json({ message: 'Vous avez quitté la famille' });
+    res.json({ message: 'Vous avez quitté l\'équipe' });
   },
 
   async remove(req, res) {
     const familyId = Number(req.params.familyId);
     await familyModel.remove(familyId);
-    res.json({ message: 'Famille supprimée' });
+    res.json({ message: 'Équipe supprimée' });
   },
 
   async resetMemberPassword(req, res) {
@@ -129,7 +129,7 @@ export const familiesController = {
 
     const target = await familyMemberModel.findByFamilyAndUser(familyId, targetUserId);
     if (!target || target.status !== 'active') {
-      throw notFound('Ce membre n\'est pas dans la famille');
+      throw notFound('Ce membre n\'est pas dans l\'équipe');
     }
 
     const tempPassword = generateTempPassword(10);
@@ -146,7 +146,7 @@ export const familiesController = {
   async getSettings(req, res) {
     const familyId = Number(req.params.familyId);
     const settings = await familyModel.getSettings(familyId);
-    if (!settings) throw notFound('Famille introuvable');
+    if (!settings) throw notFound('Équipe introuvable');
     res.json(settings);
   },
 

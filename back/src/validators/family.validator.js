@@ -3,7 +3,7 @@ import { badRequest } from '../utils/httpError.js';
 
 export function validateCreateFamily(body) {
   const name = body?.name?.trim();
-  if (!name || name.length > 100) throw badRequest('Nom de famille invalide');
+  if (!name || name.length > 100) throw badRequest('Nom d\'équipe invalide');
   return { name };
 }
 
