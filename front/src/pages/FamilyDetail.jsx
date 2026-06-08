@@ -39,6 +39,7 @@ export default function FamilyDetail() {
 
   const me = family.members.find((m) => m.user_id === user.id);
   const isAdmin = me?.is_admin;
+  const isManager = me?.role === 'parent' && me?.status === 'active';
 
   async function onApprove(member, role) {
     try {
@@ -150,15 +151,19 @@ export default function FamilyDetail() {
           <h1>{family.name}</h1>
         )}
         <div className="row">
+          {/* Configuration ouverte à tous les managers (parent role),
+              pas seulement aux admins — sinon Sophie/Ahmed ne peuvent
+              pas accéder aux réglages (jours d'ouverture, idéaux poste,
+              taux horaires) alors qu'ils sont managers. */}
+          {isManager && !editingName && (
+            <button className="secondary" onClick={() => navigate(`/teams/${familyId}/settings`)}>
+              <Settings size={14} /> {t('familyDetail.settingsButton', 'Configuration')}
+            </button>
+          )}
           {isAdmin && !editingName && (
-            <>
-              <button className="secondary" onClick={() => navigate(`/teams/${familyId}/settings`)}>
-                <Settings size={14} /> {t('familyDetail.settingsButton', 'Configuration')}
-              </button>
-              <button className="secondary" onClick={() => { setNewName(family.name); setEditingName(true); }}>
-                <Edit2 size={14} /> {t('familyDetail.renameButton')}
-              </button>
-            </>
+            <button className="secondary" onClick={() => { setNewName(family.name); setEditingName(true); }}>
+              <Edit2 size={14} /> {t('familyDetail.renameButton')}
+            </button>
           )}
           <button className="ghost" onClick={leave}>
             <LogOut size={14} /> {t('familyDetail.leaveButton')}

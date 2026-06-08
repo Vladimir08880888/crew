@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { familiesController } from '../controllers/families.controller.js';
 import { authRequired } from '../middleware/auth.js';
-import { requireFamilyMember, requireAdmin } from '../middleware/familyAccess.js';
+import { requireFamilyMember, requireAdmin, requireParent } from '../middleware/familyAccess.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const router = Router();
@@ -58,7 +58,10 @@ router.get('/:familyId/settings',
   asyncHandler(requireFamilyMember),
   asyncHandler(familiesController.getSettings));
 
+// Settings : modifiable par tout manager (rôle 'parent'), pas
+// seulement l'admin. Permet à Sophie/Ahmed (managers non-admin)
+// d'ajuster jours d'ouverture, idéaux poste et taux horaires.
 router.put('/:familyId/settings',
   asyncHandler(requireFamilyMember),
-  requireAdmin,
+  requireParent,
   asyncHandler(familiesController.updateSettings));
