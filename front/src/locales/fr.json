@@ -328,6 +328,8 @@
     "uncoveredTitle": "Services non pourvus (en dessous du seuil mini)",
     "coverageTitle": "Couverture par service et poste",
     "clearFirst": "Repartir d'un planning vierge (efface les shifts existants de la semaine avant d'appliquer)",
+    "fullWeekTitle": "Cette semaine est déjà bien couverte.",
+    "fullWeekHint": "Les équipiers sont près de leur cible contractuelle. Smart Planner ne propose que quelques ajouts — pour reconstruire entièrement la semaine, cochez « Repartir d'un planning vierge » ci-dessous.",
     "capacityLabel": "Densité de service",
     "capacityHint": "50 % = service tranquille (cible divisée par deux). 100 % = jour plein. 150 % = grosse affluence.",
     "densityHint": "L'estimation du manager basée sur les réservations et l'historique.",

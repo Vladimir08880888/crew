@@ -107,6 +107,25 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
               to:   new Date(to).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
             })}</p>
 
+            {/* Bandeau d'info quand la semaine est déjà chargée :
+                Smart Planner ne propose alors qu'un complément et tout
+                ajout violerait HCR. On indique au manager qu'il peut
+                cocher « Repartir vierge » pour reconstruire. */}
+            {!clearFirst && data.suggested.length < 10 &&
+             Object.values(data.hours).some((h) => h.planned >= h.target - 2) && (
+              <div style={{
+                background: 'var(--info-bg, rgba(99, 102, 241, 0.08))',
+                border: '1px solid var(--info, #6366f1)',
+                borderRadius: '8px',
+                padding: '0.6rem 0.8rem',
+                fontSize: '0.82rem',
+                margin: '0.5rem 0',
+              }}>
+                <strong>{t('smartPlanner.fullWeekTitle')}</strong>{' '}
+                {t('smartPlanner.fullWeekHint')}
+              </div>
+            )}
+
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem',
                             padding: '0.4rem 0', fontSize: '0.85rem', cursor: 'pointer' }}>
               <input type="checkbox" checked={clearFirst}
