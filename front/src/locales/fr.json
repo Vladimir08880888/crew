@@ -8,6 +8,7 @@
     "planning": "Planning",
     "stats": "Statistiques",
     "teams": "Équipes",
+    "help": "Aide",
     "profile": "Profil",
     "logout": "Se déconnecter",
     "login": "Se connecter",
@@ -356,5 +357,84 @@
     "levelHint": "Pondère la couverture du service. Junior = demi-puissance, Chef = lead.",
     "polyvalence": "Polyvalence (postes maîtrisés)",
     "polyvalenceHint": "Le poste primaire (★) est imposé. Cochez les postes supplémentaires que cet équipier peut tenir en cas de besoin — le solver l'y enverra seulement si aucun spécialiste n'est éligible."
+  },
+  "managerHelp": {
+    "title": "Aide manager",
+    "intro": "Comment Crew planifie votre équipe, et pourquoi. Un guide concret des concepts, des règles métier et des alertes de l'application.",
+    "profiles": {
+      "title": "Les profils d'équipiers (5 niveaux)",
+      "lead": "Chaque équipier a un niveau qui pèse sa contribution au service. Pour qu'un poste soit couvert à 100 % (1,00), il faut additionner ces niveaux jusqu'à atteindre 1,00.",
+      "apprenti": "premier mois sur poste, encadré en permanence.",
+      "debutant": "tient le poste mais a besoin d'aide en rush.",
+      "autonome": "autonome sur tâches courantes, encadrement ponctuel.",
+      "pilier": "porteur du poste, peut former un débutant à côté.",
+      "referent": "expert, peut piloter le service entier (équivaut presque à un chef).",
+      "example": "<strong>Exemple</strong> — un Référent (0,60) + un Autonome (0,40) couvrent le poste à 100 %. Un Apprenti seul (0,15) ne couvre que 15 % : le solver refusera de le laisser seul si « junior interdit seul » est actif."
+    },
+    "polyvalence": {
+      "title": "La polyvalence (multi-postes)",
+      "lead": "Chaque équipier a un poste primaire (★ imposé) et peut cocher des postes secondaires qu'il peut tenir au besoin (cuisine, plonge, salle, bar).",
+      "detail": "Le solver respecte d'abord la spécialité primaire. Il ne mobilise un équipier hors de sa spécialité que si aucun spécialiste n'est éligible (repos, absent, déjà au max d'heures). C'est l'application directe du théorème de la chaîne courte : 2-3 polyvalences par équipier suffisent à absorber la quasi-totalité des aléas.",
+      "source": "Référence : Jordan & Graves, « Principles on the benefits of manufacturing process flexibility », Management Science 41(4), 1995."
+    },
+    "smartPlanner": {
+      "title": "Le Smart Planner",
+      "lead": "Bouton « Smart Planner » sur la page Planning. Le solver greedy construit un brouillon complet de la semaine en quelques secondes, qu'il vous reste à valider ou ajuster.",
+      "step1": "Pour chaque case (jour × service), il identifie les postes ouverts et le niveau cible.",
+      "step2": "Il filtre les équipiers éligibles (présence, polyvalence, repos hebdo, plafond HCR, junior interdit seul).",
+      "step3": "Il choisit ceux qui maximisent un score combiné : couverture, lissage des heures cible, économies salariales, écart au profil idéal.",
+      "step4": "Il passe à la case suivante en mettant à jour les compteurs (heures cumulées, repos restants, masse salariale).",
+      "density": "Vous renseignez vous-même la densité prévue par jour et par service (cases « midi » / « soir »). Trois presets disponibles :",
+      "calme": "service léger, moins de couvert prévu — le solver vise 50 % de l'effectif idéal.",
+      "normal": "journée standard — 100 % de l'effectif idéal.",
+      "charge": "rush prévu (réservations pleines, événement) — 130 % de l'effectif idéal."
+    },
+    "hcr": {
+      "title": "Les contraintes Convention HCR",
+      "lead": "Le solver et les alertes s'appuient sur la Convention Collective HCR (hôtels-cafés-restaurants) et le Code du travail.",
+      "weekly": "Maximum 48 h par semaine et par équipier (HCR art. 21 + L3121-20).",
+      "dailyKitchen": "Maximum 11 h par jour pour le personnel cuisine.",
+      "dailyOthers": "Maximum 11 h 30 par jour pour le reste de l'équipe (salle, bar, plonge).",
+      "rest": "Au moins 2 jours de repos hebdomadaires (consécutifs ou non).",
+      "juniorAlone": "Règle métier maison : un junior (Apprenti / Débutant) n'est jamais affecté seul sur un poste sans au moins un Pilier ou Référent.",
+      "source": "Sources : Convention collective HCR (IDCC 1979) ; Code du travail L3121-20."
+    },
+    "alerts": {
+      "title": "Les alertes (bandeau au-dessus du planning)",
+      "lead": "Trois familles d'alertes peuvent apparaître :",
+      "hcrLabel": "Non-conformité HCR",
+      "hcr": "un équipier dépasse 48 h / sem ou un plafond journalier, ou n'a pas ses 2 jours de repos. Bloquant pour validation.",
+      "fatigueLabel": "Surcharge / fatigue",
+      "fatigue": "trop d'heures sur une fenêtre courte (modèle KC & Terwiesch 2009, Management Science). Non bloquant mais à surveiller — risque qualité + accidents.",
+      "coverageLabel": "Sous-effectif",
+      "coverage": "le score d'effectif sur un service tombe sous 0,80 (≈ 80 % de la cible). Le Service Health Score global passe à l'orange / rouge dès qu'un service descend trop bas.",
+      "source": "Sources : KC & Terwiesch, « Impact of workload on service time and patient safety », Management Science 55(9), 2009 ; INRS ED 880 (charge mentale et physique)."
+    },
+    "cost": {
+      "title": "L'optimisation cost-aware",
+      "lead": "Crew connaît le taux horaire de chaque équipier (saisi dans la fiche équipier ou hérité du barème HCR par défaut).",
+      "detail": "Quand deux affectations satisfont autant les contraintes (niveau, polyvalence, HCR), le solver préfère la moins coûteuse. La masse salariale prévisionnelle de la semaine est affichée en haut du planning — un repère pour arbitrer entre couverture et budget."
+    },
+    "dnd": {
+      "title": "Glisser-déposer un shift",
+      "lead": "Sur la page Planning, chaque case est draggable.",
+      "step1": "Cliquez sur un shift et maintenez le clic.",
+      "step2": "Faites-le glisser sur une case vide (autre jour ou autre service).",
+      "step3": "Relâchez : le shift est déplacé immédiatement. Si le déplacement viole une règle HCR (par ex. dépassement 48 h), une alerte apparaît mais le déplacement reste possible (vous êtes le décideur)."
+    },
+    "ical": {
+      "title": "Synchronisation calendrier (iCal)",
+      "lead": "Chaque équipier peut s'abonner à son planning depuis l'iPhone, Android ou Outlook — sans installer d'application.",
+      "detail": "Onglet Profil → carte « Synchronisation calendrier » → scanner le QR code ou copier l'URL .ics. Les shifts apparaissent dans le calendrier natif avec une notification 2 h avant chaque service."
+    },
+    "workflow": {
+      "title": "Workflow conseillé pour une semaine",
+      "lead": "Le rituel hebdo qui fait gagner le plus de temps :",
+      "step1": "Lundi matin — vérifier la fiche de chaque équipier (heures cible contractuelles, niveau, polyvalence).",
+      "step2": "Renseigner la densité prévue jour × service (Calme / Normal / Chargé) selon les réservations.",
+      "step3": "Lancer le Smart Planner — vous obtenez un brouillon complet en quelques secondes.",
+      "step4": "Ajuster manuellement par glisser-déposer si besoin (ex. un équipier souhaite un dimanche spécifique).",
+      "step5": "Vérifier l'absence d'alerte HCR rouge, puis valider — les équipiers reçoivent leurs shifts dans leur calendrier."
+    }
   }
 }

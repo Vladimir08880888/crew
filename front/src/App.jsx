@@ -13,6 +13,7 @@ import FamilyJoin from './pages/FamilyJoin.jsx';
 import FamilySettings from './pages/FamilySettings.jsx';
 import Profile from './pages/Profile.jsx';
 import Planning from './pages/Planning.jsx';
+import ManagerHelp from './pages/ManagerHelp.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/teams/:id" element={<FamilyDetail />} />
         <Route path="/teams/:id/settings" element={<FamilySettings />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/help" element={<ManagerHelp />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

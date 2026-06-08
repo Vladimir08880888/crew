@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Sun, Moon, LogOut, BarChart3, Globe, CalendarDays } from 'lucide-react';
+import { Home, Users, Sun, Moon, LogOut, BarChart3, Globe, CalendarDays, HelpCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useFamily } from '../../context/FamilyContext.jsx';
@@ -21,6 +21,7 @@ export function Navbar() {
   }
 
   const activeFamilies = families.filter((f) => f.status === 'active');
+  const isManagerSomewhere = activeFamilies.some((f) => f.role === 'parent');
 
   return (
     <header className="navbar">
@@ -43,6 +44,11 @@ export function Navbar() {
           <NavLink to="/teams">
             <Users size={16} /> <span>{t('nav.teams')}</span>
           </NavLink>
+          {isManagerSomewhere && (
+            <NavLink to="/help">
+              <HelpCircle size={16} /> <span>{t('nav.help')}</span>
+            </NavLink>
+          )}
         </nav>
 
         <div className="navbar-right">
