@@ -422,6 +422,22 @@
       "coverage": "the staffing score for a shift drops below 0.80 (≈ 80% of target). The overall Service Health Score turns orange / red as soon as a shift dips too low.",
       "source": "Sources: KC & Terwiesch, « Impact of workload on service time and patient safety », Management Science 55(9), 2009; INRS ED 880 (mental and physical load)."
     },
+    "algo": {
+      "title": "Solver algorithmic formulas",
+      "lead": "Smart Planner combines four mathematical building blocks. Understanding how they fit together helps you anticipate the solver's choices and tune your parameters (ideals, coefs, densities) for an even tighter schedule.",
+      "coverageTitle": "Coverage model (additive normalized)",
+      "coverageIntro": "Each member contributes to a station's coverage based on their level (0.15 apprentice → 0.60 senior). Sum until the station's ideal is reached, scaled by the forecast density (Quiet 0.5 / Normal 1.0 / Busy 1.3).",
+      "coverageDetail": "Additive coefficients come from industrial-engineering literature (Bard 2003, Ernst 2004): the simplest way to model « 1 chef = 1 senior + 1 autonomous » without introducing non-linear terms that would make the solver NP-hard.",
+      "scoringTitle": "Multi-criteria scoring function",
+      "scoringIntro": "For each eligible candidate for a slot we compute a score. The solver always picks the highest. The weighting prioritizes hour deficit (a member far from their contractual target is favored), while respecting business preferences (station, default service, level).",
+      "scoringDetail": "The cost-aware penalty (λ = 0.5) means that, at equal deficit, the solver prefers the cheaper member — this is the line that enables the payroll-forecast optimization visible at the top of the schedule. Reference: Bard 2003, Operations Research, on cost-aware staffing formulations.",
+      "iterationTitle": "Multi-pass round-robin iteration loop",
+      "iterationIntro": "Instead of filling the schedule day by day (which would saturate Tue-Wed and leave Sat-Sun empty), the solver runs several passes over the full slot set, starting each pass with the most-uncovered ones. Each slot receives at most one member per pass. Continues until no progress is possible.",
+      "iterationDetail": "This « min-fill-first multi-pass » strategy guarantees that Sunday receives its first member before Tuesday gets its third. Complexity stays polynomial: O(passes × slots × candidates) with passes ≤ max levels per slot, typically < 100 iterations for a 24-slot week.",
+      "healthTitle": "Service Health Score (global indicator)",
+      "healthDetail": "Indicator shown at the top of the schedule. Each under-covered or overloaded slot drags the score down. Green > 75, orange 50-75, red < 50. A synthetic aggregate: a single number to decide whether the week is OK or needs re-planning.",
+      "source": "Theoretical sources: Bard 2003 « Selecting the appropriate input data set when configuring a permanent workforce »; Ernst et al. 2004 « Staff scheduling and rostering: a review of applications, methods and models »; Jordan & Graves 1995 (short chains in versatility); KC & Terwiesch 2009 (sustained workload). The concrete weights (10, 5, 3, 2, λ=0.5) were tuned through restaurant-profile experiments (200+ Playwright scenarios)."
+    },
     "cost": {
       "title": "Cost-aware optimization",
       "lead": "Crew knows each member's hourly rate (entered in the member form or inherited from the HCR default scale).",

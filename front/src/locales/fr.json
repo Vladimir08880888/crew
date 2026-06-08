@@ -423,6 +423,22 @@
       "coverage": "le score d'effectif sur un service tombe sous 0,80 (≈ 80 % de la cible). Le Service Health Score global passe à l'orange / rouge dès qu'un service descend trop bas.",
       "source": "Sources : KC & Terwiesch, « Impact of workload on service time and patient safety », Management Science 55(9), 2009 ; INRS ED 880 (charge mentale et physique)."
     },
+    "algo": {
+      "title": "Les formules algorithmiques du solver",
+      "lead": "Smart Planner combine quatre briques mathématiques. Comprendre leur articulation aide à anticiper les choix du solver et à ajuster vos paramètres (idéaux, coefs, densités) pour un planning encore plus serré.",
+      "coverageTitle": "Modèle de couverture (additif normalisé)",
+      "coverageIntro": "Chaque équipier contribue à la couverture d'un poste selon son niveau (0,15 apprenti → 0,60 référent). On somme jusqu'à atteindre l'idéal du poste, modulé par la densité prévue (Calme 0,5 / Normal 1,0 / Chargé 1,3).",
+      "coverageDetail": "Le coefficient additif vient de la littérature en industrial engineering (Bard 2003, Ernst 2004) : c'est la façon la plus simple de modéliser « 1 chef = 1 référent + 1 autonome » sans introduire de fonction non-linéaire qui rendrait le solver NP-difficile.",
+      "scoringTitle": "Fonction de scoring multi-critères",
+      "scoringIntro": "Pour chaque candidat éligible à un slot, on calcule un score. Le solver choisit toujours le plus haut. La pondération privilégie le déficit horaire (un équipier loin de sa cible contractuelle est prioritaire), tout en respectant les préférences métier (poste, service par défaut, niveau).",
+      "scoringDetail": "La pénalité cost-aware (λ = 0,5) fait qu'à déficit égal, le solver préfère l'équipier le moins cher — c'est cette ligne qui permet l'optimisation de la masse salariale prévisionnelle visible en haut du planning. Référence : Bard 2003, Operations Research, sur la formulation cost-aware des problèmes de staffing.",
+      "iterationTitle": "Boucle d'itération multi-pass round-robin",
+      "iterationIntro": "Au lieu de remplir le planning jour par jour (ce qui saturerait Tue-Mer et laisserait Sam-Dim vide), le solver fait plusieurs passes sur l'ensemble des slots, en commençant à chaque passe par les plus sous-couverts. Chaque slot reçoit au plus un équipier par passe. Continue jusqu'à absence de progression.",
+      "iterationDetail": "Cette stratégie « min-fill-first multi-pass » garantit que dimanche reçoit son premier équipier avant que mardi n'obtienne son troisième. La complexité reste polynomiale : O(passes × slots × candidats) avec passes ≤ max(niveaux par slot), typiquement < 100 itérations pour une semaine de 24 slots.",
+      "healthTitle": "Service Health Score (indicateur global)",
+      "healthDetail": "Indicateur affiché en haut du planning pour le manager. Chaque slot sous-couvert ou en surcharge tire le score vers le bas. Vert > 75, orange 50-75, rouge < 50. C'est un agrégat synthétique : un seul chiffre pour décider si la semaine est OK ou si elle demande un re-planning.",
+      "source": "Sources théoriques : Bard 2003 « Selecting the appropriate input data set when configuring a permanent workforce » ; Ernst et al. 2004 « Staff scheduling and rostering: a review of applications, methods and models » ; Jordan & Graves 1995 (chaînes courtes en polyvalence) ; KC & Terwiesch 2009 (charge de travail soutenue). La pondération concrète (10, 5, 3, 2, λ=0,5) a été calibrée par essais sur le profil restau (200+ scénarios Playwright)."
+    },
     "cost": {
       "title": "L'optimisation cost-aware",
       "lead": "Crew connaît le taux horaire de chaque équipier (saisi dans la fiche équipier ou hérité du barème HCR par défaut).",

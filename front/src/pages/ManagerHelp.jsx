@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   HelpCircle, Users, Layers, Sparkles, Activity, ShieldCheck,
-  AlertTriangle, Move, Calendar as CalendarIcon, Euro,
+  AlertTriangle, Move, Calendar as CalendarIcon, Euro, FunctionSquare,
 } from 'lucide-react';
 import { useFamily } from '../context/FamilyContext.jsx';
 
@@ -119,6 +119,75 @@ export default function ManagerHelp() {
           </ul>
           <p className="muted" style={{ fontSize: '0.85rem' }}>
             <em>{t('managerHelp.alerts.source')}</em>
+          </p>
+        </Section>
+
+        <Section icon={FunctionSquare} title={t('managerHelp.algo.title')}>
+          <p>{t('managerHelp.algo.lead')}</p>
+
+          <h4 style={{ marginTop: '1rem' }}>1. {t('managerHelp.algo.coverageTitle')}</h4>
+          <p>{t('managerHelp.algo.coverageIntro')}</p>
+          <pre style={{ background: 'var(--glass)', padding: '0.5rem',
+                        borderRadius: '6px', fontSize: '0.78rem',
+                        overflowX: 'auto', whiteSpace: 'pre' }}>
+{`couverture(poste, service) = Σ niveau_i  (i ∈ équipiers présents)
+idéal_visé(poste, service)  = idéal_poste × densité_service`}
+          </pre>
+          <p>{t('managerHelp.algo.coverageDetail')}</p>
+
+          <h4 style={{ marginTop: '1rem' }}>2. {t('managerHelp.algo.scoringTitle')}</h4>
+          <p>{t('managerHelp.algo.scoringIntro')}</p>
+          <pre style={{ background: 'var(--glass)', padding: '0.5rem',
+                        borderRadius: '6px', fontSize: '0.78rem',
+                        overflowX: 'auto', whiteSpace: 'pre' }}>
+{`score(m, slot) =
+    10 × (cible_m − heures_planifiées_m)   // déficit horaire (priorité)
+  +  5 × 1[shift_default_m == service]      // service préféré
+  +  3 × 1[poste_m == poste_slot]           // poste exact
+  +  2 × 1[level_m == 'chef']               // léger bonus chef
+  −  λ × coût_horaire(m) × durée(service)   // pénalité cost-aware (λ=0,5)`}
+          </pre>
+          <p>{t('managerHelp.algo.scoringDetail')}</p>
+
+          <h4 style={{ marginTop: '1rem' }}>3. {t('managerHelp.algo.iterationTitle')}</h4>
+          <p>{t('managerHelp.algo.iterationIntro')}</p>
+          <pre style={{ background: 'var(--glass)', padding: '0.5rem',
+                        borderRadius: '6px', fontSize: '0.78rem',
+                        overflowX: 'auto', whiteSpace: 'pre' }}>
+{`tant qu'au moins un slot progresse :
+  pour chaque slot ouvert trié par déficit décroissant :
+    si couverture(slot) ≥ idéal(slot) : passer
+    candidats ← équipiers tels que :
+        canFill(m, poste)                   ∧
+        ¬ déjà_affecté(m, jour, service)    ∧
+        heures(m) + durée ≤ cible(m) + 2    ∧
+        heures(m) + durée ≤ 48              ∧  // HCR L3121-20
+        durée_journée(m) ≤ plafond_HCR(poste) ∧
+        repos_hebdo(m) ≥ 2 jours            ∧
+        consécutifs(m) ≤ 6 jours            ∧
+        ¬ junior_seul(slot, m)
+    chosen ← argmax(score(m, slot))
+    affecter(chosen, slot)`}
+          </pre>
+          <p>{t('managerHelp.algo.iterationDetail')}</p>
+
+          <h4 style={{ marginTop: '1rem' }}>4. {t('managerHelp.algo.healthTitle')}</h4>
+          <pre style={{ background: 'var(--glass)', padding: '0.5rem',
+                        borderRadius: '6px', fontSize: '0.78rem',
+                        overflowX: 'auto', whiteSpace: 'pre' }}>
+{`Service Health Score (0..100) :
+  pour chaque (jour, service, poste) :
+    pct = 100 × couverture / idéal
+    si pct ≥ 100 → +0   (sain)
+    si 50 ≤ pct < 100 → −15 (sous-effectif modéré)
+    si pct < 50  → −40 (sous-effectif sévère)
+    si pct > 150 → −25 (surcharge)
+  Score final = max(0, 100 + Σ pénalités) / nombre_de_slots`}
+          </pre>
+          <p>{t('managerHelp.algo.healthDetail')}</p>
+
+          <p className="muted" style={{ fontSize: '0.85rem', marginTop: '1rem' }}>
+            <em>{t('managerHelp.algo.source')}</em>
           </p>
         </Section>
 
