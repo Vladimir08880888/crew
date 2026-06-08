@@ -345,6 +345,157 @@ export function generatePlan(input) {
     }
   }
 
+  // ────────────────────────────────────────────────────────────────────
+  // Passe d'équilibrage finale.
+  //
+  // Tant qu'il existe au moins une paire (slot sur-couvert, slot
+  // sous-couvert), on essaie de déplacer un équipier suggéré de l'un
+  // vers l'autre — en commençant par le moins gradé (impact minimal
+  // sur les deux côtés). Le déplacement n'est exécuté que s'il réduit
+  // l'écart total à l'idéal et respecte toutes les contraintes HCR +
+  // métier.
+  //
+  // Effet : ramène les slots à 115 % vers 100 % tout en rehaussant
+  // les slots à 80 % vers 95 % — sans dépasser le mur HCR 48 h.
+  // ────────────────────────────────────────────────────────────────────
+  function tryMove(member, fromSlot, toSlot) {
+    if (!canFill(member, toSlot.poste)) return false;
+    const akeyTo = `${member.user_id}-${toSlot.date}`;
+    if (assignedByUserDay.get(akeyTo)?.has(toSlot.service)) return false;
+
+    const fromDur = SHIFT_DURATIONS[fromSlot.service] || 0;
+    const toDur = SHIFT_DURATIONS[toSlot.service] || 0;
+    const wouldBeWeek = hours[member.user_id].planned - fromDur + toDur;
+    if (wouldBeWeek > member.weekly_hours_target + 5) return false;
+    if (wouldBeWeek > HCR_WEEKLY_MAX) return false;
+
+    // Plafond quotidien sur la date d'arrivée.
+    const dayShiftsTo = assignedByUserDay.get(akeyTo) || new Set();
+    const dayHoursTo = [...dayShiftsTo].reduce((s, st) => s + (SHIFT_DURATIONS[st] || 0), 0);
+    if (dayHoursTo + toDur > hcrDailyCap(member.poste)) return false;
+
+    // Recalcul des jours travaillés après mouvement.
+    const akeyFrom = `${member.user_id}-${fromSlot.date}`;
+    const fromShiftsAfter = new Set(assignedByUserDay.get(akeyFrom) || []);
+    fromShiftsAfter.delete(fromSlot.service);
+    const userDays = new Set(daysWorked.get(member.user_id) || []);
+    if (fromShiftsAfter.size === 0) userDays.delete(fromSlot.date);
+    userDays.add(toSlot.date);
+    if (weekDates.length >= 7 && weekDates.length - userDays.size < HCR_MIN_REST_DAYS) return false;
+    if (countConsecutive([...userDays]) > MAX_CONSECUTIVE_DAYS) return false;
+
+    // Anti-overshoot pour le toSlot (même règle que findBest).
+    const memberCoef = coefOf(member, cfg);
+    if (toSlot.coefSum + memberCoef > toSlot.ideal * 1.3) return false;
+
+    // Gain d'équilibre : on déplace seulement si l'écart total baisse.
+    const oldGap = Math.abs(fromSlot.coefSum - fromSlot.ideal)
+                 + Math.abs(toSlot.coefSum   - toSlot.ideal);
+    const newFrom = fromSlot.coefSum - memberCoef;
+    const newTo   = toSlot.coefSum   + memberCoef;
+    const newGap = Math.abs(newFrom - fromSlot.ideal)
+                 + Math.abs(newTo   - toSlot.ideal);
+    if (newGap >= oldGap) return false;
+
+    // Junior-seul : si on retire un senior, vérifier qu'il en reste un
+    // côté donor (ou qu'aucun junior n'est laissé seul).
+    if (isSenior(member)) {
+      const otherSeniors = fromSlot.slotMembers
+        .some((sm) => sm.user_id !== member.user_id
+                      && isSenior(memberById.get(sm.user_id)));
+      const hasJunior = fromSlot.slotMembers
+        .some((sm) => sm.user_id !== member.user_id
+                      && !isSenior(memberById.get(sm.user_id)));
+      if (!otherSeniors && hasJunior) return false;
+    }
+    // Et côté receiver : si on amène un junior sur un slot sans senior,
+    // refuser.
+    if (!isSenior(member) && !toSlot.seniorPresent
+        && !toSlot.slotMembers.some((sm) => isSenior(memberById.get(sm.user_id)))) {
+      return false;
+    }
+
+    // ── EXÉCUTION du mouvement ──
+    // Retirer du donor.
+    const idxFrom = fromSlot.slotMembers
+      .findIndex((sm) => sm.user_id === member.user_id);
+    if (idxFrom >= 0) fromSlot.slotMembers.splice(idxFrom, 1);
+    fromSlot.coefSum -= memberCoef;
+    fromSlot.seniorPresent = fromSlot.slotMembers
+      .some((sm) => isSenior(memberById.get(sm.user_id)));
+
+    // Retirer le shift correspondant de suggested[].
+    const sugIdx = suggested.findIndex((s) =>
+      s.user_id === member.user_id
+      && s.date === fromSlot.date
+      && s.shift_type === fromSlot.service
+      && s.poste === fromSlot.poste);
+    if (sugIdx >= 0) suggested.splice(sugIdx, 1);
+
+    // Mettre à jour assignedByUserDay + daysWorked + heures du donor.
+    assignedByUserDay.get(akeyFrom)?.delete(fromSlot.service);
+    if (assignedByUserDay.get(akeyFrom)?.size === 0) {
+      assignedByUserDay.delete(akeyFrom);
+      daysWorked.get(member.user_id)?.delete(fromSlot.date);
+    }
+    hours[member.user_id].planned -= fromDur;
+
+    // Ajouter au receiver.
+    toSlot.slotMembers.push({
+      user_id: member.user_id, level: member.level,
+      first_name: member.first_name, source: 'suggested',
+    });
+    toSlot.coefSum += memberCoef;
+    if (isSenior(member)) toSlot.seniorPresent = true;
+    suggested.push({
+      family_id: familyId,
+      user_id: member.user_id,
+      first_name: member.first_name,
+      date: toSlot.date,
+      shift_type: toSlot.service,
+      poste: toSlot.poste,
+      note: 'Proposé par le solver (rééquilibrage)',
+      _suggested: true,
+    });
+    if (!assignedByUserDay.has(akeyTo)) assignedByUserDay.set(akeyTo, new Set());
+    assignedByUserDay.get(akeyTo).add(toSlot.service);
+    if (!daysWorked.has(member.user_id)) daysWorked.set(member.user_id, new Set());
+    daysWorked.get(member.user_id).add(toSlot.date);
+    hours[member.user_id].planned += toDur;
+
+    return true;
+  }
+
+  // Boucle d'équilibrage : un mouvement par tour, max 50 tours.
+  let balanceGuard = 50;
+  while (balanceGuard-- > 0) {
+    const overSlots = slots.filter((s) => s.coefSum > s.ideal);
+    const underSlots = slots
+      .filter((s) => s.coefSum < s.ideal)
+      .sort((a, b) => (a.coefSum / a.ideal) - (b.coefSum / b.ideal));
+    if (overSlots.length === 0 || underSlots.length === 0) break;
+
+    let moved = false;
+    outer: for (const donor of overSlots) {
+      // On essaie d'abord de retirer les équipiers les moins gradés
+      // — impact minimal sur donor, et léger boost sur receiver.
+      const candidates = donor.slotMembers
+        .filter((sm) => sm.source === 'suggested')
+        .map((sm) => memberById.get(sm.user_id))
+        .filter(Boolean)
+        .sort((a, b) => coefOf(a, cfg) - coefOf(b, cfg));
+      for (const member of candidates) {
+        for (const receiver of underSlots) {
+          if (tryMove(member, donor, receiver)) {
+            moved = true;
+            break outer;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
   // Construction de la coverage / uncovered à partir de l'état final.
   for (const slot of slots) {
     coverage.push({
