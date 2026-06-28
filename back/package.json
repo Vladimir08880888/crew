@@ -1,7 +1,7 @@
 {
-  "name": "reminder-back",
+  "name": "crew-back",
   "version": "0.1.0",
-  "description": "API Express pour Reminder Famille",
+  "description": "API Express pour Crew (planification d'équipe)",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
