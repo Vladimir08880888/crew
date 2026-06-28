@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Captures d'écran Crew pour le dossier projet AFPA.
+ * Captures d'écran Crew pour le dossier projet DWWM.
  *
  * Usage : APP_URL=http://localhost:5173 node scripts/screenshots.mjs
  *         (par défaut : la prod Vercel)

@@ -65,8 +65,8 @@
     "send": "Envoyer"
   },
   "roles": {
-    "parent": "Manager",
-    "child": "Équipier",
+    "manager": "Manager",
+    "equipier": "Équipier",
     "admin": "Admin",
     "you": "Vous"
   },
@@ -94,7 +94,7 @@
     "pendingTitle": "Demande en attente de validation",
     "pendingHint": "Le manager doit approuver votre demande pour que vous puissiez accéder au planning.",
     "pendingRefreshHint": "Cette page se mettra à jour automatiquement dès que la demande sera validée.",
-    "parentGreeting": "Bonjour {{name}}, vous êtes manager.",
+    "managerGreeting": "Bonjour {{name}}, vous êtes manager.",
     "openPlanning": "Ouvrir le planning",
     "hoursPlanned": "Heures planifiées",
     "outOfTarget": "sur {{target}}h cibles",
@@ -102,8 +102,8 @@
     "activeMembers": "Membres actifs",
     "hoursThisWeek": "Heures cette semaine",
     "weekHours": "planifiées",
-    "childGreeting": "👋 Salut {{name}} !",
-    "childIntro": "Tu fais partie de l'équipe"
+    "equipierGreeting": "👋 Salut {{name}} !",
+    "equipierIntro": "Tu fais partie de l'équipe"
   },
   "families": {
     "title": "Mes équipes",
@@ -293,6 +293,9 @@
     "weekRange": "Du {{from}} au {{to}}",
     "member": "Équipier",
     "addShift": "Ajouter un shift",
+    "moveKeyboard": "Déplacer ce service (clavier)",
+    "moveHere": "Déposer le service ici",
+    "moveActive": "Déplacement clavier : choisissez une cellule « Déposer le service ici », ou Échap pour annuler.",
     "editShift": "Modifier le shift",
     "shiftType": "Type",
     "poste": "Poste",

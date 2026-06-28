@@ -4,7 +4,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const router = Router();
 
-// Calendrier global (toutes les tâches en cours + à valider pour les parents)
+// Calendrier global (toutes les tâches en cours + à valider pour les managers)
 router.get('/:token', asyncHandler(calendarController.export));
 
 // Alias .ics pour clients qui exigent l'extension (Apple Calendar, etc.)

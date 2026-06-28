@@ -17,11 +17,11 @@ export const FREQUENCIES = [
 ];
 
 export const ROLE_LABEL = {
-  parent: 'Parent',
-  child:  'Enfant',
+  manager:  'Manager',
+  equipier: 'Équipier',
 };
 
-export const FAMILY_ROLES = ['parent', 'child'];
+export const FAMILY_ROLES = ['manager', 'equipier'];
 
 // Extensions « restauration »
 export const POSTES = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];
@@ -33,9 +33,9 @@ export const SHIFTS = ['matin', 'midi', 'coupure', 'soir', 'nuit'];
  */
 export function jobRoleOf(member) {
   if (!member) return null;
-  if (member.role === 'parent' && member.is_admin) return 'patron';
-  if (member.role === 'parent' && member.poste === 'cuisine') return 'chef';
-  if (member.role === 'parent') return 'manager';
-  if (member.role === 'child'  && !member.poste)   return 'apprenti';
+  if (member.role === 'manager' && member.is_admin) return 'patron';
+  if (member.role === 'manager' && member.poste === 'cuisine') return 'chef';
+  if (member.role === 'manager') return 'manager';
+  if (member.role === 'equipier'  && !member.poste)   return 'apprenti';
   return 'equipier';
 }

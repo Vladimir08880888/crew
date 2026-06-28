@@ -6,7 +6,7 @@ import { useFamily } from '../../context/FamilyContext.jsx';
  *   - manager d'au moins une équipe active → /dashboard
  *   - utilisateur sans équipe active        → /dashboard (état vide
  *     avec boutons « Créer » / « Rejoindre »)
- *   - équipier déjà rattaché (rôle 'child') → /planning
+ *   - équipier déjà rattaché (rôle 'equipier') → /planning
  */
 export function RoleRedirect() {
   const { families, loading } = useFamily();
@@ -14,7 +14,7 @@ export function RoleRedirect() {
     return <div className="card"><p>Chargement…</p></div>;
   }
   const activeFamilies = families.filter((f) => f.status === 'active');
-  const isManager = activeFamilies.some((f) => f.role === 'parent');
+  const isManager = activeFamilies.some((f) => f.role === 'manager');
   const isEquipierOnly = activeFamilies.length > 0 && !isManager;
   return <Navigate to={isEquipierOnly ? '/planning' : '/dashboard'} replace />;
 }

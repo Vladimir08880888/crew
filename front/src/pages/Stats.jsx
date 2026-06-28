@@ -34,7 +34,7 @@ export default function Stats() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const isParent = active?.role === 'parent';
+  const isParent = active?.role === 'manager';
 
   const load = useCallback(() => {
     if (!active || !isParent) { setLoading(false); return; }

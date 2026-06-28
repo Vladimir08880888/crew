@@ -14,7 +14,7 @@ export const FREQUENCIES = ['once', 'daily', 'weekly', 'monthly', 'yearly'];
 
 export const TASK_STATUSES = ['pending', 'pending_review', 'completed'];
 
-export const FAMILY_ROLES = ['parent', 'child'];
+export const FAMILY_ROLES = ['manager', 'equipier'];
 
 export const MEMBER_STATUSES = ['active', 'pending'];
 
@@ -76,18 +76,18 @@ export const DEFAULT_CLOSED_DAYS = [1];   // lundi
  * (role, is_admin, poste). Permet d'avoir 5 rôles fonctionnels riches
  * sans changer le schéma sous-jacent.
  *
- *   patron       : parent + admin
- *   manager      : parent + poste salle/bar/administration (non chef)
- *   chef         : parent + poste cuisine
- *   equipier     : child + poste défini (≠ apprenti)
- *   apprenti     : child + poste NULL
+ *   patron       : manager + admin
+ *   manager      : manager + poste salle/bar/administration (non chef)
+ *   chef         : manager + poste cuisine
+ *   equipier     : equipier + poste défini (≠ apprenti)
+ *   apprenti     : equipier + poste NULL
  */
 export function resolveJobRole(member) {
   if (!member) return null;
-  if (member.role === 'parent' && member.is_admin) return 'patron';
-  if (member.role === 'parent' && member.poste === 'cuisine') return 'chef';
-  if (member.role === 'parent') return 'manager';
-  if (member.role === 'child'  && !member.poste)   return 'apprenti';
+  if (member.role === 'manager' && member.is_admin) return 'patron';
+  if (member.role === 'manager' && member.poste === 'cuisine') return 'chef';
+  if (member.role === 'manager') return 'manager';
+  if (member.role === 'equipier'  && !member.poste)   return 'apprenti';
   return 'equipier';
 }
 

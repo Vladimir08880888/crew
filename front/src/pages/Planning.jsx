@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, ChevronLeft, ChevronRight, Calendar, Trash2, Sparkles, Copy, Eraser, AlertTriangle } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Calendar, Trash2, Sparkles, Copy, Eraser, AlertTriangle, Move, CornerDownRight, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { shiftsApi } from '../api/shifts.api.js';
 import { familiesApi } from '../api/families.api.js';
@@ -66,8 +66,12 @@ export default function Planning() {
   const [showSmart, setShowSmart] = useState(false);
   const [draggedShift, setDraggedShift] = useState(null);
   const [dragOverKey, setDragOverKey] = useState(null);
+  // Alternative clavier au drag-and-drop (accessibilité WCAG 2.1.1) :
+  // le manager « arme » un service, puis choisit une cellule de
+  // destination au clavier via les boutons « Déposer ici ».
+  const [movingShift, setMovingShift] = useState(null);
 
-  const isManager = active?.role === 'parent';
+  const isManager = active?.role === 'manager';
 
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
@@ -205,6 +209,14 @@ export default function Planning() {
 
   useEffect(() => { load(); }, [load]);
   useRefetchOnFocus(load);
+
+  // Échap annule un déplacement clavier en cours.
+  useEffect(() => {
+    if (!movingShift) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMovingShift(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [movingShift]);
 
   if (!active) {
     return (
@@ -461,6 +473,23 @@ export default function Planning() {
         )}
       </p>
 
+      {movingShift && (
+        <div className="card" role="status" style={{
+          marginTop: '0.5rem',
+          borderLeft: '4px solid var(--primary)',
+          background: 'var(--primary-bg, rgba(99,102,241,0.08))',
+          display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap',
+        }}>
+          <Move size={16} style={{ color: 'var(--primary)' }} />
+          <span style={{ fontSize: '0.85rem' }}>
+            {t('planning.moveActive', 'Déplacement clavier : choisissez une cellule « Déposer le service ici », ou Échap pour annuler.')}
+          </span>
+          <button className="ghost" style={{ marginLeft: 'auto' }} onClick={() => setMovingShift(null)}>
+            <X size={14} /> {t('common.cancel', 'Annuler')}
+          </button>
+        </div>
+      )}
+
       {loading && <p className="muted">{t('common.loading')}</p>}
 
       {!loading && (
@@ -552,6 +581,8 @@ export default function Planning() {
                     const cellKey = `${m.user_id}-${dateStr}`;
                     const canDropHere = isManager && draggedShift && cellShifts.length < 2 &&
                       !(draggedShift.user_id === m.user_id && draggedShift.date.slice(0, 10) === dateStr);
+                    const canMoveHere = isManager && movingShift && cellShifts.length < 2 &&
+                      !(movingShift.user_id === m.user_id && movingShift.date.slice(0, 10) === dateStr);
                     return (
                       <td
                         key={dateStr}
@@ -585,6 +616,16 @@ export default function Planning() {
                             <span className="shift-poste">{t(`postes.${s.poste}`, s.poste)}</span>
                             {isManager && (
                               <button
+                                className="shift-move"
+                                onClick={(e) => { e.stopPropagation(); setMovingShift((cur) => (cur?.id === s.id ? null : s)); }}
+                                aria-pressed={movingShift?.id === s.id}
+                                title={t('planning.moveKeyboard', 'Déplacer ce service (clavier)')}
+                              >
+                                <Move size={11} />
+                              </button>
+                            )}
+                            {isManager && (
+                              <button
                                 className="shift-del"
                                 onClick={(e) => { e.stopPropagation(); deleteShift(s); }}
                                 title={t('common.delete')}
@@ -594,7 +635,16 @@ export default function Planning() {
                             )}
                           </div>
                         ))}
-                        {isManager && cellShifts.length < 2 && (
+                        {canMoveHere && (
+                          <button
+                            className="shift-move-target"
+                            onClick={() => { moveShift(movingShift, dateStr, m.user_id); setMovingShift(null); }}
+                            title={t('planning.moveHere', 'Déposer le service ici')}
+                          >
+                            <CornerDownRight size={12} /> {t('planning.moveHere', 'Déposer le service ici')}
+                          </button>
+                        )}
+                        {isManager && !movingShift && cellShifts.length < 2 && (
                           <button className="shift-add" onClick={() => openCreate(dateStr, m)} title={t('planning.addShift')}>
                             <Plus size={12} />
                           </button>

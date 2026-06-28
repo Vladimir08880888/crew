@@ -23,7 +23,7 @@ export const familyModel = {
     // pending_count : nombre de demandes en attente pour chaque
     // équipe — utile pour afficher un badge côté manager. Renvoyé
     // pour toutes les équipes mais n'a de sens visuel que sur celles
-    // dont fm.role = 'parent'.
+    // dont fm.role = 'manager'.
     const [rows] = await pool.query(
       `SELECT f.*, fm.role, fm.is_admin, fm.status,
               COALESCE((

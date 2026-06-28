@@ -1,7 +1,7 @@
 import { pool } from '../db/pool.js';
 
 export const familyMemberModel = {
-  async add({ family_id, user_id, role = 'child', is_admin = false, status = 'pending' }) {
+  async add({ family_id, user_id, role = 'equipier', is_admin = false, status = 'pending' }) {
     await pool.query(
       `INSERT INTO family_members (family_id, user_id, role, is_admin, status)
        VALUES (?, ?, ?, ?, ?)`,

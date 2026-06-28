@@ -64,7 +64,7 @@ Mot de passe pour tous : `motdepasse123`.
 
 ## Auteur
 
-Projet de soutenance AFPA — Titre Professionnel **Développeur Web et Web
+Projet de soutenance — Titre Professionnel **Développeur Web et Web
 Mobile** (RNCP31114). Centre de formation : Marseille La Treille.
 Auteur : Vladimir Rodzaevskiy.
 

@@ -39,7 +39,7 @@ export function MemberList({ members, currentUserId, isAdmin, onApprove, onUpdat
       <h3>{t('memberList.membersHeading', { count: active.length })}</h3>
       <ul className="member-list">
         {active.map((m) => {
-          const incomplete = isSetupIncomplete(m) && m.role === 'child';
+          const incomplete = isSetupIncomplete(m) && m.role === 'equipier';
           return (
             <li key={m.user_id} className={incomplete ? 'member-card-incomplete' : ''}>
               <div className="member-info">
@@ -154,10 +154,10 @@ export function MemberList({ members, currentUserId, isAdmin, onApprove, onUpdat
                 </div>
                 {isAdmin && (
                   <div className="row" style={{ flexWrap: 'wrap' }}>
-                    <button onClick={() => onApprove(m, 'parent')}>
+                    <button onClick={() => onApprove(m, 'manager')}>
                       <Check size={14} /> {t('memberList.approveParent')}
                     </button>
-                    <button className="secondary" onClick={() => onApprove(m, 'child')}>
+                    <button className="secondary" onClick={() => onApprove(m, 'equipier')}>
                       <Check size={14} /> {t('memberList.approveChild')}
                     </button>
                     <button className="danger icon-only" onClick={() => onRemove(m)} title={t('memberList.rejectTitle')}>

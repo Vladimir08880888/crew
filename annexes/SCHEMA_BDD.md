@@ -34,7 +34,7 @@ erDiagram
     FAMILY_MEMBERS {
         INT family_id PK,FK
         INT user_id PK,FK
-        ENUM role "parent / child"
+        ENUM role "manager / equipier"
         BOOLEAN is_admin
         ENUM status "active / pending"
         ENUM poste "cuisine / salle / bar / plonge / administration"
@@ -70,7 +70,7 @@ Une « famille » au sens technique = une équipe au sens métier. Chaque équip
 ### `family_members`
 Table d'association **N-N** entre `users` et `families`, enrichie des champs métier utilisés par le solver d'auto-planning :
 
-- `role` (parent/child) — rôle générique, hérité du modèle initial.
+- `role` (manager/equipier) — droit d'administration du planning : `manager` gère l'équipe et les services, `equipier` consulte les siens.
 - `is_admin` — un membre peut être promu administrateur.
 - `status` — `pending` jusqu'à approbation par l'admin, puis `active`.
 - `poste` — zone fonctionnelle habituelle.

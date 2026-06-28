@@ -20,7 +20,7 @@ export const familiesController = {
     await familyMemberModel.add({
       family_id: id,
       user_id: req.user.id,
-      role: 'parent',
+      role: 'manager',
       is_admin: true,
       status: 'active',
     });
@@ -44,7 +44,7 @@ export const familiesController = {
     await familyMemberModel.add({
       family_id: family.id,
       user_id: req.user.id,
-      role: 'child',
+      role: 'equipier',
       is_admin: false,
       status: 'pending',
     });
@@ -55,7 +55,7 @@ export const familiesController = {
     const familyId = Number(req.params.familyId);
     const userId = Number(req.params.userId);
     const { role } = req.body;
-    if (!['parent', 'child'].includes(role)) throw badRequest('Rôle requis (parent|child)');
+    if (!['manager', 'equipier'].includes(role)) throw badRequest('Rôle requis (manager|equipier)');
     const member = await familyMemberModel.findByFamilyAndUser(familyId, userId);
     if (!member) throw notFound('Membre introuvable');
     await familyMemberModel.update(familyId, userId, { status: 'active', role });

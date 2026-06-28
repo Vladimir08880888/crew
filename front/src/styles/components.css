@@ -373,8 +373,8 @@
   letter-spacing: 0.05em;
   border-radius: var(--r-full);
 }
-.role-tag.parent { background: rgba(99, 102, 241, 0.18); color: var(--primary); }
-.role-tag.child  { background: rgba(6, 182, 212, 0.18);  color: var(--info); }
+.role-tag.manager { background: rgba(99, 102, 241, 0.18); color: var(--primary); }
+.role-tag.equipier  { background: rgba(6, 182, 212, 0.18);  color: var(--info); }
 .role-tag.admin  { background: rgba(245, 158, 11, 0.18); color: var(--warning); }
 .role-tag.you    { background: var(--success-bg); color: var(--success); }
 
@@ -830,6 +830,43 @@
   color: var(--primary);
   border-color: var(--primary);
 }
+
+/* Bouton « déplacer (clavier) » sur un service — alternative
+   accessible au drag-and-drop (WCAG 2.1.1). */
+.shift-pill .shift-move {
+  position: absolute;
+  top: 2px; right: 18px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+}
+.shift-pill .shift-move:hover,
+.shift-pill .shift-move[aria-pressed="true"] {
+  opacity: 1;
+  background: rgba(0,0,0,0.08);
+}
+/* Cible de dépôt clavier dans une cellule. */
+.shift-move-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--primary-bg, rgba(99,102,241,0.10));
+  border: 1px dashed var(--primary);
+  border-radius: var(--r-sm);
+  color: var(--primary);
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.shift-move-target:hover { background: var(--primary); color: #fff; }
 
 /* ============ Modal backdrop ============ */
 .modal-backdrop {

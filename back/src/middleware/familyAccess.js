@@ -15,8 +15,8 @@ export async function requireFamilyMember(req, res, next) {
 }
 
 export function requireParent(req, res, next) {
-  if (!req.familyMember || req.familyMember.role !== 'parent') {
-    return next(forbidden('Réservé aux parents'));
+  if (!req.familyMember || req.familyMember.role !== 'manager') {
+    return next(forbidden('Réservé aux managers'));
   }
   next();
 }

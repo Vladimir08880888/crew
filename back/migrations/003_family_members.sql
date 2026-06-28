@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS family_members (
   family_id   INT NOT NULL,
   user_id     INT NOT NULL,
-  role        ENUM('parent','child') NOT NULL DEFAULT 'child',
+  role        ENUM('manager','equipier') NOT NULL DEFAULT 'equipier',
   is_admin    BOOLEAN NOT NULL DEFAULT FALSE,
   status      ENUM('active','pending') NOT NULL DEFAULT 'pending',
   joined_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

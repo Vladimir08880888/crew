@@ -118,14 +118,14 @@ async function chartsForFamily(familyId) {
 export const statsController = {
   /**
    * GET /api/stats/charts?family_id=X
-   * Réservé aux managers (parent role).
+   * Réservé aux managers (manager role).
    */
   async charts(req, res) {
     const familyId = Number(req.query.family_id);
     if (!familyId) throw badRequest('family_id requis');
     const member = await familyMemberModel.findByFamilyAndUser(familyId, req.user.id);
     if (!member || member.status !== 'active') throw forbidden('Pas membre de cette équipe');
-    if (member.role !== 'parent') throw forbidden('Statistiques réservées aux managers');
+    if (member.role !== 'manager') throw forbidden('Statistiques réservées aux managers');
     res.json(await chartsForFamily(familyId));
   },
 
@@ -147,7 +147,7 @@ export const statsController = {
     const familiesEnriched = [];
     for (const f of families.filter((x) => x.status === 'active')) {
       const members = await familyMemberModel.listByFamily(f.id);
-      const breakdown = f.role === 'parent'
+      const breakdown = f.role === 'manager'
         ? await memberBreakdownByHours(f.id, iso(monday), iso(sunday))
         : null;
       familiesEnriched.push({ ...f, members, breakdown });

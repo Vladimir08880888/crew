@@ -80,17 +80,17 @@ async function run() {
 
     const team = await createFamily('Bistrot du Vieux Port', julien);
     // Patron (target=0 → exclu du solver automatique)
-    await addMember(team, julien, 'parent', true,  'administration', null,    0,  'chef');
+    await addMember(team, julien, 'manager', true,  'administration', null,    0,  'chef');
     // Managers : heures cibles 42h
-    await addMember(team, sophie, 'parent', false, 'salle',          'midi', 42, 'chef');
-    await addMember(team, ahmed,  'parent', false, 'cuisine',        'midi', 42, 'chef');
+    await addMember(team, sophie, 'manager', false, 'salle',          'midi', 42, 'chef');
+    await addMember(team, ahmed,  'manager', false, 'cuisine',        'midi', 42, 'chef');
     // Équipiers temps plein : 35h
-    await addMember(team, elena,  'child',  false, 'salle',          'midi', 35, 'confirme');
-    await addMember(team, lucas,  'child',  false, 'salle',          'soir', 35, 'confirme');
-    await addMember(team, mehdi,  'child',  false, 'cuisine',        'midi', 35, 'confirme');
-    await addMember(team, samir,  'child',  false, 'plonge',         'soir', 35, 'confirme');
+    await addMember(team, elena,  'equipier',  false, 'salle',          'midi', 35, 'confirme');
+    await addMember(team, lucas,  'equipier',  false, 'salle',          'soir', 35, 'confirme');
+    await addMember(team, mehdi,  'equipier',  false, 'cuisine',        'midi', 35, 'confirme');
+    await addMember(team, samir,  'equipier',  false, 'plonge',         'soir', 35, 'confirme');
     // Apprentie temps partiel : 24h
-    await addMember(team, clara,  'child',  false, 'cuisine',        'soir', 24, 'junior');
+    await addMember(team, clara,  'equipier',  false, 'cuisine',        'soir', 24, 'junior');
     console.log('[seed] Équipe « Bistrot du Vieux Port » créée (8 membres avec postes + heures cibles)');
 
     // ─────────────────────────────────────────────────────────────────

@@ -58,7 +58,7 @@ router.get('/:familyId/settings',
   asyncHandler(requireFamilyMember),
   asyncHandler(familiesController.getSettings));
 
-// Settings : modifiable par tout manager (rôle 'parent'), pas
+// Settings : modifiable par tout manager (rôle 'manager'), pas
 // seulement l'admin. Permet à Sophie/Ahmed (managers non-admin)
 // d'ajuster jours d'ouverture, idéaux poste et taux horaires.
 router.put('/:familyId/settings',

@@ -124,7 +124,7 @@ FOREIGN KEY (created_by) REFERENCES users(id)
 ```sql
 family_id            INT NOT NULL,
 user_id              INT NOT NULL,
-role                 ENUM('parent','child') DEFAULT 'child',
+role                 ENUM('manager','equipier') DEFAULT 'equipier',
 is_admin             BOOLEAN DEFAULT FALSE,
 status               ENUM('active','pending') DEFAULT 'pending',
 joined_at            DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -282,15 +282,23 @@ smart planner immédiatement sans configuration manuelle.
 
 ---
 
-## 10. Critères de validation AFPA
+## 10. Critères de validation DWWM (RNCP 37674)
 
-- **CCP1 — Développer la partie front-end** : React + Vite, components
-  fonctionnels, hooks, i18n, gestion d'état via Context, responsive.
-- **CCP2 — Développer la partie back-end** : Express, mysql2, modèle
-  MVC (controllers/models/services), validation, middleware d'auth.
-- **CCP3 — Concevoir et développer une application sécurisée organisée
-  en couches** : bcrypt, JWT, CORS strict, rate limiting, RBAC
-  par middleware sur chaque route, validation aux frontières.
+Le titre 37674 est structuré en **deux activités-types**. La sécurité
+n'est pas un bloc séparé : elle est exigée *à l'intérieur* de chacune
+(« application web ou web mobile **sécurisée** »).
+
+- **AT1 — Développer la partie front-end d'une application web ou web
+  mobile sécurisée** : React + Vite, components fonctionnels, hooks,
+  i18n, gestion d'état via Context, responsive, accessibilité ;
+  côté sécurité front : validation des saisies, routes protégées
+  (ProtectedRoute), pas de secret exposé au client.
+- **AT2 — Développer la partie back-end d'une application web ou web
+  mobile sécurisée** : Express, mysql2, modèle MVC
+  (controllers/models/services), validation systématique côté serveur ;
+  côté sécurité back : bcrypt, JWT, CORS strict, rate limiting,
+  RBAC par middleware sur chaque route, requêtes préparées,
+  secrets en variables d'environnement.
 
 Tests : couverture manuelle documentée en annexe, comptes de démo pour
 chaque rôle, scénarios de cas nominal et cas d'erreur tracés.

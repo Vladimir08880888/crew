@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useFamily } from '../context/FamilyContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus.js';
-import ParentDashboard from './ParentDashboard.jsx';
-import ChildDashboard from './ChildDashboard.jsx';
+import ManagerDashboard from './ManagerDashboard.jsx';
+import EquipierDashboard from './EquipierDashboard.jsx';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -69,7 +69,7 @@ export default function Dashboard() {
     );
   }
 
-  return active.role === 'parent'
-    ? <ParentDashboard data={data} user={user} family={active} />
-    : <ChildDashboard data={data} user={user} family={active} />;
+  return active.role === 'manager'
+    ? <ManagerDashboard data={data} user={user} family={active} />
+    : <EquipierDashboard data={data} user={user} family={active} />;
 }

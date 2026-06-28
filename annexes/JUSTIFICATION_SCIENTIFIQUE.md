@@ -1,6 +1,6 @@
 # Justification scientifique du modèle de couverture Crew
 
-> Annexe au dossier projet — Soutenance AFPA DWWM.
+> Annexe au dossier projet — Soutenance DWWM (RNCP 37674).
 > Synthèse de la littérature peer-reviewed et des publications d'organismes
 > publics (INRS, NIOSH, CDC) qui sous-tendent la modélisation du smart planner.
 

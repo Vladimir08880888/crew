@@ -70,7 +70,7 @@ function buildDescription(t) {
     parts.push(`Assigné à : ${t.assigned_first_name} ${t.assigned_last_name || ''}`.trim());
   }
   if (t.status === 'pending_review') {
-    parts.push('', '⚠️ En attente de validation par un parent');
+    parts.push('', '⚠️ En attente de validation par un manager');
   }
   return parts.join('\n');
 }

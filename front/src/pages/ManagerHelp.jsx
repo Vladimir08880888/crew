@@ -29,7 +29,7 @@ export default function ManagerHelp() {
   }
 
   const isManagerSomewhere = families.some(
-    (f) => f.role === 'parent' && f.status === 'active',
+    (f) => f.role === 'manager' && f.status === 'active',
   );
   if (!isManagerSomewhere) {
     return <Navigate to="/dashboard" replace />;

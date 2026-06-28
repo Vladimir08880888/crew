@@ -21,11 +21,11 @@ export function Navbar() {
   }
 
   const activeFamilies = families.filter((f) => f.status === 'active');
-  const isManagerSomewhere = activeFamilies.some((f) => f.role === 'parent');
+  const isManagerSomewhere = activeFamilies.some((f) => f.role === 'manager');
   // Somme des demandes en attente sur les équipes que je manage.
   // Sert au badge « Équipes (N) » qui pousse le manager à approuver.
   const totalPending = activeFamilies
-    .filter((f) => f.role === 'parent')
+    .filter((f) => f.role === 'manager')
     .reduce((sum, f) => sum + (Number(f.pending_count) || 0), 0);
 
   return (

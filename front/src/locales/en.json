@@ -65,8 +65,8 @@
     "send": "Send"
   },
   "roles": {
-    "parent": "Manager",
-    "child": "Member",
+    "manager": "Manager",
+    "equipier": "Member",
     "admin": "Admin",
     "you": "You"
   },
@@ -94,7 +94,7 @@
     "pendingTitle": "Request pending approval",
     "pendingHint": "The manager must approve your request before you can access the schedule.",
     "pendingRefreshHint": "This page will update automatically as soon as your request is approved.",
-    "parentGreeting": "Hello {{name}}, you are a manager.",
+    "managerGreeting": "Hello {{name}}, you are a manager.",
     "openPlanning": "Open schedule",
     "hoursPlanned": "Hours planned",
     "outOfTarget": "of {{target}}h target",
@@ -102,8 +102,8 @@
     "activeMembers": "Active members",
     "hoursThisWeek": "Hours this week",
     "weekHours": "planned",
-    "childGreeting": "👋 Hi {{name}}!",
-    "childIntro": "You're part of the team"
+    "equipierGreeting": "👋 Hi {{name}}!",
+    "equipierIntro": "You're part of the team"
   },
   "families": {
     "title": "My teams",
@@ -293,6 +293,9 @@
     "weekRange": "From {{from}} to {{to}}",
     "member": "Member",
     "addShift": "Add a shift",
+    "moveKeyboard": "Move this shift (keyboard)",
+    "moveHere": "Drop the shift here",
+    "moveActive": "Keyboard move: pick a \"Drop the shift here\" cell, or press Esc to cancel.",
     "editShift": "Edit shift",
     "shiftType": "Type",
     "poste": "Role",

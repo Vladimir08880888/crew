@@ -58,7 +58,7 @@ function MemberHoursGrid({ members }) {
   );
 }
 
-export default function ParentDashboard({ data, user, family }) {
+export default function ManagerDashboard({ data, user, family }) {
   const { t } = useTranslation();
   const activeFamily = data.families?.find((f) => f.id === family.id);
   const breakdown = activeFamily?.breakdown || [];
@@ -72,7 +72,7 @@ export default function ParentDashboard({ data, user, family }) {
       <div className="page-header">
         <div>
           <h1>👥 {family.name}</h1>
-          <p className="muted">{t('dashboard.parentGreeting', { name: user.first_name })}</p>
+          <p className="muted">{t('dashboard.managerGreeting', { name: user.first_name })}</p>
         </div>
         <Link to="/planning">
           <button><Sparkles size={16} /> {t('dashboard.openPlanning')}</button>

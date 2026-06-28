@@ -39,7 +39,7 @@ export default function FamilySettings() {
         if (cancelled) return;
         setForm(settings);
         const me = (family.members || []).find((m) => m.user_id === user?.id);
-        setIsManager(!!me && me.role === 'parent' && me.status === 'active');
+        setIsManager(!!me && me.role === 'manager' && me.status === 'active');
       })
       .catch((err) => { toast.fromError(err); setIsManager(false); })
       .finally(() => { if (!cancelled) setLoading(false); });

@@ -15,15 +15,15 @@ function maskToClosedDays(mask) {
 }
 
 /**
- * Vérifie que l'utilisateur est manager (parent) de la famille donnée.
- * Un équipier (child) ne peut pas créer/modifier/supprimer un shift.
+ * Vérifie que l'utilisateur est manager de la famille donnée.
+ * Un équipier ne peut pas créer/modifier/supprimer un shift.
  */
 async function assertCanManageShifts(familyId, userId) {
   const member = await familyMemberModel.findByFamilyAndUser(familyId, userId);
   if (!member || member.status !== 'active') {
     throw forbidden('Pas membre de cette équipe');
   }
-  if (member.role !== 'parent') {
+  if (member.role !== 'manager') {
     throw forbidden('Seuls les managers peuvent gérer le planning');
   }
   return member;
@@ -59,7 +59,7 @@ export const shiftsController = {
 
     let userId = req.query.user_id ? Number(req.query.user_id) : null;
     // Équipier : forcer à ses propres shifts
-    if (member.role === 'child') userId = req.user.id;
+    if (member.role === 'equipier') userId = req.user.id;
 
     const shifts = await shiftModel.listByFamily({
       familyId,
