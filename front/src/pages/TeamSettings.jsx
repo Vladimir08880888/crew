@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Save, ArrowLeft } from 'lucide-react';
-import { familiesApi } from '../api/families.api.js';
+import { teamsApi } from '../api/teams.api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -11,17 +11,17 @@ import { useAuth } from '../context/AuthContext.jsx';
  * Trois blocs : coefficients par niveau, capacité de référence,
  * répartition idéale par service et par poste.
  *
- * Le statut « manager » est dérivé du retour /families/:id (rôle effectif
+ * Le statut « manager » est dérivé du retour /teams/:id (rôle effectif
  * dans cette équipe) plutôt que de l'état du sidebar, sinon un accès
  * direct par URL côté admin pouvait être bloqué à tort.
  */
-export default function FamilySettings() {
+export default function TeamSettings() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const familyId = Number(id);
+  const teamId = Number(id);
 
   const [form, setForm] = useState(null);
   const [isManager, setIsManager] = useState(null);   // null = inconnu, true/false = chargé
@@ -32,19 +32,19 @@ export default function FamilySettings() {
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      familiesApi.getSettings(familyId),
-      familiesApi.detail(familyId),
+      teamsApi.getSettings(teamId),
+      teamsApi.detail(teamId),
     ])
-      .then(([settings, family]) => {
+      .then(([settings, team]) => {
         if (cancelled) return;
         setForm(settings);
-        const me = (family.members || []).find((m) => m.user_id === user?.id);
+        const me = (team.members || []).find((m) => m.user_id === user?.id);
         setIsManager(!!me && me.role === 'manager' && me.status === 'active');
       })
       .catch((err) => { toast.fromError(err); setIsManager(false); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [familyId, user?.id]);
+  }, [teamId, user?.id]);
 
   function setField(key, value) {
     setForm((f) => ({ ...f, [key]: value === '' ? '' : Number(value) }));
@@ -54,7 +54,7 @@ export default function FamilySettings() {
     e.preventDefault();
     setSaving(true);
     try {
-      await familiesApi.updateSettings(familyId, form);
+      await teamsApi.updateSettings(teamId, form);
       toast.success(t('settings.saved', 'Configuration enregistrée'));
     } catch (err) {
       toast.fromError(err);

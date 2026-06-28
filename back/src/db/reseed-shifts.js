@@ -29,7 +29,7 @@ async function findUserId(email) {
 }
 
 async function findTeamId(name) {
-  const [rows] = await pool.query('SELECT id FROM families WHERE name = ?', [name]);
+  const [rows] = await pool.query('SELECT id FROM teams WHERE name = ?', [name]);
   return rows[0]?.id ?? null;
 }
 
@@ -60,8 +60,8 @@ async function reseed() {
 
   console.log(`[reseed-shifts] team=${teamId}, users:`, ids);
 
-  // Effacement chirurgical : seulement les shifts (preserve users, families, family_members).
-  const [del] = await pool.query('DELETE FROM shifts WHERE family_id = ?', [teamId]);
+  // Effacement chirurgical : seulement les shifts (preserve users, teams, team_members).
+  const [del] = await pool.query('DELETE FROM shifts WHERE team_id = ?', [teamId]);
   console.log(`[reseed-shifts] ${del.affectedRows} anciens shifts supprimés`);
 
   // Plan hebdo (alternance pour rester ≤ 48 h) — uniquement la semaine en cours,
@@ -102,7 +102,7 @@ async function reseed() {
   for (const [offset, uid, st, poste, note] of shifts) {
     try {
       await pool.query(
-        `INSERT INTO shifts (family_id, user_id, date, shift_type, poste, note, created_by)
+        `INSERT INTO shifts (team_id, user_id, date, shift_type, poste, note, created_by)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [teamId, uid, dateInDays(offset), st, poste, note, ids.sophie],
       );

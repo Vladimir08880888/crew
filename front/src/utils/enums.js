@@ -21,7 +21,7 @@ export const ROLE_LABEL = {
   equipier: 'Équipier',
 };
 
-export const FAMILY_ROLES = ['manager', 'equipier'];
+export const TEAM_ROLES = ['manager', 'equipier'];
 
 // Extensions « restauration »
 export const POSTES = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];

@@ -2,50 +2,50 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Edit2, LogOut, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { familiesApi } from '../api/families.api.js';
+import { teamsApi } from '../api/teams.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useTeam } from '../context/TeamContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useConfirm } from '../context/ConfirmContext.jsx';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus.js';
-import { MemberList } from '../components/families/MemberList.jsx';
-import { InviteCodeBox } from '../components/families/InviteCodeBox.jsx';
-import { TempPasswordModal } from '../components/families/TempPasswordModal.jsx';
-import { MemberEditModal } from '../components/families/MemberEditModal.jsx';
+import { MemberList } from '../components/teams/MemberList.jsx';
+import { InviteCodeBox } from '../components/teams/InviteCodeBox.jsx';
+import { TempPasswordModal } from '../components/teams/TempPasswordModal.jsx';
+import { MemberEditModal } from '../components/teams/MemberEditModal.jsx';
 
-export default function FamilyDetail() {
+export default function TeamDetail() {
   const { id } = useParams();
-  const familyId = Number(id);
+  const teamId = Number(id);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { reload: reloadFamilies } = useFamily();
+  const { reload: reloadTeams } = useTeam();
   const toast = useToast();
   const confirm = useConfirm();
   const { t } = useTranslation();
-  const [family, setFamily] = useState(null);
+  const [team, setTeam] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [resetResult, setResetResult] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
 
   const load = useCallback(() => {
-    familiesApi.detail(familyId).then(setFamily).catch(toast.fromError);
-  }, [familyId]);
+    teamsApi.detail(teamId).then(setTeam).catch(toast.fromError);
+  }, [teamId]);
 
   useEffect(() => { load(); }, [load]);
   useRefetchOnFocus(load);
 
-  if (!family) return <p className="muted">{t('common.loading')}</p>;
+  if (!team) return <p className="muted">{t('common.loading')}</p>;
 
-  const me = family.members.find((m) => m.user_id === user.id);
+  const me = team.members.find((m) => m.user_id === user.id);
   const isAdmin = me?.is_admin;
   const isManager = me?.role === 'manager' && me?.status === 'active';
 
   async function onApprove(member, role) {
     try {
-      await familiesApi.approve(familyId, member.user_id, role);
-      toast.success(t('familyDetail.approvedToast', { name: member.first_name, role: t(`roles.${role}`) }));
-      await reloadFamilies();
+      await teamsApi.approve(teamId, member.user_id, role);
+      toast.success(t('teamDetail.approvedToast', { name: member.first_name, role: t(`roles.${role}`) }));
+      await reloadTeams();
       load();
       // Pour les équipiers, on enchaîne directement avec le setup
       // wizard (poste + heures contractuelles). C'est ce qui rend
@@ -58,15 +58,15 @@ export default function FamilyDetail() {
 
   async function onRemove(member) {
     const ok = await confirm({
-      title: t('familyDetail.removeMemberTitle'),
-      message: t('familyDetail.removeMemberMessage', { first: member.first_name, last: member.last_name }),
-      confirmLabel: t('familyDetail.removeMemberLabel'), danger: true,
+      title: t('teamDetail.removeMemberTitle'),
+      message: t('teamDetail.removeMemberMessage', { first: member.first_name, last: member.last_name }),
+      confirmLabel: t('teamDetail.removeMemberLabel'), danger: true,
     });
     if (!ok) return;
     try {
-      await familiesApi.removeMember(familyId, member.user_id);
-      toast.success(t('familyDetail.memberRemovedToast'));
-      await reloadFamilies(); load();
+      await teamsApi.removeMember(teamId, member.user_id);
+      toast.success(t('teamDetail.memberRemovedToast'));
+      await reloadTeams(); load();
     } catch (err) { toast.fromError(err); }
   }
 
@@ -77,62 +77,62 @@ export default function FamilyDetail() {
 
   async function saveMember(fields) {
     try {
-      await familiesApi.updateMember(familyId, editingMember.user_id, fields);
-      toast.success(t('familyDetail.roleUpdatedToast'));
+      await teamsApi.updateMember(teamId, editingMember.user_id, fields);
+      toast.success(t('teamDetail.roleUpdatedToast'));
       setEditingMember(null);
       load();
-      await reloadFamilies();
+      await reloadTeams();
     } catch (err) { toast.fromError(err); }
   }
 
   async function regenerate() {
     const ok = await confirm({
-      title: t('familyDetail.regenerateTitle'),
-      message: t('familyDetail.regenerateMessage'),
-      confirmLabel: t('familyDetail.regenerateLabel'),
+      title: t('teamDetail.regenerateTitle'),
+      message: t('teamDetail.regenerateMessage'),
+      confirmLabel: t('teamDetail.regenerateLabel'),
     });
     if (!ok) return;
     try {
-      const { invite_code } = await familiesApi.regenerateCode(familyId);
-      setFamily({ ...family, invite_code });
-      toast.success(t('familyDetail.codeRegeneratedToast'));
+      const { invite_code } = await teamsApi.regenerateCode(teamId);
+      setTeam({ ...team, invite_code });
+      toast.success(t('teamDetail.codeRegeneratedToast'));
     } catch (err) { toast.fromError(err); }
   }
 
   async function saveName() {
     try {
-      const updated = await familiesApi.rename(familyId, newName);
-      setFamily({ ...family, name: updated.name });
+      const updated = await teamsApi.rename(teamId, newName);
+      setTeam({ ...team, name: updated.name });
       setEditingName(false);
-      toast.success(t('familyDetail.nameUpdatedToast'));
-      await reloadFamilies();
+      toast.success(t('teamDetail.nameUpdatedToast'));
+      await reloadTeams();
     } catch (err) { toast.fromError(err); }
   }
 
   async function onResetPassword(member) {
     const ok = await confirm({
-      title: t('familyDetail.resetPasswordTitle'),
-      message: t('familyDetail.resetPasswordMessage', { first: member.first_name, last: member.last_name }),
-      confirmLabel: t('familyDetail.resetPasswordLabel'),
+      title: t('teamDetail.resetPasswordTitle'),
+      message: t('teamDetail.resetPasswordMessage', { first: member.first_name, last: member.last_name }),
+      confirmLabel: t('teamDetail.resetPasswordLabel'),
     });
     if (!ok) return;
     try {
-      const res = await familiesApi.resetMemberPassword(familyId, member.user_id);
+      const res = await teamsApi.resetMemberPassword(teamId, member.user_id);
       setResetResult({ member, password: res.temp_password });
     } catch (err) { toast.fromError(err); }
   }
 
   async function leave() {
     const ok = await confirm({
-      title: t('familyDetail.leaveTitle'),
-      message: t('familyDetail.leaveMessage', { name: family.name }),
-      confirmLabel: t('familyDetail.leaveLabel'), danger: true,
+      title: t('teamDetail.leaveTitle'),
+      message: t('teamDetail.leaveMessage', { name: team.name }),
+      confirmLabel: t('teamDetail.leaveLabel'), danger: true,
     });
     if (!ok) return;
     try {
-      await familiesApi.leave(familyId);
-      toast.success(t('familyDetail.leftToast'));
-      await reloadFamilies();
+      await teamsApi.leave(teamId);
+      toast.success(t('teamDetail.leftToast'));
+      await reloadTeams();
       navigate('/teams');
     } catch (err) { toast.fromError(err); }
   }
@@ -148,7 +148,7 @@ export default function FamilyDetail() {
             <button className="secondary" onClick={() => setEditingName(false)}>{t('common.cancel')}</button>
           </div>
         ) : (
-          <h1>{family.name}</h1>
+          <h1>{team.name}</h1>
         )}
         <div className="row">
           {/* Configuration ouverte à tous les managers (manager role),
@@ -156,27 +156,27 @@ export default function FamilyDetail() {
               pas accéder aux réglages (jours d'ouverture, idéaux poste,
               taux horaires) alors qu'ils sont managers. */}
           {isManager && !editingName && (
-            <button className="secondary" onClick={() => navigate(`/teams/${familyId}/settings`)}>
-              <Settings size={14} /> {t('familyDetail.settingsButton', 'Configuration')}
+            <button className="secondary" onClick={() => navigate(`/teams/${teamId}/settings`)}>
+              <Settings size={14} /> {t('teamDetail.settingsButton', 'Configuration')}
             </button>
           )}
           {isAdmin && !editingName && (
-            <button className="secondary" onClick={() => { setNewName(family.name); setEditingName(true); }}>
-              <Edit2 size={14} /> {t('familyDetail.renameButton')}
+            <button className="secondary" onClick={() => { setNewName(team.name); setEditingName(true); }}>
+              <Edit2 size={14} /> {t('teamDetail.renameButton')}
             </button>
           )}
           <button className="ghost" onClick={leave}>
-            <LogOut size={14} /> {t('familyDetail.leaveButton')}
+            <LogOut size={14} /> {t('teamDetail.leaveButton')}
           </button>
         </div>
       </div>
 
       {isAdmin && (
-        <InviteCodeBox code={family.invite_code} onRegenerate={regenerate} canRegenerate />
+        <InviteCodeBox code={team.invite_code} onRegenerate={regenerate} canRegenerate />
       )}
 
       <MemberList
-        members={family.members}
+        members={team.members}
         currentUserId={user.id}
         isAdmin={isAdmin}
         onApprove={onApprove}

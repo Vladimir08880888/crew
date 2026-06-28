@@ -8,11 +8,11 @@ function validateCommon(body, { partial = false } = {}) {
   const errors = {};
   const out = {};
 
-  if (!partial || body.family_id !== undefined) {
-    if (!body.family_id || Number.isNaN(Number(body.family_id))) {
-      errors.family_id = "Identifiant d'équipe requis";
+  if (!partial || body.team_id !== undefined) {
+    if (!body.team_id || Number.isNaN(Number(body.team_id))) {
+      errors.team_id = "Identifiant d'équipe requis";
     } else {
-      out.family_id = Number(body.family_id);
+      out.team_id = Number(body.team_id);
     }
   }
 

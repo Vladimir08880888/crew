@@ -8,7 +8,7 @@ import {
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { useTranslation } from 'react-i18next';
 import { statsApi } from '../api/stats.api.js';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useTeam } from '../context/TeamContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus.js';
@@ -27,23 +27,23 @@ const POSTE_COLORS = {
 };
 
 export default function Stats() {
-  const { active } = useFamily();
+  const { active } = useTeam();
   const { theme } = useTheme();
   const toast = useToast();
   const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const isParent = active?.role === 'manager';
+  const isManager = active?.role === 'manager';
 
   const load = useCallback(() => {
-    if (!active || !isParent) { setLoading(false); return; }
+    if (!active || !isManager) { setLoading(false); return; }
     setLoading(true);
     statsApi.charts(active.id)
       .then(setData)
       .catch(toast.fromError)
       .finally(() => setLoading(false));
-  }, [active?.id, isParent]);
+  }, [active?.id, isManager]);
 
   useEffect(() => { load(); }, [load]);
   useRefetchOnFocus(load);
@@ -58,7 +58,7 @@ export default function Stats() {
     );
   }
 
-  if (!isParent) {
+  if (!isManager) {
     return (
       <div className="empty-state">
         <div className="empty-icon"><Lock size={48} style={{ color: 'var(--text-muted)' }} /></div>

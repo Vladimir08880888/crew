@@ -1,7 +1,7 @@
 /**
  * Smart Planner — solver d'auto-planning Crew.
  *
- * Le solver lit la configuration de l'établissement (table `families`,
+ * Le solver lit la configuration de l'établissement (table `teams`,
  * colonnes ajoutées en migration 007) plutôt que des constantes
  * hardcodées. Pour chaque (jour, service, poste) il calcule la cible
  * de couverture en COEFFICIENTS (somme à atteindre) puis remplit avec
@@ -137,7 +137,7 @@ function countConsecutive(dates) {
  * @param {Array} input.members         — équipiers de l'équipe
  * @param {Array<string>} input.weekDates — dates ISO YYYY-MM-DD
  * @param {Array} input.existingShifts  — shifts déjà présents (préservés)
- * @param {Object} input.settings       — config famille (coefs + ideals)
+ * @param {Object} input.settings       — config Ã©quipe (coefs + ideals)
  * @param {Array<number>} [input.closedDays] — jours fermés (0=dim,1=lun,…)
  * @param {Object} [input.capacityByDate] — { 'YYYY-MM-DD': pct } override
  * @returns {{ suggested, uncovered, hours, coverage }}
@@ -155,7 +155,7 @@ export function generatePlan(input) {
   } = input;
 
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
-  const familyId = existingShifts[0]?.family_id || null;
+  const teamId = existingShifts[0]?.team_id || null;
 
   // Index utile pour retrouver le level d'un user à partir des shifts existants.
   const memberById = new Map();
@@ -302,7 +302,7 @@ export function generatePlan(input) {
   //     slots restants ; chacun voit son alerte « +X h » dans le récap.
   function assign(slot, chosen) {
     suggested.push({
-      family_id: familyId,
+      team_id: teamId,
       user_id: chosen.user_id,
       first_name: chosen.first_name,
       date: slot.date,
@@ -448,7 +448,7 @@ export function generatePlan(input) {
     toSlot.coefSum += memberCoef;
     if (isSenior(member)) toSlot.seniorPresent = true;
     suggested.push({
-      family_id: familyId,
+      team_id: teamId,
       user_id: member.user_id,
       first_name: member.first_name,
       date: toSlot.date,

@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useFamily } from '../../context/FamilyContext.jsx';
+import { useTeam } from '../../context/TeamContext.jsx';
 
 /**
  * Redirection racine selon le rôle :
@@ -9,12 +9,12 @@ import { useFamily } from '../../context/FamilyContext.jsx';
  *   - équipier déjà rattaché (rôle 'equipier') → /planning
  */
 export function RoleRedirect() {
-  const { families, loading } = useFamily();
+  const { teams, loading } = useTeam();
   if (loading) {
     return <div className="card"><p>Chargement…</p></div>;
   }
-  const activeFamilies = families.filter((f) => f.status === 'active');
-  const isManager = activeFamilies.some((f) => f.role === 'manager');
-  const isEquipierOnly = activeFamilies.length > 0 && !isManager;
+  const activeTeams = teams.filter((f) => f.status === 'active');
+  const isManager = activeTeams.some((f) => f.role === 'manager');
+  const isEquipierOnly = activeTeams.length > 0 && !isManager;
   return <Navigate to={isEquipierOnly ? '/planning' : '/dashboard'} replace />;
 }

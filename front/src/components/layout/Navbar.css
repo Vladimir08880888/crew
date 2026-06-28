@@ -63,7 +63,7 @@
   gap: 0.5rem;
 }
 
-.family-switcher {
+.team-switcher {
   width: auto;
   min-width: 140px;
   max-width: 220px;
@@ -124,5 +124,5 @@
   .navbar-links a span { display: none; }
   .navbar-links a { padding: 0.5rem; }
   .navbar-user .navbar-username { display: none; }
-  .family-switcher { display: none; }
+  .team-switcher { display: none; }
 }

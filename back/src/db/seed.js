@@ -8,7 +8,7 @@
  *
  * Lancement : `npm run seed`
  *
- * ⚠️ Cette commande TRUNCATE les tables users/families/family_members/shifts.
+ * ⚠️ Cette commande TRUNCATE les tables users/teams/team_members/shifts.
  * À n'utiliser qu'en environnement de démo.
  */
 
@@ -19,8 +19,8 @@ import { randomHex, randomInviteCode } from '../utils/randomToken.js';
 async function clean() {
   await pool.query('SET FOREIGN_KEY_CHECKS = 0');
   await pool.query('TRUNCATE TABLE shifts');
-  await pool.query('TRUNCATE TABLE family_members');
-  await pool.query('TRUNCATE TABLE families');
+  await pool.query('TRUNCATE TABLE team_members');
+  await pool.query('TRUNCATE TABLE teams');
   await pool.query('TRUNCATE TABLE users');
   await pool.query('SET FOREIGN_KEY_CHECKS = 1');
   console.log('[seed] tables vidées');
@@ -36,19 +36,19 @@ async function createUser(email, firstName, lastName, plain) {
   return r.insertId;
 }
 
-async function createFamily(name, createdBy) {
+async function createTeam(name, createdBy) {
   const [r] = await pool.query(
-    'INSERT INTO families (name, invite_code, created_by) VALUES (?, ?, ?)',
+    'INSERT INTO teams (name, invite_code, created_by) VALUES (?, ?, ?)',
     [name, randomInviteCode(), createdBy]
   );
   return r.insertId;
 }
 
-async function addMember(familyId, userId, role, isAdmin = false, poste = null, shiftDefault = null, weeklyHours = null, level = 'confirme') {
+async function addMember(teamId, userId, role, isAdmin = false, poste = null, shiftDefault = null, weeklyHours = null, level = 'confirme') {
   await pool.query(
-    `INSERT INTO family_members (family_id, user_id, role, is_admin, status, poste, shift_default, weekly_hours_target, level)
+    `INSERT INTO team_members (team_id, user_id, role, is_admin, status, poste, shift_default, weekly_hours_target, level)
      VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?)`,
-    [familyId, userId, role, isAdmin, poste, shiftDefault, weeklyHours, level]
+    [teamId, userId, role, isAdmin, poste, shiftDefault, weeklyHours, level]
   );
 }
 
@@ -78,7 +78,7 @@ async function run() {
     const samir  = await createUser('samir.plonge@bistrot.fr',   'Samir',   'Lefebvre', 'motdepasse123');
     console.log('[seed] 8 membres créés');
 
-    const team = await createFamily('Bistrot du Vieux Port', julien);
+    const team = await createTeam('Bistrot du Vieux Port', julien);
     // Patron (target=0 → exclu du solver automatique)
     await addMember(team, julien, 'manager', true,  'administration', null,    0,  'chef');
     // Managers : heures cibles 42h
@@ -112,7 +112,7 @@ async function run() {
     // Paramètres de l'établissement : valeurs par défaut (manager pourra les changer
     // depuis l'écran « Configuration » plus tard).
     await pool.query(
-      `UPDATE families SET
+      `UPDATE teams SET
          junior_coef = 15, confirme_coef = 40, chef_coef = 60,
          max_couverts = 100,
          midi_cuisine_ideal = 100, midi_salle_ideal = 100,

@@ -105,7 +105,7 @@
     "equipierGreeting": "👋 Salut {{name}} !",
     "equipierIntro": "Tu fais partie de l'équipe"
   },
-  "families": {
+  "teams": {
     "title": "Mes équipes",
     "create": "Créer",
     "join": "Rejoindre",
@@ -121,20 +121,20 @@
     "emptyHint": "Vous n'êtes manager d'aucune équipe. Si vous êtes patron, recréez un compte en choisissant « Patron de restaurant » à l'inscription.",
     "statusPending": "En attente"
   },
-  "familyCreate": {
+  "teamCreate": {
     "title": "Créer une équipe",
     "nameLabel": "Nom de l'équipe",
     "namePlaceholder": "ex. Bistrot du Vieux Port",
     "createdToast": "Équipe « {{name}} » créée"
   },
-  "familyJoin": {
+  "teamJoin": {
     "title": "Rejoindre une équipe",
     "codeLabel": "Code d'invitation",
-    "codePlaceholder": "FAM-XXXX-XXXX",
+    "codePlaceholder": "CREW-XXXX-XXXX",
     "codeHint": "Demandez ce code à un manager de l'équipe.",
     "submit": "Demander à rejoindre"
   },
-  "familyDetail": {
+  "teamDetail": {
     "renameButton": "Renommer",
     "leaveButton": "Quitter",
     "settingsButton": "Configuration",
@@ -417,7 +417,7 @@
     },
     "alerts": {
       "title": "Les alertes (bandeau au-dessus du planning)",
-      "lead": "Trois familles d'alertes peuvent apparaître :",
+      "lead": "Trois Ã©quipes d'alertes peuvent apparaître :",
       "hcrLabel": "Non-conformité HCR",
       "hcr": "un équipier dépasse 48 h / sem ou un plafond journalier, ou n'a pas ses 2 jours de repos. Bloquant pour validation.",
       "fatigueLabel": "Surcharge / fatigue",

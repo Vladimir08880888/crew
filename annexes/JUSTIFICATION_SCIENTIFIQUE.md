@@ -209,7 +209,7 @@ L'INRS s'appuie sur :
 > d'expertise sur le suivi des risques psychosociaux au travail.
 > Ministère du Travail.
 
-Ce rapport définit six familles de facteurs RPS, dont la **« quantité
+Ce rapport définit six Ã©quipes de facteurs RPS, dont la **« quantité
 de travail »** et **« l'intensité du travail »** — précisément les
 dimensions modélisées par les coefficients de Crew.
 

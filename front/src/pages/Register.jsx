@@ -71,7 +71,7 @@ export default function Register() {
         <input value={form.first_name} onChange={(e) => update('first_name', e.target.value)} required autoFocus autoComplete="given-name" />
 
         <label>{t('auth.register.lastName')}</label>
-        <input value={form.last_name} onChange={(e) => update('last_name', e.target.value)} required autoComplete="family-name" />
+        <input value={form.last_name} onChange={(e) => update('last_name', e.target.value)} required autoComplete="team-name" />
 
         <label>{t('auth.register.email')}</label>
         <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required autoComplete="email" />

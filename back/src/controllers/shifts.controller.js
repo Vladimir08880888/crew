@@ -1,6 +1,6 @@
 import { shiftModel } from '../models/shift.model.js';
-import { familyMemberModel } from '../models/familyMember.model.js';
-import { familyModel } from '../models/family.model.js';
+import { teamMemberModel } from '../models/teamMember.model.js';
+import { teamModel } from '../models/team.model.js';
 import { validateCreateShift, validateUpdateShift } from '../validators/shift.validator.js';
 import { forbidden, notFound, badRequest } from '../utils/httpError.js';
 import { generatePlan, computeSummary } from '../services/plannerSolver.js';
@@ -15,11 +15,11 @@ function maskToClosedDays(mask) {
 }
 
 /**
- * Vérifie que l'utilisateur est manager de la famille donnée.
+ * Vérifie que l'utilisateur est manager de la Ã©quipe donnée.
  * Un équipier ne peut pas créer/modifier/supprimer un shift.
  */
-async function assertCanManageShifts(familyId, userId) {
-  const member = await familyMemberModel.findByFamilyAndUser(familyId, userId);
+async function assertCanManageShifts(teamId, userId) {
+  const member = await teamMemberModel.findByTeamAndUser(teamId, userId);
   if (!member || member.status !== 'active') {
     throw forbidden('Pas membre de cette équipe');
   }
@@ -30,11 +30,11 @@ async function assertCanManageShifts(familyId, userId) {
 }
 
 /**
- * Vérifie que l'utilisateur appartient à la famille (lecture autorisée
+ * Vérifie que l'utilisateur appartient à la Ã©quipe (lecture autorisée
  * pour tout membre actif — les équipiers doivent voir le planning).
  */
-async function assertCanReadShifts(familyId, userId) {
-  const member = await familyMemberModel.findByFamilyAndUser(familyId, userId);
+async function assertCanReadShifts(teamId, userId) {
+  const member = await teamMemberModel.findByTeamAndUser(teamId, userId);
   if (!member || member.status !== 'active') {
     throw forbidden('Pas membre de cette équipe');
   }
@@ -43,16 +43,16 @@ async function assertCanReadShifts(familyId, userId) {
 
 export const shiftsController = {
   /**
-   * GET /api/shifts?family_id=X&from=Y&to=Z&user_id=W
-   * Liste des shifts d'une famille sur une période donnée.
-   * - Manager : voit tous les shifts de la famille
+   * GET /api/shifts?team_id=X&from=Y&to=Z&user_id=W
+   * Liste des shifts d'une Ã©quipe sur une période donnée.
+   * - Manager : voit tous les shifts de la Ã©quipe
    * - Équipier : ne voit que ses propres shifts (filtre forcé)
    */
   async list(req, res) {
-    const familyId = Number(req.query.family_id);
-    if (!familyId) throw badRequest("Paramètre family_id requis");
+    const teamId = Number(req.query.team_id);
+    if (!teamId) throw badRequest("Paramètre team_id requis");
 
-    const member = await assertCanReadShifts(familyId, req.user.id);
+    const member = await assertCanReadShifts(teamId, req.user.id);
 
     const today = new Date().toISOString().slice(0, 10);
     const defaultTo = new Date(Date.now() + 30 * 86400_000).toISOString().slice(0, 10);
@@ -61,8 +61,8 @@ export const shiftsController = {
     // Équipier : forcer à ses propres shifts
     if (member.role === 'equipier') userId = req.user.id;
 
-    const shifts = await shiftModel.listByFamily({
-      familyId,
+    const shifts = await shiftModel.listByTeam({
+      teamId,
       from: req.query.from || today,
       to:   req.query.to   || defaultTo,
       userId,
@@ -72,7 +72,7 @@ export const shiftsController = {
 
   /**
    * GET /api/shifts/upcoming
-   * Prochains shifts de l'utilisateur (toutes familles confondues).
+   * Prochains shifts de l'utilisateur (toutes Ã©quipes confondues).
    * Utilisé par le widget dashboard et l'export iCal.
    */
   async upcoming(req, res) {
@@ -87,10 +87,10 @@ export const shiftsController = {
    */
   async create(req, res) {
     const data = validateCreateShift(req.body);
-    await assertCanManageShifts(data.family_id, req.user.id);
+    await assertCanManageShifts(data.team_id, req.user.id);
 
-    // Vérifier que l'user_id appartient bien à la famille
-    const target = await familyMemberModel.findByFamilyAndUser(data.family_id, data.user_id);
+    // Vérifier que l'user_id appartient bien à la Ã©quipe
+    const target = await teamMemberModel.findByTeamAndUser(data.team_id, data.user_id);
     if (!target || target.status !== 'active') {
       throw badRequest("Cet équipier n'est pas dans l'équipe");
     }
@@ -112,7 +112,7 @@ export const shiftsController = {
   async get(req, res) {
     const shift = await shiftModel.findById(Number(req.params.id));
     if (!shift) throw notFound('Shift introuvable');
-    await assertCanReadShifts(shift.family_id, req.user.id);
+    await assertCanReadShifts(shift.team_id, req.user.id);
     res.json(shift);
   },
 
@@ -122,7 +122,7 @@ export const shiftsController = {
   async update(req, res) {
     const shift = await shiftModel.findById(Number(req.params.id));
     if (!shift) throw notFound('Shift introuvable');
-    await assertCanManageShifts(shift.family_id, req.user.id);
+    await assertCanManageShifts(shift.team_id, req.user.id);
     const fields = validateUpdateShift(req.body);
     await shiftModel.update(shift.id, fields);
     res.json(await shiftModel.findById(shift.id));
@@ -134,7 +134,7 @@ export const shiftsController = {
   async remove(req, res) {
     const shift = await shiftModel.findById(Number(req.params.id));
     if (!shift) throw notFound('Shift introuvable');
-    await assertCanManageShifts(shift.family_id, req.user.id);
+    await assertCanManageShifts(shift.team_id, req.user.id);
     await shiftModel.remove(shift.id);
     res.json({ message: 'Shift supprimé' });
   },
@@ -144,22 +144,22 @@ export const shiftsController = {
   // ─────────────────────────────────────────────────────────────────
 
   /**
-   * GET /api/shifts/summary?family_id=X&from=Y&to=Z
+   * GET /api/shifts/summary?team_id=X&from=Y&to=Z
    * Retourne les heures par membre + couverture (gaps).
    * Tout membre actif peut lire.
    */
   async summary(req, res) {
-    const familyId = Number(req.query.family_id);
-    if (!familyId) throw badRequest('family_id requis');
-    await assertCanReadShifts(familyId, req.user.id);
+    const teamId = Number(req.query.team_id);
+    if (!teamId) throw badRequest('team_id requis');
+    await assertCanReadShifts(teamId, req.user.id);
 
     const from = req.query.from;
     const to   = req.query.to;
     if (!from || !to) throw badRequest('from et to requis (YYYY-MM-DD)');
 
     const [members, shifts] = await Promise.all([
-      familyMemberModel.listByFamily(familyId),
-      shiftModel.listByFamily({ familyId, from, to }),
+      teamMemberModel.listByTeam(teamId),
+      shiftModel.listByTeam({ teamId, from, to }),
     ]);
 
     const weekDates = [];
@@ -170,7 +170,7 @@ export const shiftsController = {
     }
 
     const activeMembers = members.filter((m) => m.status === 'active');
-    const settings = await familyModel.getSettings(familyId);
+    const settings = await teamModel.getSettings(teamId);
     const closedDays = maskToClosedDays(settings?.closed_days_mask);
     const { memberStats, coverage, overallService, laborCostTotal, fatigueAlerts, hcrViolations, serviceHealth } = computeSummary({
       members: activeMembers,
@@ -190,21 +190,21 @@ export const shiftsController = {
 
   /**
    * POST /api/shifts/generate-plan
-   *   body: { family_id, from, to }
+   *   body: { team_id, from, to }
    * Manager only — propose des shifts (sans les créer).
    * Retourne { suggested, uncovered, hours }.
    */
   async generatePlan(req, res) {
-    const familyId = Number(req.body.family_id);
+    const teamId = Number(req.body.team_id);
     const from = req.body.from;
     const to   = req.body.to;
-    if (!familyId || !from || !to) throw badRequest('family_id, from, to requis');
+    if (!teamId || !from || !to) throw badRequest('team_id, from, to requis');
 
-    await assertCanManageShifts(familyId, req.user.id);
+    await assertCanManageShifts(teamId, req.user.id);
 
     const [members, existingShifts] = await Promise.all([
-      familyMemberModel.listByFamily(familyId),
-      shiftModel.listByFamily({ familyId, from, to }),
+      teamMemberModel.listByTeam(teamId),
+      shiftModel.listByTeam({ teamId, from, to }),
     ]);
 
     const weekDates = [];
@@ -215,7 +215,7 @@ export const shiftsController = {
     }
 
     const activeMembers = members.filter((m) => m.status === 'active');
-    const settings = await familyModel.getSettings(familyId);
+    const settings = await teamModel.getSettings(teamId);
     const closedDays = maskToClosedDays(settings?.closed_days_mask);
     const capacityByDate = req.body.capacityByDate && typeof req.body.capacityByDate === 'object'
       ? req.body.capacityByDate
@@ -238,7 +238,7 @@ export const shiftsController = {
       existingShifts: ignoreExisting ? [] : existingShifts.map((s) => ({
         ...s,
         date: s.date.toISOString ? s.date.toISOString().slice(0, 10) : s.date,
-        family_id: familyId,
+        team_id: teamId,
       })),
       settings,
       closedDays,
@@ -252,24 +252,24 @@ export const shiftsController = {
 
   /**
    * POST /api/shifts/apply-plan
-   *   body: { family_id, shifts: [...] }
+   *   body: { team_id, shifts: [...] }
    * Crée en masse les shifts proposés (issus de generate-plan).
    * Manager only. Ignore les doublons silencieusement.
    */
   async applyPlan(req, res) {
-    const familyId = Number(req.body.family_id);
+    const teamId = Number(req.body.team_id);
     const shifts = Array.isArray(req.body.shifts) ? req.body.shifts : [];
-    if (!familyId) throw badRequest('family_id requis');
+    if (!teamId) throw badRequest('team_id requis');
     if (shifts.length === 0) throw badRequest('Aucun shift à créer');
 
-    await assertCanManageShifts(familyId, req.user.id);
+    await assertCanManageShifts(teamId, req.user.id);
 
     let created = 0;
     let skipped = 0;
     for (const s of shifts) {
       try {
         await shiftModel.create({
-          family_id: familyId,
+          team_id: teamId,
           user_id: Number(s.user_id),
           date: s.date,
           shift_type: s.shift_type,
@@ -290,20 +290,20 @@ export const shiftsController = {
 
   /**
    * POST /api/shifts/clone-week
-   *   body: { family_id, source_from, source_to, target_from }
+   *   body: { team_id, source_from, source_to, target_from }
    * Duplique tous les shifts d'une semaine vers une autre.
    * Manager only.
    */
   async cloneWeek(req, res) {
-    const familyId = Number(req.body.family_id);
+    const teamId = Number(req.body.team_id);
     const { source_from, source_to, target_from } = req.body;
-    if (!familyId || !source_from || !source_to || !target_from) {
-      throw badRequest('family_id, source_from, source_to, target_from requis');
+    if (!teamId || !source_from || !source_to || !target_from) {
+      throw badRequest('team_id, source_from, source_to, target_from requis');
     }
-    await assertCanManageShifts(familyId, req.user.id);
+    await assertCanManageShifts(teamId, req.user.id);
 
-    const sourceShifts = await shiftModel.listByFamily({
-      familyId, from: source_from, to: source_to,
+    const sourceShifts = await shiftModel.listByTeam({
+      teamId, from: source_from, to: source_to,
     });
     const diffDays = Math.round(
       (new Date(target_from) - new Date(source_from)) / 86400000,
@@ -320,7 +320,7 @@ export const shiftsController = {
       const targetDate = d.toISOString().slice(0, 10);
       try {
         await shiftModel.create({
-          family_id: familyId,
+          team_id: teamId,
           user_id: s.user_id,
           date: targetDate,
           shift_type: s.shift_type,
@@ -340,18 +340,18 @@ export const shiftsController = {
   },
 
   /**
-   * DELETE /api/shifts/clear-week?family_id=X&from=Y&to=Z
-   * Supprime tous les shifts d'une plage de dates pour une famille.
+   * DELETE /api/shifts/clear-week?team_id=X&from=Y&to=Z
+   * Supprime tous les shifts d'une plage de dates pour une Ã©quipe.
    * Manager only.
    */
   async clearWeek(req, res) {
-    const familyId = Number(req.query.family_id);
+    const teamId = Number(req.query.team_id);
     const { from, to } = req.query;
-    if (!familyId || !from || !to) throw badRequest('family_id, from, to requis');
-    await assertCanManageShifts(familyId, req.user.id);
+    if (!teamId || !from || !to) throw badRequest('team_id, from, to requis');
+    await assertCanManageShifts(teamId, req.user.id);
     const [r] = await pool.query(
-      'DELETE FROM shifts WHERE family_id = ? AND date BETWEEN ? AND ?',
-      [familyId, from, to],
+      'DELETE FROM shifts WHERE team_id = ? AND date BETWEEN ? AND ?',
+      [teamId, from, to],
     );
     res.json({ deleted: r.affectedRows });
   },

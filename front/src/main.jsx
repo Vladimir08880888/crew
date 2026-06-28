@@ -6,7 +6,7 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
 import { ConfirmProvider } from './context/ConfirmContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
-import { FamilyProvider } from './context/FamilyContext.jsx';
+import { TeamProvider } from './context/TeamContext.jsx';
 import './i18n.js';                      // initialise i18next (FR/EN)
 import './styles/variables.css';
 import './styles/index.css';
@@ -19,9 +19,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ConfirmProvider>
           <BrowserRouter>
             <AuthProvider>
-              <FamilyProvider>
+              <TeamProvider>
                 <App />
-              </FamilyProvider>
+              </TeamProvider>
             </AuthProvider>
           </BrowserRouter>
         </ConfirmProvider>

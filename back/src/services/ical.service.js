@@ -115,12 +115,12 @@ function addShiftEvents(cal, shifts) {
   for (const s of shifts) {
     const { startDate, endDate } = shiftRange(s);
     const emoji = POSTE_EMOJI[s.poste] || '🍴';
-    const familySuffix = s.family_name ? ` — ${s.family_name}` : '';
+    const teamSuffix = s.team_name ? ` — ${s.team_name}` : '';
     const event = cal.createEvent({
       id: `shift-${s.id}@reminder`,
       start: startDate,
       end:   endDate,
-      summary: `${emoji} Service ${s.shift_type} — ${s.poste}${familySuffix}`,
+      summary: `${emoji} Service ${s.shift_type} — ${s.poste}${teamSuffix}`,
       description: [
         `Poste : ${s.poste}`,
         `Shift : ${s.shift_type}`,

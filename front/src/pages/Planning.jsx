@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { Plus, ChevronLeft, ChevronRight, Calendar, Trash2, Sparkles, Copy, Eraser, AlertTriangle, Move, CornerDownRight, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { shiftsApi } from '../api/shifts.api.js';
-import { familiesApi } from '../api/families.api.js';
+import { teamsApi } from '../api/teams.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useTeam } from '../context/TeamContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useConfirm } from '../context/ConfirmContext.jsx';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus.js';
@@ -51,7 +51,7 @@ function fmt(date) {
 
 export default function Planning() {
   const { user } = useAuth();
-  const { active } = useFamily();
+  const { active } = useTeam();
   const toast = useToast();
   const confirm = useConfirm();
   const { t } = useTranslation();
@@ -136,10 +136,10 @@ export default function Planning() {
     setLoading(true);
     try {
       const [shiftsData, fam, summaryData, settingsData] = await Promise.all([
-        shiftsApi.list({ family_id: active.id, from, to }),
-        familiesApi.detail(active.id),
-        isManager ? shiftsApi.summary({ family_id: active.id, from, to }) : Promise.resolve(null),
-        isManager ? familiesApi.getSettings(active.id) : Promise.resolve(null),
+        shiftsApi.list({ team_id: active.id, from, to }),
+        teamsApi.detail(active.id),
+        isManager ? shiftsApi.summary({ team_id: active.id, from, to }) : Promise.resolve(null),
+        isManager ? teamsApi.getSettings(active.id) : Promise.resolve(null),
       ]);
       setShifts(shiftsData);
       setMembers((fam.members || []).filter((m) => m.status === 'active'));
@@ -160,7 +160,7 @@ export default function Planning() {
       ? (mask & ~(1 << dow))   // était fermé → on ouvre
       : (mask | (1 << dow));    // était ouvert → on ferme
     try {
-      await familiesApi.updateSettings(active.id, { closed_days_mask: newMask });
+      await teamsApi.updateSettings(active.id, { closed_days_mask: newMask });
       setSettings({ ...settings, closed_days_mask: newMask });
       toast.success(t('planning.openDaysSaved', "Jours d'ouverture mis à jour"));
     } catch (err) {
@@ -182,7 +182,7 @@ export default function Planning() {
     if (!ok) return;
     try {
       const r = await shiftsApi.cloneWeek({
-        family_id: active.id,
+        team_id: active.id,
         source_from: iso(srcStart),
         source_to: iso(addDays(srcStart, 6)),
         target_from: from,
@@ -201,7 +201,7 @@ export default function Planning() {
     });
     if (!ok) return;
     try {
-      const r = await shiftsApi.clearWeek({ family_id: active.id, from, to });
+      const r = await shiftsApi.clearWeek({ team_id: active.id, from, to });
       toast.success(t('smartPlanner.clearedToast', { n: r.deleted }));
       load();
     } catch (err) { toast.fromError(err); }
@@ -235,7 +235,7 @@ export default function Planning() {
   function openCreate(dateStr, member) {
     if (!isManager) return;
     setEditing({
-      family_id: active.id,
+      team_id: active.id,
       user_id: member.user_id,
       memberName: `${member.first_name} ${member.last_name}`,
       date: dateStr,
@@ -249,7 +249,7 @@ export default function Planning() {
     const member = members.find((m) => m.user_id === shift.user_id);
     setEditing({
       id: shift.id,
-      family_id: active.id,
+      team_id: active.id,
       user_id: shift.user_id,
       memberName: `${shift.first_name} ${shift.last_name}`,
       date: shift.date.slice(0, 10),
@@ -701,7 +701,7 @@ export default function Planning() {
 
       {showSmart && (
         <SmartPlannerModal
-          familyId={active.id}
+          teamId={active.id}
           from={from}
           to={to}
           onClose={() => setShowSmart(false)}

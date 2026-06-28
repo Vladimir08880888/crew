@@ -37,7 +37,7 @@
 | 1.8 | Changement de mot de passe                     | `/profile` → ancien + nouveau                                                           | Succès, ré-auth requis                          | ☑      |
 | 1.9 | Déconnexion                                     | Bouton « Se déconnecter »                                                               | JWT supprimé, redirect login                    | ☑      |
 
-## 2. Gestion d'équipe (familles)
+## 2. Gestion d'équipe (Ã©quipes)
 
 | # | Scénario                                | Résultat attendu                                                | Statut |
 | - | --------------------------------------- | --------------------------------------------------------------- | ------ |
@@ -49,7 +49,7 @@
 | 2.6 | Modification poste/shift/heures        | Sauvegarde immédiate, reflétée sur le planning                  | ☐      |
 | 2.7 | Quitter une équipe                     | L'admin reçoit notification, équipier sort de la liste          | ☐      |
 | 2.8 | Suppression d'équipe par admin         | Cascade : shifts supprimés, équipiers détachés                  | ☐      |
-| 2.9 | Non-membre tente d'accéder à l'équipe  | 403 — middleware `requireFamilyMember`                          | ☑      |
+| 2.9 | Non-membre tente d'accéder à l'équipe  | 403 — middleware `requireTeamMember`                          | ☑      |
 
 ## 3. Planning et shifts
 

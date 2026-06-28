@@ -7,7 +7,7 @@ export function ShiftFormModal({ initial, onClose, onSave }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     id:         initial.id,
-    family_id:  initial.family_id,
+    team_id:  initial.team_id,
     user_id:    initial.user_id,
     date:       initial.date,
     shift_type: initial.shift_type,

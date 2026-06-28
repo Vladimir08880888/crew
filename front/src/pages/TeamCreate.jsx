@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { familiesApi } from '../api/families.api.js';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { teamsApi } from '../api/teams.api.js';
+import { useTeam } from '../context/TeamContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
-export default function FamilyCreate() {
+export default function TeamCreate() {
   const navigate = useNavigate();
-  const { reload } = useFamily();
+  const { reload } = useTeam();
   const toast = useToast();
   const { t } = useTranslation();
   const [name, setName] = useState('');
@@ -18,10 +18,10 @@ export default function FamilyCreate() {
     e.preventDefault();
     setBusy(true);
     try {
-      const family = await familiesApi.create({ name });
+      const team = await teamsApi.create({ name });
       await reload();
-      toast.success(t('familyCreate.createdToast', { name: family.name }));
-      navigate(`/teams/${family.id}`);
+      toast.success(t('teamCreate.createdToast', { name: team.name }));
+      navigate(`/teams/${team.id}`);
     } catch (err) {
       toast.fromError(err);
     } finally {
@@ -32,13 +32,13 @@ export default function FamilyCreate() {
   return (
     <>
       <div className="page-header">
-        <h1>{t('familyCreate.title')}</h1>
+        <h1>{t('teamCreate.title')}</h1>
       </div>
 
       <form className="card" onSubmit={submit} style={{ maxWidth: 480 }}>
-        <label>{t('familyCreate.nameLabel')}</label>
+        <label>{t('teamCreate.nameLabel')}</label>
         <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} autoFocus
-               placeholder={t('familyCreate.namePlaceholder')} />
+               placeholder={t('teamCreate.namePlaceholder')} />
 
         <div className="row" style={{ marginTop: '1rem' }}>
           <button type="submit" disabled={busy}><Save size={16} /> {t('common.create')}</button>

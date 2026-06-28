@@ -13,7 +13,7 @@
 -- et le solver scale la cible en conséquence. Le solver garantit aussi qu'un
 -- junior n'est jamais seul sur un poste (≥1 confirmé/chef requis sur place).
 
-ALTER TABLE families
+ALTER TABLE teams
   ADD COLUMN junior_coef    INT NOT NULL DEFAULT 50
        COMMENT 'Contribution d un junior (équipier débutant) à la couverture',
   ADD COLUMN confirme_coef  INT NOT NULL DEFAULT 100

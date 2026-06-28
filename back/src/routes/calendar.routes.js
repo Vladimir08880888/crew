@@ -10,5 +10,5 @@ router.get('/:token', asyncHandler(calendarController.export));
 // Alias .ics pour clients qui exigent l'extension (Apple Calendar, etc.)
 router.get('/:token/perso.ics', asyncHandler(calendarController.export));
 
-// Sub-feed: tâches d'une famille spécifique
-router.get('/:token/family/:familyId.ics', asyncHandler(calendarController.exportFamily));
+// Sub-feed: tâches d'une Ã©quipe spécifique
+router.get('/:token/team/:teamId.ics', asyncHandler(calendarController.exportTeam));

@@ -2,13 +2,13 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Home, Users, Sun, Moon, LogOut, BarChart3, Globe, CalendarDays, HelpCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useFamily } from '../../context/FamilyContext.jsx';
+import { useTeam } from '../../context/TeamContext.jsx';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import './Navbar.css';
 
 export function Navbar() {
   const { user, logout } = useAuth();
-  const { families, activeFamilyId, setActiveFamilyId } = useFamily();
+  const { teams, activeTeamId, setActiveTeamId } = useTeam();
   const { theme, toggle } = useTheme();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -20,11 +20,11 @@ export function Navbar() {
     navigate('/login');
   }
 
-  const activeFamilies = families.filter((f) => f.status === 'active');
-  const isManagerSomewhere = activeFamilies.some((f) => f.role === 'manager');
+  const activeTeams = teams.filter((f) => f.status === 'active');
+  const isManagerSomewhere = activeTeams.some((f) => f.role === 'manager');
   // Somme des demandes en attente sur les équipes que je manage.
   // Sert au badge « Équipes (N) » qui pousse le manager à approuver.
-  const totalPending = activeFamilies
+  const totalPending = activeTeams
     .filter((f) => f.role === 'manager')
     .reduce((sum, f) => sum + (Number(f.pending_count) || 0), 0);
 
@@ -69,15 +69,15 @@ export function Navbar() {
         </nav>
 
         <div className="navbar-right">
-          {activeFamilies.length > 0 && (
+          {activeTeams.length > 0 && (
             <select
-              className="family-switcher"
-              value={activeFamilyId || ''}
-              onChange={(e) => setActiveFamilyId(Number(e.target.value) || null)}
+              className="team-switcher"
+              value={activeTeamId || ''}
+              onChange={(e) => setActiveTeamId(Number(e.target.value) || null)}
               aria-label={t('nav.activeTeam', 'Équipe active')}
             >
               <option value="">— {t('nav.noTeam', 'Sans équipe')} —</option>
-              {activeFamilies.map((f) => (
+              {activeTeams.map((f) => (
                 <option key={f.id} value={f.id}>{f.name}</option>
               ))}
             </select>

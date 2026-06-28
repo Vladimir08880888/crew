@@ -1,6 +1,6 @@
 -- Migration 004 : champs métier pour le planning intelligent
 --
--- Étend la table family_members avec trois informations utilisées par
+-- Étend la table team_members avec trois informations utilisées par
 -- le solver d'auto-planning :
 --
 --   POSTE                — zone fonctionnelle (cuisine, salle, bar, plonge,
@@ -16,7 +16,7 @@
 --                          de cette cible sans la dépasser. NULL ou 0 =
 --                          exclu du solver (cas typique des cadres).
 
-ALTER TABLE family_members
+ALTER TABLE team_members
   ADD COLUMN poste ENUM('cuisine','salle','bar','plonge','administration')
        DEFAULT NULL
        COMMENT 'Poste fonctionnel (ex: cuisine, salle, bar)',
@@ -25,4 +25,4 @@ ALTER TABLE family_members
        COMMENT 'Shift habituel — préférence personnelle',
   ADD COLUMN weekly_hours_target INT DEFAULT NULL
        COMMENT 'Heures cibles par semaine (0 ou NULL = exclu de l auto-planning)',
-  ADD INDEX idx_family_members_poste (family_id, poste);
+  ADD INDEX idx_team_members_poste (team_id, poste);

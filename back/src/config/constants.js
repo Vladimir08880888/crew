@@ -14,19 +14,19 @@ export const FREQUENCIES = ['once', 'daily', 'weekly', 'monthly', 'yearly'];
 
 export const TASK_STATUSES = ['pending', 'pending_review', 'completed'];
 
-export const FAMILY_ROLES = ['manager', 'equipier'];
+export const TEAM_ROLES = ['manager', 'equipier'];
 
 export const MEMBER_STATUSES = ['active', 'pending'];
 
 // ──────────────────────────────────────────────────────────────────────
 // Extensions « restauration » — concepts métier introduits par la
-// migration 007. Toujours optionnels (NULL = contexte familial).
+// migration 007. Toujours optionnels (NULL = contexte d'équipe).
 // ──────────────────────────────────────────────────────────────────────
 export const POSTES = ['cuisine', 'salle', 'bar', 'plonge', 'administration'];
 export const SHIFTS = ['matin', 'midi', 'coupure', 'soir', 'nuit'];
 
 // Niveaux d'expérience (pondération de la couverture par équipier).
-// Le coefficient effectif est lu dans family.settings — ces valeurs ne
+// Le coefficient effectif est lu dans team.settings — ces valeurs ne
 // servent qu'à valider l'enum côté API.
 export const LEVELS = ['junior', 'confirme', 'chef'];
 

@@ -58,10 +58,10 @@ function MemberHoursGrid({ members }) {
   );
 }
 
-export default function ManagerDashboard({ data, user, family }) {
+export default function ManagerDashboard({ data, user, team }) {
   const { t } = useTranslation();
-  const activeFamily = data.families?.find((f) => f.id === family.id);
-  const breakdown = activeFamily?.breakdown || [];
+  const activeTeam = data.teams?.find((f) => f.id === team.id);
+  const breakdown = activeTeam?.breakdown || [];
 
   const totalPlanned  = breakdown.reduce((acc, m) => acc + (m.hours_planned || 0), 0);
   const totalTarget   = breakdown.reduce((acc, m) => acc + (m.weekly_hours_target || 0), 0);
@@ -71,7 +71,7 @@ export default function ManagerDashboard({ data, user, family }) {
     <>
       <div className="page-header">
         <div>
-          <h1>👥 {family.name}</h1>
+          <h1>👥 {team.name}</h1>
           <p className="muted">{t('dashboard.managerGreeting', { name: user.first_name })}</p>
         </div>
         <Link to="/planning">

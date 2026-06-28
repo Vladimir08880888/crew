@@ -9,11 +9,11 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Stats from './pages/Stats.jsx';
-import Families from './pages/Families.jsx';
-import FamilyDetail from './pages/FamilyDetail.jsx';
-import FamilyCreate from './pages/FamilyCreate.jsx';
-import FamilyJoin from './pages/FamilyJoin.jsx';
-import FamilySettings from './pages/FamilySettings.jsx';
+import Teams from './pages/Teams.jsx';
+import TeamDetail from './pages/TeamDetail.jsx';
+import TeamCreate from './pages/TeamCreate.jsx';
+import TeamJoin from './pages/TeamJoin.jsx';
+import TeamSettings from './pages/TeamSettings.jsx';
 import Profile from './pages/Profile.jsx';
 import Planning from './pages/Planning.jsx';
 import ManagerHelp from './pages/ManagerHelp.jsx';
@@ -37,14 +37,14 @@ export default function App() {
             aux managers ET aux utilisateurs sans équipe (nouvel inscrit
             qui doit rejoindre via code ou créer son équipe). */}
         <Route path="/dashboard" element={<HideFromEquipier><Dashboard /></HideFromEquipier>} />
-        <Route path="/teams/new" element={<HideFromEquipier><FamilyCreate /></HideFromEquipier>} />
-        <Route path="/teams/join" element={<HideFromEquipier><FamilyJoin /></HideFromEquipier>} />
+        <Route path="/teams/new" element={<HideFromEquipier><TeamCreate /></HideFromEquipier>} />
+        <Route path="/teams/join" element={<HideFromEquipier><TeamJoin /></HideFromEquipier>} />
 
         {/* Pages strictement réservées aux managers d'une équipe */}
         <Route path="/stats"     element={<ManagerOnly><Stats /></ManagerOnly>} />
-        <Route path="/teams"     element={<ManagerOnly><Families /></ManagerOnly>} />
-        <Route path="/teams/:id" element={<ManagerOnly><FamilyDetail /></ManagerOnly>} />
-        <Route path="/teams/:id/settings" element={<ManagerOnly><FamilySettings /></ManagerOnly>} />
+        <Route path="/teams"     element={<ManagerOnly><Teams /></ManagerOnly>} />
+        <Route path="/teams/:id" element={<ManagerOnly><TeamDetail /></ManagerOnly>} />
+        <Route path="/teams/:id/settings" element={<ManagerOnly><TeamSettings /></ManagerOnly>} />
         <Route path="/help"      element={<ManagerOnly><ManagerHelp /></ManagerOnly>} />
       </Route>
 

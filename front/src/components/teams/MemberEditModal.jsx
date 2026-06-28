@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Save, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { POSTES, SHIFTS, FAMILY_ROLES } from '../../utils/enums.js';
+import { POSTES, SHIFTS, TEAM_ROLES } from '../../utils/enums.js';
 
 /**
  * Modal d'édition d'un membre d'équipe.
@@ -190,7 +190,7 @@ export function MemberEditModal({ member, onClose, onSave, canChangeRole = false
               <legend>3. {t('memberEdit.stepPermissions')}</legend>
               <label>{t('memberEdit.role')}</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                {FAMILY_ROLES.map((r) => (
+                {TEAM_ROLES.map((r) => (
                   <option key={r} value={r}>{t(`roles.${r}`)}</option>
                 ))}
               </select>

@@ -4,7 +4,7 @@ import {
   HelpCircle, Users, Layers, Sparkles, Activity, ShieldCheck,
   AlertTriangle, Move, Calendar as CalendarIcon, Euro, FunctionSquare,
 } from 'lucide-react';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useTeam } from '../context/TeamContext.jsx';
 
 function Section({ icon: Icon, title, children }) {
   return (
@@ -22,13 +22,13 @@ function Section({ icon: Icon, title, children }) {
 
 export default function ManagerHelp() {
   const { t } = useTranslation();
-  const { families, loading } = useFamily();
+  const { teams, loading } = useTeam();
 
   if (loading) {
     return <div className="card"><p>{t('common.loading')}</p></div>;
   }
 
-  const isManagerSomewhere = families.some(
+  const isManagerSomewhere = teams.some(
     (f) => f.role === 'manager' && f.status === 'active',
   );
   if (!isManagerSomewhere) {

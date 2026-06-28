@@ -32,7 +32,7 @@ erDiagram
     }
 
     FAMILY_MEMBERS {
-        INT family_id PK,FK
+        INT team_id PK,FK
         INT user_id PK,FK
         ENUM role "manager / equipier"
         BOOLEAN is_admin
@@ -45,7 +45,7 @@ erDiagram
 
     SHIFTS {
         INT id PK
-        INT family_id FK
+        INT team_id FK
         INT user_id FK
         DATE date
         ENUM shift_type "matin / midi / coupure / soir / nuit"
@@ -64,11 +64,11 @@ erDiagram
 ### `users`
 Compte applicatif. Une seule identité par adresse email. Le `calendar_token` est un secret long généré aléatoirement à l'inscription : il sert d'URL personnelle pour le flux iCal sans nécessiter d'authentification supplémentaire.
 
-### `families`
-Une « famille » au sens technique = une équipe au sens métier. Chaque équipe possède un `invite_code` à 6 caractères que le manager partage avec ses équipiers. Le `created_by` désigne le créateur (par défaut admin).
+### `teams`
+Une « Ã©quipe » au sens technique = une équipe au sens métier. Chaque équipe possède un `invite_code` à 6 caractères que le manager partage avec ses équipiers. Le `created_by` désigne le créateur (par défaut admin).
 
-### `family_members`
-Table d'association **N-N** entre `users` et `families`, enrichie des champs métier utilisés par le solver d'auto-planning :
+### `team_members`
+Table d'association **N-N** entre `users` et `teams`, enrichie des champs métier utilisés par le solver d'auto-planning :
 
 - `role` (manager/equipier) — droit d'administration du planning : `manager` gère l'équipe et les services, `equipier` consulte les siens.
 - `is_admin` — un membre peut être promu administrateur.
@@ -90,9 +90,9 @@ Cœur du planning. Chaque ligne = un créneau planifié pour un équipier donné
 | ------------------------------------------ | ------------------------------------------------- |
 | Email unique                               | `UNIQUE` sur `users.email`                        |
 | Token iCal unique                          | `UNIQUE` sur `users.calendar_token`               |
-| Code d'invitation unique                   | `UNIQUE` sur `families.invite_code`               |
+| Code d'invitation unique                   | `UNIQUE` sur `teams.invite_code`               |
 | Pas de double-planning                     | `UNIQUE (user_id, date, shift_type)` sur `shifts` |
-| Suppression d'équipe ⇒ cascade des shifts  | `FK family_id ON DELETE CASCADE`                  |
+| Suppression d'équipe ⇒ cascade des shifts  | `FK team_id ON DELETE CASCADE`                  |
 | Suppression d'utilisateur ⇒ cascade        | `FK user_id ON DELETE CASCADE`                    |
 | Créateur de l'équipe protégé               | `FK created_by ON DELETE RESTRICT`                |
 | Historisation du créateur d'un shift       | `FK created_by ON DELETE SET NULL`                |
@@ -101,19 +101,19 @@ Cœur du planning. Chaque ligne = un créneau planifié pour un équipier donné
 
 - `users(email)` — recherche par email à la connexion.
 - `users(calendar_token)` — résolution rapide du token iCal.
-- `families(invite_code)` — vérification du code à l'adhésion.
-- `family_members(user_id)` — liste des équipes d'un utilisateur.
-- `family_members(family_id, poste)` — solver : équipiers disponibles par poste.
+- `teams(invite_code)` — vérification du code à l'adhésion.
+- `team_members(user_id)` — liste des équipes d'un utilisateur.
+- `team_members(team_id, poste)` — solver : équipiers disponibles par poste.
 - `shifts(user_id, date)` — agenda personnel.
-- `shifts(family_id, date)` — grille hebdomadaire d'équipe.
+- `shifts(team_id, date)` — grille hebdomadaire d'équipe.
 
 ## Versionnage du schéma
 
 Les migrations sont appliquées séquentiellement par `npm run migrate` :
 
 1. `001_users.sql` — comptes
-2. `002_families.sql` — équipes
-3. `003_family_members.sql` — association + rôles
+2. `002_teams.sql` — équipes
+3. `003_team_members.sql` — association + rôles
 4. `004_member_planning_fields.sql` — champs métier solver
 5. `005_shifts.sql` — créneaux planifiés
 

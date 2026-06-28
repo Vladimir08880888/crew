@@ -1,13 +1,13 @@
-import { FAMILY_ROLES, POSTES, SHIFTS, LEVELS } from '../config/constants.js';
+import { TEAM_ROLES, POSTES, SHIFTS, LEVELS } from '../config/constants.js';
 import { badRequest } from '../utils/httpError.js';
 
-export function validateCreateFamily(body) {
+export function validateCreateTeam(body) {
   const name = body?.name?.trim();
   if (!name || name.length > 100) throw badRequest('Nom d\'équipe invalide');
   return { name };
 }
 
-export function validateJoinFamily(body) {
+export function validateJoinTeam(body) {
   const code = body?.invite_code?.trim();
   if (!code) throw badRequest('Code d\'invitation requis');
   return { invite_code: code };
@@ -17,7 +17,7 @@ export function validateMemberUpdate(body) {
   const errors = {};
   const out = {};
   if (body.role !== undefined) {
-    if (!FAMILY_ROLES.includes(body.role)) errors.role = 'Rôle invalide';
+    if (!TEAM_ROLES.includes(body.role)) errors.role = 'Rôle invalide';
     else out.role = body.role;
   }
   if (body.is_admin !== undefined) {
@@ -85,7 +85,7 @@ const SETTING_FIELDS = [
   'junior_rate', 'confirme_rate', 'chef_rate',
 ];
 
-export function validateFamilySettings(body) {
+export function validateTeamSettings(body) {
   const errors = {};
   const out = {};
   for (const f of SETTING_FIELDS) {

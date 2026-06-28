@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useFamily } from '../../context/FamilyContext.jsx';
+import { useTeam } from '../../context/TeamContext.jsx';
 
 /**
  * Restreint l'accès aux managers (d'au moins une équipe active).
@@ -7,11 +7,11 @@ import { useFamily } from '../../context/FamilyContext.jsx';
  * son planning. Évite d'avoir à dupliquer la garde dans chaque page.
  */
 export function ManagerOnly({ children }) {
-  const { families, loading } = useFamily();
+  const { teams, loading } = useTeam();
   if (loading) {
     return <div className="card"><p>Chargement…</p></div>;
   }
-  const isManagerSomewhere = families.some(
+  const isManagerSomewhere = teams.some(
     (f) => f.role === 'manager' && f.status === 'active',
   );
   if (!isManagerSomewhere) {

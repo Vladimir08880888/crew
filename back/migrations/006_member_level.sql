@@ -10,7 +10,7 @@
 -- Cela permet par exemple « 1 confirmé suffit », « 2 juniors couvrent
 -- aussi », « 1 chef + 1 junior = 200 » (sur-couverture).
 
-ALTER TABLE family_members
+ALTER TABLE team_members
   ADD COLUMN level ENUM('junior','confirme','chef')
        NOT NULL DEFAULT 'confirme'
        COMMENT 'Niveau d expérience (pondère la couverture journalière)';

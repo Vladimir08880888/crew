@@ -4,7 +4,7 @@ import { Users, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { statsApi } from '../api/stats.api.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useFamily } from '../context/FamilyContext.jsx';
+import { useTeam } from '../context/TeamContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus.js';
 import ManagerDashboard from './ManagerDashboard.jsx';
@@ -12,7 +12,7 @@ import EquipierDashboard from './EquipierDashboard.jsx';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { active, families, reload } = useFamily();
+  const { active, teams, reload } = useTeam();
   const toast = useToast();
   const { t } = useTranslation();
   const [data, setData] = useState(null);
@@ -34,7 +34,7 @@ export default function Dashboard() {
     // Cas particulier : l'utilisateur a déjà saisi un code mais
     // attend l'approbation du manager. On affiche un état explicite
     // au lieu de l'état vide « bienvenue ».
-    const pending = families.filter((f) => f.status === 'pending');
+    const pending = teams.filter((f) => f.status === 'pending');
     if (pending.length > 0) {
       return (
         <div className="empty-state">
@@ -70,6 +70,6 @@ export default function Dashboard() {
   }
 
   return active.role === 'manager'
-    ? <ManagerDashboard data={data} user={user} family={active} />
-    : <EquipierDashboard data={data} user={user} family={active} />;
+    ? <ManagerDashboard data={data} user={user} team={active} />
+    : <EquipierDashboard data={data} user={user} team={active} />;
 }

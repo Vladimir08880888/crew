@@ -8,8 +8,8 @@
 -- Cette colonne `coef_override` permet au manager de surcharger la
 -- valeur par défaut du niveau pour un équipier précis. NULL = utiliser
 -- le coefficient défini par le niveau (junior_coef / confirme_coef /
--- chef_coef de la table families).
+-- chef_coef de la table teams).
 
-ALTER TABLE family_members
+ALTER TABLE team_members
   ADD COLUMN coef_override INT DEFAULT NULL
        COMMENT 'Coefficient personnel (override le coef du niveau si non NULL)';

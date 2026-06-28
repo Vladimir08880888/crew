@@ -64,10 +64,10 @@ async function safe(name, fn) {
   }
 }
 
-async function getFamilyId(page) {
+async function getTeamId(page) {
   return await page.evaluate(async (api) => {
     const token = localStorage.getItem('reminder_token');
-    const r = await fetch(`${api}/families`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await fetch(`${api}/teams`, { headers: { Authorization: `Bearer ${token}` } });
     const j = await r.json();
     return j[0]?.id;
   }, API);
@@ -124,7 +124,7 @@ await safe('Sophie-suite', async () => {
   });
 
   await safe('05-team-detail', async () => {
-    const id = await getFamilyId(page);
+    const id = await getTeamId(page);
     await page.goto(`${APP}/teams/${id}`);
     await page.waitForSelector('.member-list', { timeout: 30000 });
     await page.waitForTimeout(1200);
@@ -132,7 +132,7 @@ await safe('Sophie-suite', async () => {
   });
 
   await safe('06-member-setup-wizard', async () => {
-    const id = await getFamilyId(page);
+    const id = await getTeamId(page);
     await page.goto(`${APP}/teams/${id}`);
     await page.waitForSelector('.member-list', { timeout: 30000 });
     // Open edit modal on the first non-self member
@@ -211,13 +211,13 @@ await safe('Julien-suite', async () => {
 
   await safe('13-teams-list', async () => {
     await page.goto(`${APP}/teams`);
-    await page.waitForSelector('.family-list', { timeout: 30000 });
+    await page.waitForSelector('.team-list', { timeout: 30000 });
     await page.waitForTimeout(800);
     await shoot(page, '13-teams-list.png');
   });
 
   await safe('14-reset-password-modal', async () => {
-    const id = await getFamilyId(page);
+    const id = await getTeamId(page);
     await page.goto(`${APP}/teams/${id}`);
     await page.waitForSelector('.member-list', { timeout: 30000 });
     const btn = page.locator('button[title*="éinitialiser"], button[title*="Reset"]').first();

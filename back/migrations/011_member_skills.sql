@@ -21,6 +21,6 @@
 -- un membre polyvalent comblera un slot non-primaire seulement si
 -- aucun membre primaire n'est éligible (heures, repos, etc.).
 
-ALTER TABLE family_members
+ALTER TABLE team_members
   ADD COLUMN skills_mask INT DEFAULT NULL
        COMMENT 'Bitmask postes maitrisés (bit i = poste i de POSTES). NULL = défaut basé sur poste.';

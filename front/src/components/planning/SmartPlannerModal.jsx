@@ -21,7 +21,7 @@ function dateRange(from, to) {
  *   3. Montre l'impact en heures par membre
  *   4. Bouton "Appliquer" qui crée les shifts en base
  */
-export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
+export function SmartPlannerModal({ teamId, from, to, onClose, onApplied }) {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
@@ -54,7 +54,7 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
   useEffect(() => {
     setLoading(true);
     shiftsApi.generatePlan({
-      family_id: familyId, from, to,
+      team_id: teamId, from, to,
       capacityByDateAndService: perCell,
       // En mode « repartir vierge » : on demande au solver d'ignorer
       // les shifts existants pour construire un plan optimal sans
@@ -65,16 +65,16 @@ export function SmartPlannerModal({ familyId, from, to, onClose, onApplied }) {
       .then(setData)
       .catch((err) => { toast.fromError(err); onClose(); })
       .finally(() => setLoading(false));
-  }, [familyId, from, to, perCell, clearFirst]);
+  }, [teamId, from, to, perCell, clearFirst]);
 
   async function apply() {
     setApplying(true);
     try {
       if (clearFirst) {
-        await shiftsApi.clearWeek({ family_id: familyId, from, to });
+        await shiftsApi.clearWeek({ team_id: teamId, from, to });
       }
       const result = await shiftsApi.applyPlan({
-        family_id: familyId,
+        team_id: teamId,
         shifts: data.suggested,
       });
       toast.success(t('smartPlanner.appliedToast', { n: result.created }));

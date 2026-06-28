@@ -105,7 +105,7 @@
     "equipierGreeting": "👋 Hi {{name}}!",
     "equipierIntro": "You're part of the team"
   },
-  "families": {
+  "teams": {
     "title": "My teams",
     "create": "Create",
     "join": "Join",
@@ -121,20 +121,20 @@
     "emptyHint": "You don't manage any team. If you're a restaurant owner, sign up again choosing « restaurant owner » at registration.",
     "statusPending": "Pending"
   },
-  "familyCreate": {
+  "teamCreate": {
     "title": "Create a team",
     "nameLabel": "Team name",
     "namePlaceholder": "e.g. Bistrot du Vieux Port",
     "createdToast": "Team « {{name}} » created"
   },
-  "familyJoin": {
+  "teamJoin": {
     "title": "Join a team",
     "codeLabel": "Invite code",
-    "codePlaceholder": "FAM-XXXX-XXXX",
+    "codePlaceholder": "CREW-XXXX-XXXX",
     "codeHint": "Ask a team manager for this code.",
     "submit": "Request to join"
   },
-  "familyDetail": {
+  "teamDetail": {
     "renameButton": "Rename",
     "leaveButton": "Leave",
     "settingsButton": "Settings",
@@ -416,7 +416,7 @@
     },
     "alerts": {
       "title": "Alerts (banner above the schedule)",
-      "lead": "Three alert families may appear:",
+      "lead": "Three alert teams may appear:",
       "hcrLabel": "HCR non-compliance",
       "hcr": "a member exceeds 48h/week or a daily cap, or is missing their 2 rest days. Blocking for validation.",
       "fatigueLabel": "Overload / fatigue",

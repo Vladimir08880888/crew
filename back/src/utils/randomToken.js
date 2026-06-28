@@ -6,5 +6,5 @@ export function randomHex(bytes = 32) {
 
 export function randomInviteCode() {
   const part = () => crypto.randomBytes(2).toString('hex').toUpperCase();
-  return `FAM-${part()}-${part()}`;
+  return `CREW-${part()}-${part()}`;
 }

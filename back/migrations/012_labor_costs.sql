@@ -15,7 +15,7 @@
 -- Crew stocke les taux en CENTIMES d'euro par heure (entiers) pour
 -- éviter les imprécisions flottantes côté SQL.
 
-ALTER TABLE families
+ALTER TABLE teams
   ADD COLUMN junior_rate    INT NOT NULL DEFAULT 1200
        COMMENT 'Taux horaire Junior (apprenti/débutant) en centimes/€ (HCR niveau I-II)',
   ADD COLUMN confirme_rate  INT NOT NULL DEFAULT 1400
@@ -23,6 +23,6 @@ ALTER TABLE families
   ADD COLUMN chef_rate      INT NOT NULL DEFAULT 1900
        COMMENT 'Taux horaire Chef (référent) en centimes/€ (HCR niveau IV-V)';
 
-ALTER TABLE family_members
+ALTER TABLE team_members
   ADD COLUMN rate_override  INT DEFAULT NULL
        COMMENT 'Taux horaire personnel en centimes/€ (override du taux du niveau)';

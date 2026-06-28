@@ -3,13 +3,13 @@
  *
  * Expose un flux iCal (RFC 5545) pour chaque utilisateur :
  *   - /api/calendar/:token            → tous les shifts de l'utilisateur
- *   - /api/calendar/:token/team/:familyId.ics → shifts d'une équipe
+ *   - /api/calendar/:token/team/:teamId.ics → shifts d'une équipe
  *
  * Auth : pas de JWT, c'est le calendar_token (URL) qui identifie
  * l'utilisateur. Endpoint en lecture seule.
  */
 import { userModel } from '../models/user.model.js';
-import { familyModel } from '../models/family.model.js';
+import { teamModel } from '../models/team.model.js';
 import { shiftModel } from '../models/shift.model.js';
 import { buildIcal } from '../services/ical.service.js';
 import { notFound, forbidden } from '../utils/httpError.js';
@@ -46,19 +46,19 @@ export const calendarController = {
   /**
    * Sub-feed — shifts d'une équipe spécifique uniquement.
    */
-  async exportFamily(req, res) {
+  async exportTeam(req, res) {
     const user = await userFromToken(req.params.token);
-    const familyId = Number(req.params.familyId);
-    const family = await familyModel.findById(familyId);
-    if (!family) throw notFound('Équipe introuvable');
+    const teamId = Number(req.params.teamId);
+    const team = await teamModel.findById(teamId);
+    if (!team) throw notFound('Équipe introuvable');
 
-    const isMember = await familyModel.listForUser(user.id);
-    if (!isMember.find((f) => f.id === familyId && f.status === 'active')) {
+    const isMember = await teamModel.listForUser(user.id);
+    if (!isMember.find((f) => f.id === teamId && f.status === 'active')) {
       throw forbidden("Pas membre de cette équipe");
     }
 
-    const shifts = await shiftModel.listByFamily({
-      familyId,
+    const shifts = await shiftModel.listByTeam({
+      teamId,
       from: new Date().toISOString().slice(0, 10),
       to:   new Date(Date.now() + 30 * 86400_000).toISOString().slice(0, 10),
       userId: user.id,
@@ -66,11 +66,11 @@ export const calendarController = {
 
     const ics = buildIcal({
       ownerName: `${user.first_name} ${user.last_name}`,
-      calendarName: `Crew — ${family.name}`,
+      calendarName: `Crew — ${team.name}`,
       calendarColor: '#c3553a',
       tasks: [],
       shifts,
     });
-    sendIcs(res, ics, `crew-${family.name.replace(/\s+/g, '-')}.ics`);
+    sendIcs(res, ics, `crew-${team.name.replace(/\s+/g, '-')}.ics`);
   },
 };

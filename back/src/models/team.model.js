@@ -1,21 +1,21 @@
 import { pool } from '../db/pool.js';
 
-export const familyModel = {
+export const teamModel = {
   async create({ name, invite_code, created_by }) {
     const [result] = await pool.query(
-      'INSERT INTO families (name, invite_code, created_by) VALUES (?, ?, ?)',
+      'INSERT INTO teams (name, invite_code, created_by) VALUES (?, ?, ?)',
       [name, invite_code, created_by]
     );
     return result.insertId;
   },
 
   async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM families WHERE id = ?', [id]);
+    const [rows] = await pool.query('SELECT * FROM teams WHERE id = ?', [id]);
     return rows[0] || null;
   },
 
   async findByInviteCode(code) {
-    const [rows] = await pool.query('SELECT * FROM families WHERE invite_code = ?', [code]);
+    const [rows] = await pool.query('SELECT * FROM teams WHERE invite_code = ?', [code]);
     return rows[0] || null;
   },
 
@@ -27,11 +27,11 @@ export const familyModel = {
     const [rows] = await pool.query(
       `SELECT f.*, fm.role, fm.is_admin, fm.status,
               COALESCE((
-                SELECT COUNT(*) FROM family_members
-                WHERE family_id = f.id AND status = 'pending'
+                SELECT COUNT(*) FROM team_members
+                WHERE team_id = f.id AND status = 'pending'
               ), 0) AS pending_count
-       FROM families f
-       JOIN family_members fm ON fm.family_id = f.id
+       FROM teams f
+       JOIN team_members fm ON fm.team_id = f.id
        WHERE fm.user_id = ?
        ORDER BY f.created_at DESC`,
       [userId]
@@ -40,15 +40,15 @@ export const familyModel = {
   },
 
   async regenerateCode(id, newCode) {
-    await pool.query('UPDATE families SET invite_code = ? WHERE id = ?', [newCode, id]);
+    await pool.query('UPDATE teams SET invite_code = ? WHERE id = ?', [newCode, id]);
   },
 
   async rename(id, name) {
-    await pool.query('UPDATE families SET name = ? WHERE id = ?', [name, id]);
+    await pool.query('UPDATE teams SET name = ? WHERE id = ?', [name, id]);
   },
 
   async remove(id) {
-    await pool.query('DELETE FROM families WHERE id = ?', [id]);
+    await pool.query('DELETE FROM teams WHERE id = ?', [id]);
   },
 
   async getSettings(id) {
@@ -58,7 +58,7 @@ export const familyModel = {
               soir_cuisine_ideal, soir_salle_ideal,
               closed_days_mask,
               junior_rate, confirme_rate, chef_rate
-       FROM families WHERE id = ?`,
+       FROM teams WHERE id = ?`,
       [id]
     );
     return rows[0] || null;
@@ -68,6 +68,6 @@ export const familyModel = {
     const keys = Object.keys(fields);
     if (!keys.length) return;
     const set = keys.map((k) => `${k} = ?`).join(', ');
-    await pool.query(`UPDATE families SET ${set} WHERE id = ?`, [...Object.values(fields), id]);
+    await pool.query(`UPDATE teams SET ${set} WHERE id = ?`, [...Object.values(fields), id]);
   },
 };
