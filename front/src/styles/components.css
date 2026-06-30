@@ -1,24 +1,24 @@
 /* ============ Logo de marque (global) ============ */
-/* 4 barres colorées, repris de la présentation. */
+/* 4 barres colorées — proportions reprisees du PPTX : ratio ~1:10 (32×316 EMU) */
 .brand-logo {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  height: 22px;
+  height: 38px;
 }
 .brand-logo i {
   display: block;
-  width: 5px;
-  height: 22px;
-  border-radius: 3px;
+  width: 4px;
+  height: 38px;
+  border-radius: 99px;
 }
 .brand-logo i:nth-child(1) { background: var(--c-teal); }
 .brand-logo i:nth-child(2) { background: var(--c-amber); }
 .brand-logo i:nth-child(3) { background: var(--c-coral); }
 .brand-logo i:nth-child(4) { background: var(--c-green); }
 
-.brand-logo-lg { height: 36px; gap: 5px; }
-.brand-logo-lg i { width: 7px; height: 36px; border-radius: 4px; }
+.brand-logo-lg { height: 64px; gap: 5px; }
+.brand-logo-lg i { width: 7px; height: 64px; border-radius: 99px; }
 
 .brand-block {
   display: flex;
