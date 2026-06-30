@@ -83,7 +83,7 @@ async function run() {
     await addMember(team, julien, 'manager', true,  'administration', null,    0,  'chef');
     // Managers : heures cibles 42h
     await addMember(team, sophie, 'manager', false, 'salle',          'midi', 42, 'chef');
-    await addMember(team, ahmed,  'manager', false, 'cuisine',        'midi', 42, 'chef');
+    await addMember(team, ahmed,  'equipier', false, 'cuisine',        'midi', 42, 'chef');
     // Équipiers temps plein : 35h
     await addMember(team, elena,  'equipier',  false, 'salle',          'midi', 35, 'confirme');
     await addMember(team, lucas,  'equipier',  false, 'salle',          'soir', 35, 'confirme');
