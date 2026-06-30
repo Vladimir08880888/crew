@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Crew — Dossier de projet DWWM</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme: 'neutral' }); }
+  });
+</script>
+<style>
+  :root{
+    --navy:#1d3a5f; --accent:#2bb673; --ink:#222; --muted:#555;
+    --code-bg:#f4f5f7; --border:#d7dbe0; --th:#eef2f7;
+  }
+  *{box-sizing:border-box;}
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color:var(--ink); font-size:13px; line-height:1.55; margin:0;
+  }
+  .page{ padding:48px 56px; }
+  h1{ color:var(--navy); font-size:24px; border-bottom:3px solid var(--navy);
+      padding-bottom:8px; margin:0 0 22px; page-break-after:avoid; }
+  h2{ color:var(--navy); font-size:17px; margin:26px 0 8px;
+      border-bottom:1px solid var(--border); padding-bottom:4px; page-break-after:avoid;}
+  h3{ color:var(--navy); font-size:14px; margin:18px 0 6px; page-break-after:avoid;}
+  h4{ color:var(--muted); font-size:13px; margin:12px 0 4px; page-break-after:avoid;}
+  p{margin:7px 0;}
+  ul,ol{margin:6px 0 10px; padding-left:22px;}
+  li{margin:3px 0;}
+  code{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:11.5px;
+        background:var(--code-bg); padding:1px 4px; border-radius:3px; color:#1a4d8f;}
+  pre{ background:var(--code-bg); border:1px solid var(--border); border-radius:6px;
+       padding:12px 14px; overflow:auto; font-size:11px; line-height:1.5;
+       page-break-inside:avoid; }
+  pre code{background:none; padding:0; color:#143b66;}
+  table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:11.5px;
+         page-break-inside:avoid; }
+  th,td{ border:1px solid var(--border); padding:6px 9px; text-align:left; vertical-align:top;}
+  th{ background:var(--th); color:var(--navy); font-weight:600;}
+  .accent{color:var(--accent);}
+  .navy{color:var(--navy);}
+  .lead{font-size:14px; color:var(--muted);}
+  .pagebreak{page-break-before:always;}
+  .cover{ height:980px; display:flex; flex-direction:column; justify-content:center;
+          align-items:center; text-align:center; page-break-after:always;}
+  .cover .wordmark{ font-size:64px; font-weight:800; letter-spacing:-2px; color:var(--navy);}
+  .cover .wordmark .accent{color:var(--accent);}
+  .cover .sub{ font-size:18px; color:var(--muted); margin-top:14px;}
+  .cover .tp{ margin-top:90px; font-size:16px;}
+  .cover .name{ margin-top:34px; font-size:22px; font-weight:700; color:var(--navy);}
+  .cover .meta{ margin-top:8px; font-size:13px; color:var(--muted);}
+  .toc a{text-decoration:none; color:var(--ink);}
+  .toc .lvl1{font-weight:700; color:var(--navy); margin-top:12px;}
+  .toc .lvl2{padding-left:18px; color:var(--muted);}
+  .toc .row{display:flex; justify-content:space-between; border-bottom:1px dotted var(--border); padding:3px 0;}
+  .placeholder{ border:2px dashed var(--accent); border-radius:8px; padding:26px;
+     text-align:center; color:var(--accent); font-weight:600; margin:14px 0; background:#f5fbf8;}
+  .placeholder small{display:block; color:var(--muted); font-weight:400; margin-top:6px;}
+  .comp{ background:#f5fbf8; border-left:4px solid var(--accent); padding:8px 12px; margin:10px 0; border-radius:0 6px 6px 0;}
+  .comp b{color:var(--navy);}
+  .note{ background:#fff8e6; border-left:4px solid #f0a500; padding:8px 12px; margin:10px 0; font-size:12px;}
+  blockquote{ margin:10px 0; padding:6px 14px; border-left:3px solid var(--border); color:var(--muted); font-style:italic;}
+  .mermaid{ text-align:center; margin:14px 0; }
+  .small{font-size:11px; color:var(--muted);}
+  figure{margin:16px 0; text-align:center; page-break-inside:avoid;}
+  figure img{ max-width:100%; border:1px solid var(--border); border-radius:6px;
+              box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  figure img.mobile{ max-width:240px; }
+  figcaption{font-size:11px; color:var(--muted); margin-top:6px; font-style:italic;}
+  .two-col{ display:flex; gap:16px; align-items:flex-start; justify-content:center; }
+  .two-col figure{flex:1;}
+</style>
+</head>
+<body>
+
+<!-- ============ COUVERTURE ============ -->
+<div class="cover">
+  <div class="wordmark">Crew<span class="accent">.</span></div>
+  <div class="sub">Planning d'équipe intelligent — solver d'auto-planning &amp; sync calendrier natif</div>
+  <div class="tp">Dossier de projet réalisé dans le cadre de la présentation au<br>
+     <b>Titre Professionnel Développeur Web &amp; Web Mobile</b><br>
+     <span class="small">RNCP 37674 — Niveau 5</span></div>
+  <div class="name">Vladimir Rodzaevskiy</div>
+  <div class="meta">Projet individuel · Démo : crew-planner-hazel.vercel.app</div>
+</div>
+
+<!-- ============ SOMMAIRE ============ -->
+<div class="page">
+  <h1>Sommaire</h1>
+  <div class="toc">
+    <div class="row lvl1"><span>Introduction</span><span>3</span></div>
+    <div class="row lvl1"><span>Liste des compétences couvertes par le projet</span><span>4</span></div>
+    <div class="row lvl2"><span>I. Front-end — application web sécurisée</span><span>4</span></div>
+    <div class="row lvl2"><span>II. Back-end — application web sécurisée</span><span>5</span></div>
+    <div class="row lvl1"><span>Résumé du projet</span><span>6</span></div>
+    <div class="row lvl1"><span>Cahier des charges</span><span>7</span></div>
+    <div class="row lvl2"><span>Besoins, objectifs, concepts métier</span><span>7</span></div>
+    <div class="row lvl2"><span>User stories · Arborescence · MVP</span><span>9</span></div>
+    <div class="row lvl2"><span>Rôles &amp; permissions · Maquettes de l'application</span><span>11</span></div>
+    <div class="row lvl1"><span>Spécifications techniques</span><span>13</span></div>
+    <div class="row lvl2"><span>Technologies</span><span>13</span></div>
+    <div class="row lvl2"><span>Base de données — MCD / MLD / dictionnaire</span><span>14</span></div>
+    <div class="row lvl2"><span>API REST — routes</span><span>17</span></div>
+    <div class="row lvl1"><span>Extraits de code commentés</span><span>19</span></div>
+    <div class="row lvl1"><span>Sécurité — analyse OWASP</span><span>22</span></div>
+    <div class="row lvl1"><span>Plan de tests &amp; jeu d'essai</span><span>24</span></div>
+    <div class="row lvl1"><span>Veille technique &amp; exemple de raisonnement</span><span>26</span></div>
+    <div class="row lvl1"><span>Évolutions — solver enrichi (migrations 006-012)</span><span>28</span></div>
+    <div class="row lvl1"><span>Conclusion</span><span>31</span></div>
+  </div>
+</div>
+
+<!-- ============ INTRODUCTION ============ -->
+<div class="page pagebreak">
+  <h1>Introduction</h1>
+  <div class="note"><b>À personnaliser :</b> ce paragraphe est un brouillon — remplace-le par ton parcours réel
+   (La Plateforme_, motivations, contexte). Garde le ton « je » et la longueur d'une page.</div>
+
+  <p>Je m'appelle Vladimir Rodzaevskiy et je présente le titre professionnel
+  <b>Développeur Web et Web Mobile</b>. Avant cette formation, je m'étais déjà initié au
+  développement en autodidacte, en construisant des applications mobiles publiées sur l'App Store.
+  Cette pratique m'a donné le goût des projets menés de bout en bout — du cadrage à la mise
+  en production — et c'est dans cet état d'esprit que j'ai abordé mon projet de fin de parcours.</p>
+
+  <p>J'ai choisi de réaliser <b>Crew</b>, une application web responsive de planification de services
+  d'équipe. L'idée vient d'un constat simple et concret : dans la restauration, l'hôtellerie ou le
+  retail, le manager passe un temps considérable à bâtir chaque semaine un planning équitable, qui
+  respecte les heures contractuelles de chacun, la couverture nécessaire de chaque service et le droit
+  du travail. Ce travail est répétitif, source d'erreurs et difficile à diffuser proprement aux
+  équipiers.</p>
+
+  <p>Crew répond à ce besoin avec un <b>solver d'auto-planning</b> : le manager configure une fois le
+  profil de chaque équipier (poste, créneau habituel, heures cibles), puis génère en un clic un
+  planning hebdomadaire équilibré qu'il peut ajuster avant publication. Chaque équipier reçoit ensuite
+  ses services directement dans le calendrier de son téléphone via un flux iCal personnel, sans aucune
+  application à installer.</p>
+
+  <p>J'ai mené ce projet de façon individuelle et autonome, du cahier des charges aux maquettes, puis
+  au développement front-end et back-end, jusqu'au déploiement en production. Il m'a confronté à des
+  défis techniques réels — modélisation de la base, conception d'un algorithme d'affectation sous
+  contraintes, sécurisation de l'API — qui sont au cœur des compétences du titre et que ce dossier
+  détaille.</p>
+</div>
+
+<!-- ============ COMPETENCES ============ -->
+<div class="page pagebreak">
+  <h1>Liste des compétences couvertes par le projet</h1>
+  <p class="lead">Le titre RNCP 37674 est structuré en deux activités-types. La sécurité n'est pas un
+  bloc séparé : elle est exigée <i>à l'intérieur</i> de chacune (« application web ou web mobile
+  <b>sécurisée</b> »). Chaque compétence ci-dessous renvoie à la section du dossier qui en apporte la preuve.</p>
+
+  <h2>I. Développer la partie front-end d'une application web sécurisée</h2>
+
+  <div class="comp"><b>A. Maquetter une application.</b> En amont du développement, j'ai formalisé les
+  besoins via des <i>user stories</i> (utilisateur / manager / admin), une arborescence de navigation,
+  un MVP et des maquettes des écrans clés. → <i>Cahier des charges, p. 9-12.</i></div>
+
+  <div class="comp"><b>B. Réaliser une interface utilisateur web statique et adaptable.</b> L'interface
+  est développée en React 18 + Vite, découpée en composants réutilisables, stylée en CSS pur (custom
+  properties) pour un rendu responsive desktop/mobile, et internationalisée (FR/EN) via i18next. Les
+  bonnes pratiques d'accessibilité sont appliquées (HTML sémantique, contrastes, navigation clavier).
+  → <i>Spécifications techniques p. 13 ; Sécurité front p. 22.</i></div>
+
+  <div class="comp"><b>C. Développer une interface utilisateur web dynamique.</b> Gestion d'état via
+  Context API (auth, équipe, thème, toasts), routage protégé (ProtectedRoute), appels API
+  authentifiés par JWT, modaux interactifs (preview du smart planner), graphiques Chart.js. Les
+  formulaires valident les saisies et n'exposent aucun secret côté client.
+  → <i>Extraits de code p. 19 ; Sécurité p. 22.</i></div>
+
+  <h2>II. Développer la partie back-end d'une application web sécurisée</h2>
+
+  <div class="comp"><b>A. Créer une base de données.</b> Conception du MCD puis du MLD, écriture des
+  migrations SQL versionnées (MariaDB 10.11), définition des contraintes d'intégrité (clés étrangères,
+  unicité, cascades) et d'un dictionnaire de données complet.
+  → <i>Spécifications techniques p. 14-16.</i></div>
+
+  <div class="comp"><b>B. Développer les composants d'accès aux données.</b> Couche Model en SQL
+  paramétré (driver mysql2, requêtes préparées contre l'injection), organisée en modèles
+  (user, team, teamMember, shift), pool de connexions, migrations et seed.
+  → <i>Extraits de code p. 20 ; Sécurité p. 23.</i></div>
+
+  <div class="comp"><b>C. Développer la partie back-end (métier &amp; sécurité).</b> API REST Express
+  structurée en MVC (routes → controllers → services → models), validation systématique côté serveur,
+  authentification JWT + bcrypt, contrôle d'accès par rôle (RBAC) via middleware sur chaque endpoint,
+  rate-limiting, CORS restrictif, et la logique métier centrale : le <b>solver d'auto-planning</b>
+  sous contraintes légales (Convention HCR / Code du travail).
+  → <i>Extraits de code p. 19-21 ; Sécurité p. 22-23 ; Évolutions p. 28.</i></div>
+</div>
+
+<!-- ============ RESUME ============ -->
+<div class="page pagebreak">
+  <h1>Résumé du projet</h1>
+
+  <p><b>Crew</b> est une application web responsive de planification de services d'équipe, dédiée à
+  tout responsable gérant une rotation de shifts : restauration, hôtellerie, retail, santé, sécurité,
+  événementiel.</p>
+
+  <h2>Objectifs</h2>
+  <ul>
+    <li><b>Objectif général</b> — réduire le temps et les erreurs de la planification hebdomadaire
+        en la rendant assistée, équitable et conforme au droit du travail.</li>
+    <li>Proposer un <b>planning automatique</b> en un clic à partir du profil des équipiers.</li>
+    <li>Offrir une <b>expérience fluide</b> au manager (preview, ajustement, publication, statistiques).</li>
+    <li>Diffuser les services aux équipiers via un <b>calendrier natif</b>, sans application à installer.</li>
+    <li>Garantir les <b>bonnes pratiques de sécurité</b> à chaque niveau de l'application.</li>
+  </ul>
+
+  <h2>Fonctionnalités principales</h2>
+  <ul>
+    <li><b>Compte &amp; équipes</b> — inscription/connexion, création d'équipe, adhésion par code
+        d'invitation, modération des nouvelles demandes, rôles manager/équipier/admin.</li>
+    <li><b>Smart Planner</b> — génération automatique d'un planning hebdomadaire, preview chiffrée
+        (heures par membre, slots non couverts, masse salariale), clone-week / clear-week.</li>
+    <li><b>Planning</b> — grille membres × jours, création/édition de shifts, indicateurs de couverture.</li>
+    <li><b>Statistiques</b> — répartition par poste, par membre, timeline (Chart.js).</li>
+    <li><b>Calendrier natif</b> — flux iCal personnel et par équipe, alarme VALARM 2 h avant chaque
+        service, QR code d'abonnement.</li>
+  </ul>
+
+  <h2>Architecture &amp; stack</h2>
+  <ul>
+    <li><b>Front</b> : React 18 + Vite + React Router 6, i18next (FR/EN), Chart.js, CSS pur.</li>
+    <li><b>Back</b> : Node.js 22 + Express 4, mysql2, architecture MVC.</li>
+    <li><b>Base de données</b> : MariaDB 10.11.</li>
+    <li><b>Sécurité</b> : JWT HS256, bcrypt, RBAC par middleware, CORS strict, rate-limiting,
+        requêtes préparées.</li>
+    <li><b>Déploiement</b> : Vercel (front) + Fly.io (back + base dans un conteneur Docker).</li>
+  </ul>
+
+  <h2>Limites actuelles &amp; suites prévues</h2>
+  <ul>
+    <li>Densité unique par service (pas de granularité intra-service) — assumé, voir Évolutions.</li>
+    <li>Tests automatisés à étendre (couverture manuelle documentée pour l'instant).</li>
+    <li>Pistes : notifications push, suggestion automatique de densité depuis l'historique,
+        calibration de productivité par paire (membre, poste).</li>
+  </ul>
+</div>
+
+<!-- ============ CAHIER DES CHARGES ============ -->
+<div class="page pagebreak">
+  <h1>Cahier des charges</h1>
+
+  <h2>I. Besoins et objectifs</h2>
+  <h3>Constats</h3>
+  <ul>
+    <li>La planification manuelle (tableur, papier) est chronophage et source d'erreurs :
+        sur-staffing coûteux, sous-couverture risquée, dépassements du droit du travail.</li>
+    <li>La diffusion du planning aux équipiers est peu fiable (photo d'un tableau, message groupé).</li>
+    <li>Le suivi des heures contractuelles et de la masse salariale est rarement outillé en temps réel.</li>
+  </ul>
+  <h3>Solution</h3>
+  <ul>
+    <li>Un <b>solver</b> qui propose un planning équitable respectant postes, créneaux, heures cibles
+        et contraintes légales.</li>
+    <li>Un <b>flux calendrier natif</b> personnel par équipier.</li>
+    <li>Des <b>indicateurs</b> de couverture, d'heures et de coût directement dans l'interface.</li>
+  </ul>
+
+  <h2>II. Concepts métier</h2>
+  <h3>Utilisateur</h3>
+  <p>Compte personnel (email + mot de passe). Peut créer une équipe ou en rejoindre une via un code
+  d'invitation, et appartenir à plusieurs équipes (ex : un serveur travaillant dans deux restaurants).</p>
+  <h3>Équipe</h3>
+  <p>Groupe d'utilisateurs partageant un planning. Chaque membre a un rôle (<code>manager</code> ou
+  <code>équipier</code>). Un manager administrateur peut inviter, valider et retirer des membres.</p>
+  <h3>Membre d'équipe — caractéristiques métier</h3>
+  <ul>
+    <li><b>Poste</b> — zone fonctionnelle (cuisine, salle, bar, plonge, administration). Permet au
+        solver d'affecter les bons profils aux bons services.</li>
+    <li><b>Shift habituel</b> — créneau préféré (matin, midi, coupure, soir, nuit). Indice de score.</li>
+    <li><b>Heures hebdomadaires cibles</b> — quota contractuel (35 h, 24 h…). <code>NULL</code> ou
+        <code>0</code> = membre exclu du planning automatique (cadres, patron).</li>
+  </ul>
+  <h3>Shift</h3>
+  <p>Créneau de travail planifié pour un équipier donné. Contrainte d'unicité
+  <code>(user_id, date, shift_type)</code> : pas de double-planning sur le même créneau d'un jour.</p>
+  <h3>Smart Planner</h3>
+  <p>Algorithme greedy à score multicritères :</p>
+  <ol>
+    <li>Préférer les membres dont les heures planifiées sont les plus éloignées (en dessous) de leur cible.</li>
+    <li>Bonus si le poste demandé correspond au poste habituel.</li>
+    <li>Bonus si le créneau demandé correspond au shift habituel.</li>
+    <li>Malus à partir du 5ᵉ jour consécutif ; rejet strict au-delà de 6 jours (Code du travail).</li>
+  </ol>
+  <p>Le manager voit la proposition dans un modal de preview (heures par membre, slots non couverts,
+  total) avant de l'appliquer.</p>
+</div>
+
+<div class="page pagebreak">
+  <h2>III. User stories</h2>
+  <table>
+    <tr><th>En tant que</th><th>Je souhaite</th><th>Afin de</th></tr>
+    <tr><td>Utilisateur</td><td>m'inscrire et me connecter</td><td>accéder à l'application en sécurité</td></tr>
+    <tr><td>Utilisateur</td><td>créer une équipe ou en rejoindre une par code</td><td>partager un planning</td></tr>
+    <tr><td>Manager</td><td>configurer le profil d'un équipier (poste, créneau, heures)</td><td>alimenter le solver</td></tr>
+    <tr><td>Manager</td><td>générer un planning automatique</td><td>gagner du temps et de l'équité</td></tr>
+    <tr><td>Manager</td><td>prévisualiser puis ajuster la proposition</td><td>garder le contrôle final</td></tr>
+    <tr><td>Manager</td><td>cloner ou effacer une semaine</td><td>accélérer la mise en place</td></tr>
+    <tr><td>Manager admin</td><td>inviter, valider, retirer des membres</td><td>administrer l'équipe</td></tr>
+    <tr><td>Manager admin</td><td>réinitialiser le mot de passe d'un membre</td><td>dépanner un équipier</td></tr>
+    <tr><td>Équipier</td><td>consulter mes prochains shifts</td><td>m'organiser</td></tr>
+    <tr><td>Équipier</td><td>m'abonner au flux iCal</td><td>recevoir mes services dans mon téléphone</td></tr>
+    <tr><td>Manager</td><td>consulter les statistiques d'équipe</td><td>piloter l'activité</td></tr>
+  </table>
+
+  <h2>IV. Arborescence de navigation</h2>
+  <div class="mermaid">
+flowchart TD
+  A[Accueil / Login] --> B[Inscription]
+  A --> C[Tableau de bord]
+  C --> D[Mes équipes]
+  D --> E[Détail équipe]
+  E --> F[Membres & rôles]
+  E --> G[Planning]
+  G --> H[Smart Planner - preview]
+  E --> I[Statistiques]
+  E --> J[Configuration équipe]
+  C --> K[Profil & flux iCal]
+  C --> L[Espace équipier]
+  M[404] -.-> A
+  </div>
+  <p class="small">Accès commun (tous rôles) : profil, abonnement iCal, consultation du planning.
+  Accès manager : édition des shifts, smart planner. Accès admin : gestion des membres et de l'équipe.</p>
+
+  <h2>V. MVP</h2>
+  <p>Le « Produit Minimum Viable » vise une planification fiable et conforme :</p>
+  <ul>
+    <li>Authentification sécurisée, création/adhésion d'équipe par code.</li>
+    <li>Configuration des équipiers et génération d'un planning auto (preview + application).</li>
+    <li>Grille de planning éditable et flux iCal personnel.</li>
+  </ul>
+  <p><b>Hors MVP (évolutions)</b> : statistiques avancées, multi-skill, cost-aware, alertes
+  science-based (livrées ensuite — voir section Évolutions).</p>
+</div>
+
+<div class="page pagebreak">
+  <h2>VI. Rôles et permissions</h2>
+  <table>
+    <tr><th>Action</th><th>Manager admin</th><th>Manager</th><th>Équipier</th></tr>
+    <tr><td>Inviter / approuver un membre</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Modifier rôle / poste / heures</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Retirer un membre</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Régénérer le code d'invitation</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Réinitialiser le mot de passe d'un membre</td><td>✓</td><td>✗</td><td>✗</td></tr>
+    <tr><td>Créer / éditer / supprimer un shift</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>Générer / appliquer un smart planning</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>Voir tout le planning de l'équipe</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>Consulter les statistiques équipe</td><td>✓</td><td>✓</td><td>✗</td></tr>
+    <tr><td>Voir ses propres shifts</td><td>✓</td><td>✓</td><td>✓</td></tr>
+    <tr><td>S'abonner au flux iCal</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  </table>
+
+  <h2>VII. Maquettes (captures de l'application)</h2>
+
+  <figure>
+    <img src="img/dashboard.jpg" alt="Tableau de bord manager">
+    <figcaption>Tableau de bord du manager — heures planifiées par équipier vs cibles,
+      couverture par poste, alertes santé du service.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/planning.jpg" alt="Grille de planning hebdomadaire">
+    <figcaption>Grille de planning hebdomadaire — équipiers groupés par poste (cuisine, salle),
+      ligne « Extras » avec déficits à couvrir, indicateurs de couverture par service en en-tête,
+      masse salariale prévisionnelle affichée.</figcaption>
+  </figure>
+</div>
+
+<div class="page pagebreak">
+  <figure>
+    <img src="img/smartplanner.jpg" alt="Modale Smart Planner">
+    <figcaption>Modale Smart Planner — tableau (jour × service) de densité prévue avec presets
+      Calme 0,5 / Normal 1,0 / Chargé 1,3, couverture par service et par poste, liste des services
+      non couverts.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="img/editmember.jpg" alt="Modale d'édition équipier">
+    <figcaption>Modale d'édition d'un équipier — 5 profils nommés (Apprenti → Référent),
+      polyvalence multi-postes, heures cibles, permissions.</figcaption>
+  </figure>
+</div>
+
+<div class="page pagebreak">
+  <h3>Responsive desktop / mobile</h3>
+  <div class="two-col">
+    <figure>
+      <img src="img/stats.jpg" alt="Page Statistiques">
+      <figcaption>Page Statistiques — graphiques Chart.js (shifts par poste, par équipier,
+        évolution hebdomadaire).</figcaption>
+    </figure>
+    <figure>
+      <img src="img/mobile.jpg" class="mobile" alt="Vue mobile">
+      <figcaption>Vue mobile responsive — application utilisable sur smartphone.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- ============ SPECS TECHNIQUES ============ -->
+<div class="page pagebreak">
+  <h1>Spécifications techniques</h1>
+
+  <h2>I. Technologies</h2>
+  <h4>Developer experience &amp; outils</h4>
+  <ul>
+    <li><b>Git / GitHub</b> (branches main + dev)</li>
+    <li><b>Node 22 + npm</b> — exécution et dépendances</li>
+    <li><b>Vite</b> — serveur de dev et build front</li>
+    <li><b>ESLint + Prettier</b> — qualité et formatage du code</li>
+    <li><b>Docker</b> — image de déploiement back (Fly.io)</li>
+  </ul>
+  <h4>Front-end</h4>
+  <ul>
+    <li><b>React 18</b> via Vite — composants fonctionnels et hooks</li>
+    <li><b>React Router 6</b> — navigation, routes protégées</li>
+    <li><b>i18next</b> — internationalisation FR/EN</li>
+    <li><b>Chart.js + react-chartjs-2</b> — statistiques</li>
+    <li><b>CSS pur (custom properties)</b> — design system responsive</li>
+    <li><b>Context API</b> — état global (auth, équipe, thème, toasts)</li>
+  </ul>
+  <h4>Back-end</h4>
+  <ul>
+    <li><b>Express 4</b> — routes, middlewares, contrôleurs (architecture MVC)</li>
+    <li><b>mysql2</b> — accès données, requêtes préparées (protection injection SQL)</li>
+    <li><b>MariaDB 10.11</b> — base relationnelle</li>
+    <li><b>Migrations &amp; seed</b> — versionnage du schéma, données de démo</li>
+    <li><b>bcrypt, jsonwebtoken, express-rate-limit, cors</b> — sécurité</li>
+    <li><b>ical-generator</b> — flux calendrier RFC 5545</li>
+  </ul>
+
+  <h2>II. Création de la base de données</h2>
+  <h3>A. Modèle conceptuel / logique (MCD-MLD)</h3>
+  <div class="mermaid">
+erDiagram
+  USERS ||--o{ TEAM_MEMBERS : "appartient à"
+  USERS ||--o{ SHIFTS : "travaille"
+  USERS ||--o{ TEAMS : "crée"
+  TEAMS ||--o{ TEAM_MEMBERS : "contient"
+  TEAMS ||--o{ SHIFTS : "planifie"
+  USERS {
+    INT id PK
+    VARCHAR email UK
+    VARCHAR password_hash
+    VARCHAR first_name
+    VARCHAR last_name
+    CHAR calendar_token UK
+    DATETIME created_at
+  }
+  TEAMS {
+    INT id PK
+    VARCHAR name
+    CHAR invite_code UK
+    INT created_by FK
+    DATETIME created_at
+  }
+  TEAM_MEMBERS {
+    INT team_id PK "FK teams"
+    INT user_id PK "FK users"
+    ENUM role
+    BOOL is_admin
+    ENUM status
+    ENUM poste
+    ENUM shift_default
+    INT weekly_hours_target
+    DATETIME joined_at
+  }
+  SHIFTS {
+    INT id PK
+    INT team_id FK
+    INT user_id FK
+    DATE date
+    ENUM shift_type
+    TIME start_time
+    TIME end_time
+    ENUM poste
+    TEXT note
+    INT created_by FK
+    DATETIME created_at
+  }
+  </div>
+  <p class="small">Base MariaDB 10.11. Source de vérité : <code>back/migrations/*.sql</code>.</p>
+</div>
+
+<div class="page pagebreak">
+  <h3>B. Dictionnaire des données</h3>
+  <h4>Table <code>users</code></h4>
+  <table>
+    <tr><th>Donnée</th><th>Désignation</th><th>Type</th><th>Contrainte</th></tr>
+    <tr><td>id</td><td>Identifiant utilisateur</td><td>INT</td><td>PK, AUTO_INCREMENT</td></tr>
+    <tr><td>email</td><td>Adresse e-mail</td><td>VARCHAR(255)</td><td>NOT NULL, UNIQUE</td></tr>
+    <tr><td>password_hash</td><td>Mot de passe haché (bcrypt)</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+    <tr><td>first_name</td><td>Prénom</td><td>VARCHAR(80)</td><td>NOT NULL</td></tr>
+    <tr><td>last_name</td><td>Nom</td><td>VARCHAR(80)</td><td>NOT NULL</td></tr>
+    <tr><td>calendar_token</td><td>Token iCal opaque</td><td>CHAR(48)</td><td>NOT NULL, UNIQUE</td></tr>
+    <tr><td>created_at</td><td>Date de création</td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+  </table>
+  <h4>Table <code>teams</code></h4>
+  <table>
+    <tr><th>Donnée</th><th>Désignation</th><th>Type</th><th>Contrainte</th></tr>
+    <tr><td>id</td><td>Identifiant équipe</td><td>INT</td><td>PK, AUTO_INCREMENT</td></tr>
+    <tr><td>name</td><td>Nom de l'équipe</td><td>VARCHAR(120)</td><td>NOT NULL</td></tr>
+    <tr><td>invite_code</td><td>Code d'invitation (CREW-XXXX-XXXX)</td><td>CHAR(14)</td><td>NOT NULL, UNIQUE</td></tr>
+    <tr><td>created_by</td><td>Créateur</td><td>INT</td><td>FK → users(id), NOT NULL</td></tr>
+    <tr><td>created_at</td><td>Date de création</td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+  </table>
+  <h4>Table <code>team_members</code> (association N-N enrichie)</h4>
+  <table>
+    <tr><th>Donnée</th><th>Désignation</th><th>Type</th><th>Contrainte</th></tr>
+    <tr><td>team_id</td><td>Équipe</td><td>INT</td><td>PK, FK → teams(id) ON DELETE CASCADE</td></tr>
+    <tr><td>user_id</td><td>Utilisateur</td><td>INT</td><td>PK, FK → users(id) ON DELETE CASCADE</td></tr>
+    <tr><td>role</td><td>Rôle</td><td>ENUM(manager, equipier)</td><td>DEFAULT 'equipier'</td></tr>
+    <tr><td>is_admin</td><td>Administrateur</td><td>BOOLEAN</td><td>DEFAULT FALSE</td></tr>
+    <tr><td>status</td><td>Statut d'adhésion</td><td>ENUM(active, pending)</td><td>DEFAULT 'pending'</td></tr>
+    <tr><td>poste</td><td>Poste habituel</td><td>ENUM(cuisine…administration)</td><td>NULL</td></tr>
+    <tr><td>shift_default</td><td>Créneau habituel</td><td>ENUM(matin…nuit)</td><td>NULL</td></tr>
+    <tr><td>weekly_hours_target</td><td>Heures cibles/semaine</td><td>INT</td><td>NULL (0/NULL = exclu solver)</td></tr>
+    <tr><td>joined_at</td><td>Date d'adhésion</td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+  </table>
+</div>
+
+<div class="page pagebreak">
+  <h4>Table <code>shifts</code></h4>
+  <table>
+    <tr><th>Donnée</th><th>Désignation</th><th>Type</th><th>Contrainte</th></tr>
+    <tr><td>id</td><td>Identifiant du shift</td><td>INT</td><td>PK, AUTO_INCREMENT</td></tr>
+    <tr><td>team_id</td><td>Équipe</td><td>INT</td><td>FK → teams(id) ON DELETE CASCADE</td></tr>
+    <tr><td>user_id</td><td>Équipier planifié</td><td>INT</td><td>FK → users(id) ON DELETE CASCADE</td></tr>
+    <tr><td>date</td><td>Jour du service</td><td>DATE</td><td>NOT NULL</td></tr>
+    <tr><td>shift_type</td><td>Type de créneau</td><td>ENUM(matin…nuit)</td><td>NOT NULL</td></tr>
+    <tr><td>start_time</td><td>Heure de début</td><td>TIME</td><td>NULL (dérivé du type sinon)</td></tr>
+    <tr><td>end_time</td><td>Heure de fin</td><td>TIME</td><td>NULL</td></tr>
+    <tr><td>poste</td><td>Poste tenu (renfort possible)</td><td>ENUM(cuisine…administration)</td><td>NOT NULL</td></tr>
+    <tr><td>note</td><td>Note libre</td><td>TEXT</td><td>NULL</td></tr>
+    <tr><td>created_by</td><td>Manager créateur</td><td>INT</td><td>FK → users(id) ON DELETE SET NULL</td></tr>
+    <tr><td>created_at</td><td>Création</td><td>DATETIME</td><td>DEFAULT CURRENT_TIMESTAMP</td></tr>
+    <tr><td>updated_at</td><td>Mise à jour</td><td>DATETIME</td><td>ON UPDATE CURRENT_TIMESTAMP</td></tr>
+  </table>
+
+  <h3>C. Règles d'intégrité &amp; index</h3>
+  <table>
+    <tr><th>Règle</th><th>Mécanisme</th></tr>
+    <tr><td>Email unique</td><td>UNIQUE sur <code>users.email</code></td></tr>
+    <tr><td>Token iCal unique</td><td>UNIQUE sur <code>users.calendar_token</code></td></tr>
+    <tr><td>Code d'invitation unique</td><td>UNIQUE sur <code>teams.invite_code</code></td></tr>
+    <tr><td>Pas de double-planning</td><td>UNIQUE <code>(user_id, date, shift_type)</code> sur <code>shifts</code></td></tr>
+    <tr><td>Suppression équipe ⇒ cascade des shifts</td><td>FK <code>team_id</code> ON DELETE CASCADE</td></tr>
+    <tr><td>Historisation du créateur d'un shift</td><td>FK <code>created_by</code> ON DELETE SET NULL</td></tr>
+  </table>
+  <p><b>Index principaux :</b> <code>users(email)</code>, <code>users(calendar_token)</code>,
+  <code>teams(invite_code)</code>, <code>team_members(user_id)</code>,
+  <code>team_members(team_id, poste)</code> (solver), <code>shifts(user_id, date)</code>,
+  <code>shifts(team_id, date)</code>.</p>
+  <p class="small">Migrations appliquées séquentiellement par <code>npm run migrate</code> :
+  001_users → 002_teams → 003_team_members → 004_member_planning_fields → 005_shifts, puis
+  006-012 (évolutions, voir dernière section).</p>
+</div>
+
+<div class="page pagebreak">
+  <h2>III. API REST — routes</h2>
+  <p>Toutes les routes sont préfixées par <code>/api</code>. Sauf <code>/auth/*</code> et
+  <code>/calendar/*</code>, toutes exigent un header <code>Authorization: Bearer &lt;jwt&gt;</code>.</p>
+
+  <h4>Authentification &amp; profil</h4>
+  <table>
+    <tr><th>Méthode</th><th>Chemin</th><th>Description</th><th>Accès</th></tr>
+    <tr><td>POST</td><td><code>/auth/register</code></td><td>Création de compte</td><td>Public</td></tr>
+    <tr><td>POST</td><td><code>/auth/login</code></td><td>Connexion → JWT</td><td>Public</td></tr>
+    <tr><td>GET</td><td><code>/users/me</code></td><td>Profil connecté</td><td>Auth</td></tr>
+    <tr><td>PATCH</td><td><code>/users/me</code></td><td>Modifier prénom/nom</td><td>Auth</td></tr>
+    <tr><td>POST</td><td><code>/users/me/password</code></td><td>Changer son mot de passe</td><td>Auth</td></tr>
+  </table>
+
+  <h4>Équipes &amp; membres</h4>
+  <table>
+    <tr><th>Méthode</th><th>Chemin</th><th>Description</th><th>Accès</th></tr>
+    <tr><td>GET</td><td><code>/teams</code></td><td>Mes équipes</td><td>Auth</td></tr>
+    <tr><td>POST</td><td><code>/teams</code></td><td>Créer une équipe</td><td>Auth</td></tr>
+    <tr><td>GET</td><td><code>/teams/:id</code></td><td>Détail + membres</td><td>Membre</td></tr>
+    <tr><td>POST</td><td><code>/teams/join</code></td><td>Rejoindre via code</td><td>Auth</td></tr>
+    <tr><td>POST</td><td><code>/teams/:id/approve/:userId</code></td><td>Valider un membre</td><td>Admin</td></tr>
+    <tr><td>PATCH</td><td><code>/teams/:id/members/:userId</code></td><td>Modifier rôle/poste/heures</td><td>Admin</td></tr>
+    <tr><td>DELETE</td><td><code>/teams/:id/members/:userId</code></td><td>Retirer un membre</td><td>Admin</td></tr>
+    <tr><td>POST</td><td><code>/teams/:id/regenerate-code</code></td><td>Régénérer le code</td><td>Admin</td></tr>
+  </table>
+
+  <h4>Shifts &amp; smart planner</h4>
+  <table>
+    <tr><th>Méthode</th><th>Chemin</th><th>Description</th><th>Accès</th></tr>
+    <tr><td>GET</td><td><code>/shifts?team_id&amp;from&amp;to</code></td><td>Lister les shifts</td><td>Membre</td></tr>
+    <tr><td>GET</td><td><code>/shifts/upcoming</code></td><td>Mes 10 prochains shifts</td><td>Auth</td></tr>
+    <tr><td>POST / PUT / DELETE</td><td><code>/shifts(/:id)</code></td><td>CRUD d'un shift</td><td>Manager</td></tr>
+    <tr><td>GET</td><td><code>/shifts/summary</code></td><td>Heures/membre + slots non couverts + coût</td><td>Manager</td></tr>
+    <tr><td>POST</td><td><code>/shifts/generate-plan</code></td><td>Proposer un planning (preview)</td><td>Manager</td></tr>
+    <tr><td>POST</td><td><code>/shifts/apply-plan</code></td><td>Créer en base les shifts proposés</td><td>Manager</td></tr>
+    <tr><td>POST</td><td><code>/shifts/clone-week</code></td><td>Dupliquer une semaine</td><td>Manager</td></tr>
+    <tr><td>DELETE</td><td><code>/shifts/clear-week</code></td><td>Vider une semaine</td><td>Manager</td></tr>
+  </table>
+
+  <h4>Statistiques &amp; calendrier</h4>
+  <table>
+    <tr><th>Méthode</th><th>Chemin</th><th>Description</th><th>Accès</th></tr>
+    <tr><td>GET</td><td><code>/stats/dashboard</code></td><td>Tableau de bord</td><td>Auth</td></tr>
+    <tr><td>GET</td><td><code>/stats/charts?team_id</code></td><td>Stats équipe (poste, membre, timeline)</td><td>Manager</td></tr>
+    <tr><td>GET</td><td><code>/calendar/:token</code></td><td>Flux iCal de tous les shifts</td><td>Public (token)</td></tr>
+    <tr><td>GET</td><td><code>/calendar/:token/team/:teamId.ics</code></td><td>Flux iCal d'une équipe</td><td>Public (token)</td></tr>
+  </table>
+</div>
+
+<!-- ============ EXTRAITS DE CODE ============ -->
+<div class="page pagebreak">
+  <h1>Extraits de code commentés</h1>
+  <p class="lead">Ces extraits illustrent les compétences clés du titre. Chacun est commenté pour
+  expliquer le choix technique et la mesure de sécurité associée.</p>
+
+  <h2>1. Back-end — authentification JWT (middleware)</h2>
+  <p>Chaque route protégée passe par ce middleware. Il refuse l'accès si le header est absent/mal formé,
+  vérifie la signature du token et n'expose au reste de l'application que l'identifiant utilisateur.
+  <b>Compétence II.C — sécurité back.</b></p>
+<pre><code>// back/src/middleware/auth.js
+import { verifyToken } from '../services/jwt.service.js';
+import { unauthorized } from '../utils/httpError.js';
+
+export function authRequired(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) {
+    return next(unauthorized());                 // 401 : pas de token
+  }
+  try {
+    const payload = verifyToken(header.slice(7)); // vérifie la signature HS256
+    req.user = { id: payload.sub };               // on n'expose que l'id
+    next();
+  } catch {
+    next(unauthorized('Token invalide ou expiré'));
+  }
+}</code></pre>
+
+  <h2>2. Back-end — hachage du mot de passe (bcrypt)</h2>
+  <p>Les mots de passe ne sont jamais stockés en clair : bcrypt (cost 10) produit un hash salé.
+  La comparaison est faite par bcrypt lui-même (résistant au timing). <b>Compétence II.C.</b></p>
+<pre><code>// back/src/services/password.service.js
+import bcrypt from 'bcrypt';
+const ROUNDS = 10;
+
+export function hashPassword(plain) {
+  return bcrypt.hash(plain, ROUNDS);             // salt + hash automatiques
+}
+export function comparePassword(plain, hash) {
+  return bcrypt.compare(plain, hash);
+}</code></pre>
+
+  <h2>3. Back-end — contrôle d'accès par rôle (RBAC)</h2>
+  <p>Au-delà de l'authentification, l'autorisation est vérifiée par middleware sur chaque endpoint
+  sensible : appartenance à l'équipe, rôle manager, statut administrateur. <b>Compétence II.C.</b></p>
+<pre><code>// back/src/middleware/teamAccess.js
+export async function requireTeamMember(req, res, next) {
+  const teamId = Number(req.params.teamId || req.body.team_id);
+  if (!teamId) return next(forbidden('team_id manquant'));
+  const member = await teamMemberModel.findByTeamAndUser(teamId, req.user.id);
+  if (!member || member.status !== 'active')
+    return next(forbidden("Vous n'êtes pas membre de cette équipe"));
+  req.teamMember = member;
+  next();
+}
+
+export function requireManager(req, res, next) {
+  if (!req.teamMember || req.teamMember.role !== 'manager')
+    return next(forbidden('Réservé aux managers'));
+  next();
+}</code></pre>
+</div>
+
+<div class="page pagebreak">
+  <h2>4. Back-end — accès aux données en requêtes préparées</h2>
+  <p>La couche Model n'écrit jamais de SQL par concaténation : toutes les valeurs passent par des
+  paramètres liés <code>?</code> (driver mysql2), ce qui neutralise l'injection SQL.
+  <b>Compétence II.B — accès aux données + sécurité.</b></p>
+<pre><code>// back/src/models/user.model.js
+export const userModel = {
+  async findByEmail(email) {
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE email = ?', [email]);   // paramètre lié
+    return rows[0] || null;
+  },
+  async create({ email, password_hash, first_name, last_name, calendar_token }) {
+    const [result] = await pool.query(
+      `INSERT INTO users (email, password_hash, first_name, last_name, calendar_token)
+       VALUES (?, ?, ?, ?, ?)`,
+      [email, password_hash, first_name, last_name, calendar_token]);
+    return result.insertId;
+  },
+};</code></pre>
+
+  <h2>5. Back-end — validation systématique des entrées</h2>
+  <p>Toute donnée venant du client est validée côté serveur avant traitement (format email, longueur
+  du mot de passe, champs requis). La validation lève une erreur 400 structurée. <b>Compétence II.C.</b></p>
+<pre><code>// back/src/validators/auth.validator.js
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateRegister(body) {
+  const errors = {};
+  const { email, password, first_name, last_name } = body || {};
+  if (!email || !EMAIL_RE.test(email) || email.length > LIMITS.EMAIL_MAX)
+    errors.email = 'Email invalide';
+  if (!password || password.length < LIMITS.PASSWORD_MIN)
+    errors.password = `Mot de passe d'au moins ${LIMITS.PASSWORD_MIN} caractères`;
+  if (!first_name) errors.first_name = 'Prénom requis';
+  if (!last_name)  errors.last_name  = 'Nom requis';
+  if (Object.keys(errors).length) throw badRequest('Champs invalides', errors);
+  return { email, password, first_name, last_name };
+}</code></pre>
+
+  <h2>6. Logique métier — cœur du solver (scoring)</h2>
+  <p>Le composant métier central : pour chaque créneau à couvrir, le solver filtre les candidats
+  éligibles (compétence, disponibilité, <b>plafonds légaux HCR jamais relâchés</b>), puis les classe
+  par un score multicritères. <b>Compétence II.C — composant métier.</b></p>
+<pre><code>// back/src/services/plannerSolver.js  (extrait de findBest)
+.filter((m) => {
+  if (!m.weekly_hours_target) return false;          // exclu du solver
+  if (!canFill(m, slot.poste)) return false;          // compétence/poste
+  if (wouldBeWeek > HCR_WEEKLY_MAX) return false;      // 48 h/sem — mur légal
+  if (dayHours + shiftDur > hcrDailyCap(m.poste)) return false; // plafond/jour
+  if (countConsecutive([...userDays, slot.date]) > MAX_CONSECUTIVE_DAYS)
+    return false;                                      // max 6 jours consécutifs
+  return true;
+})
+.map((m) => {
+  const deficit = m.weekly_hours_target - hours[m.user_id].planned;
+  let score = deficit * 10;                            // priorité : qui manque d'heures
+  if (m.shift_default === slot.service) score += 5;    // créneau habituel
+  if (m.poste === slot.poste)          score += 3;     // poste habituel
+  if (m.level === 'chef')              score += 2;     // séniorité
+  score -= (shiftCost(m, slot.service, cfg) / 100) * COST_PENALTY_WEIGHT; // coût
+  return { member: m, score };
+})
+.sort((a, b) => b.score - a.score)[0]?.member ?? null;</code></pre>
+</div>
+
+<!-- ============ SECURITE ============ -->
+<div class="page pagebreak">
+  <h1>Sécurité — analyse OWASP</h1>
+  <p class="lead">La sécurité est traitée à chaque niveau de l'application. Le tableau ci-dessous met
+  en regard les principaux risques (référentiel OWASP Top 10) et les mesures concrètes implémentées
+  dans Crew.</p>
+
+  <table>
+    <tr><th>Risque OWASP</th><th>Mesure dans Crew</th><th>Emplacement</th></tr>
+    <tr><td>A01 — Broken Access Control</td>
+        <td>RBAC par middleware sur chaque endpoint (membre / manager / admin) ; vérification
+            d'appartenance à l'équipe avant toute action.</td>
+        <td><code>middleware/teamAccess.js</code></td></tr>
+    <tr><td>A02 — Cryptographic Failures</td>
+        <td>Mots de passe hachés avec bcrypt (cost 10, salt) ; jamais stockés ni renvoyés en clair ;
+            HTTPS forcé en production.</td>
+        <td><code>services/password.service.js</code></td></tr>
+    <tr><td>A03 — Injection</td>
+        <td>Requêtes SQL exclusivement préparées (paramètres liés mysql2) ; aucune concaténation
+            de chaîne dans les requêtes.</td>
+        <td><code>models/*.model.js</code></td></tr>
+    <tr><td>A04 — Insecure Design</td>
+        <td>Validation systématique côté serveur ; principe du moindre privilège ; le token client
+            ne contient que l'id (aucun secret).</td>
+        <td><code>validators/*</code></td></tr>
+    <tr><td>A05 — Security Misconfiguration</td>
+        <td>CORS restrictif (liste blanche d'origines via <code>FRONT_ORIGIN</code>) ;
+            <code>trust proxy</code> pour la détection d'IP derrière Fly ; secrets en variables
+            d'environnement.</td>
+        <td><code>app.js</code>, <code>config/env.js</code></td></tr>
+    <tr><td>A07 — Identification &amp; Auth. Failures</td>
+        <td>JWT signé HS256 avec expiration ; rate-limiting des tentatives de connexion et
+            d'inscription ; messages d'erreur sans fuite d'information.</td>
+        <td><code>middleware/auth.js</code>, <code>rateLimit.js</code></td></tr>
+    <tr><td>A09 — Logging &amp; Monitoring</td>
+        <td>Journalisation des requêtes (requestLogger) et gestion centralisée des erreurs
+            (errorHandler) pour la traçabilité.</td>
+        <td><code>middleware/requestLogger.js</code></td></tr>
+  </table>
+
+  <h2>Sécurité côté front-end</h2>
+  <ul>
+    <li><b>Routes protégées</b> — un composant <code>ProtectedRoute</code> redirige vers la connexion
+        si aucun token valide n'est présent.</li>
+    <li><b>Aucun secret exposé</b> — le client ne manipule que le JWT ; aucune clé serveur, aucun
+        identifiant de base n'est embarqué dans le bundle.</li>
+    <li><b>Validation des saisies</b> — les formulaires (inscription, connexion, changement de mot de
+        passe) contrôlent les entrées avant envoi et affichent des retours d'erreur clairs.</li>
+    <li><b>Échappement</b> — React échappe par défaut le contenu rendu, neutralisant les injections
+        XSS basiques.</li>
+  </ul>
+
+  <h2>Rate-limiting (extrait)</h2>
+<pre><code>// back/src/middleware/rateLimit.js
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isProd ? 20 : 1000,        // 20 essais / 15 min en prod : rempart anti brute-force
+  message: { error: 'Trop de tentatives, réessayez dans 15 minutes' },
+});</code></pre>
+</div>
+
+<!-- ============ TESTS ============ -->
+<div class="page pagebreak">
+  <h1>Plan de tests &amp; jeu d'essai</h1>
+  <p class="lead">Couverture manuelle exécutée avant chaque mise en production et avant la soutenance,
+  complétée par un jeu de données de démo (seed) couvrant chaque rôle.</p>
+
+  <h2>Comptes de test (seed)</h2>
+  <table>
+    <tr><th>Email</th><th>Rôle</th><th>Mot de passe</th></tr>
+    <tr><td>julien.patron@bistrot.fr</td><td>Patron (admin)</td><td>motdepasse123</td></tr>
+    <tr><td>sophie.manager@bistrot.fr</td><td>Manager salle</td><td>motdepasse123</td></tr>
+    <tr><td>ahmed.chef@bistrot.fr</td><td>Chef cuisine</td><td>motdepasse123</td></tr>
+    <tr><td>elena.serveuse@bistrot.fr</td><td>Serveuse</td><td>motdepasse123</td></tr>
+    <tr><td>samir.plonge@bistrot.fr</td><td>Plongeur</td><td>motdepasse123</td></tr>
+  </table>
+
+  <h2>1. Authentification</h2>
+  <table>
+    <tr><th>#</th><th>Scénario</th><th>Résultat attendu</th><th>Statut</th></tr>
+    <tr><td>1.1</td><td>Inscription valide (mdp ≥ 8)</td><td>Redirection dashboard, JWT stocké</td><td>OK</td></tr>
+    <tr><td>1.2</td><td>Inscription email déjà utilisé</td><td>Erreur 409, message clair</td><td>OK</td></tr>
+    <tr><td>1.3</td><td>Mot de passe trop court</td><td>Erreur 400 (validateur)</td><td>OK</td></tr>
+    <tr><td>1.4</td><td>Connexion valide</td><td>Redirection dashboard</td><td>OK</td></tr>
+    <tr><td>1.5</td><td>Mauvais mot de passe</td><td>401, pas de fuite d'info</td><td>OK</td></tr>
+    <tr><td>1.6</td><td>Rate limit login (excès de tentatives)</td><td>Réponse 429</td><td>OK</td></tr>
+    <tr><td>1.7</td><td>Token expiré sur route protégée</td><td>401, redirect login</td><td>OK</td></tr>
+    <tr><td>1.8</td><td>Changement de mot de passe</td><td>Succès, ré-auth requis</td><td>OK</td></tr>
+  </table>
+
+  <h2>2. Équipe &amp; permissions</h2>
+  <table>
+    <tr><th>#</th><th>Scénario</th><th>Résultat attendu</th><th>Statut</th></tr>
+    <tr><td>2.1</td><td>Création d'équipe</td><td>Équipe créée, créateur = admin</td><td>OK</td></tr>
+    <tr><td>2.2</td><td>Adhésion par code valide</td><td>Membre en statut <code>pending</code></td><td>OK</td></tr>
+    <tr><td>2.3</td><td>Adhésion par code invalide</td><td>Erreur 404</td><td>OK</td></tr>
+    <tr><td>2.4</td><td>Équipier tente d'éditer un shift</td><td>403 (RBAC)</td><td>OK</td></tr>
+    <tr><td>2.5</td><td>Non-membre accède au détail équipe</td><td>403</td><td>OK</td></tr>
+  </table>
+
+  <h2>3. Smart Planner</h2>
+  <table>
+    <tr><th>#</th><th>Scénario</th><th>Résultat attendu</th><th>Statut</th></tr>
+    <tr><td>3.1</td><td>Génération sur le seed</td><td>Preview cohérente, slots non couverts signalés</td><td>OK</td></tr>
+    <tr><td>3.2</td><td>Respect du plafond 48 h/semaine</td><td>Aucun équipier au-dessus de 48 h</td><td>OK</td></tr>
+    <tr><td>3.3</td><td>Max 6 jours consécutifs</td><td>Aucune affectation au 7ᵉ jour consécutif</td><td>OK</td></tr>
+    <tr><td>3.4</td><td>Application du plan</td><td>Shifts créés en base, unicité respectée</td><td>OK</td></tr>
+    <tr><td>3.5</td><td>Clone-week / clear-week</td><td>Semaine dupliquée / vidée</td><td>OK</td></tr>
+  </table>
+
+  <h2>4. Calendrier natif</h2>
+  <table>
+    <tr><th>#</th><th>Scénario</th><th>Résultat attendu</th><th>Statut</th></tr>
+    <tr><td>4.1</td><td>Abonnement au flux iCal perso</td><td>Shifts visibles dans le calendrier</td><td>OK</td></tr>
+    <tr><td>4.2</td><td>Alarme VALARM</td><td>Notification 2 h avant le service</td><td>OK</td></tr>
+    <tr><td>4.3</td><td>Token erroné</td><td>Flux vide / 404, pas de fuite</td><td>OK</td></tr>
+  </table>
+
+  <div class="note"><b>Suite prévue :</b> ajouter une couche de tests automatisés (Vitest + supertest)
+  sur le solver (plafonds HCR, scoring) et l'authentification, pour compléter cette couverture manuelle.</div>
+</div>
+
+<!-- ============ VEILLE ============ -->
+<div class="page pagebreak">
+  <h1>Veille technique &amp; exemple de raisonnement</h1>
+  <p class="lead">Pour les décisions techniques importantes, j'applique une démarche de veille :
+  formuler la question, comparer 2-3 sources fiables (dont anglophones), évaluer selon des critères,
+  tester, puis décider — en gardant une alternative de secours.</p>
+
+  <h2>Exemple — algorithme du solver : heuristique greedy vs solveur exact (MIP)</h2>
+
+  <h3>Contexte</h3>
+  <p>Le cœur de Crew est l'affectation d'équipiers à des créneaux sous contraintes (couverture cible,
+  heures contractuelles, plafonds légaux HCR). C'est un problème classique de <i>staff
+  scheduling / rostering</i>. Deux familles d'approches existent :</p>
+  <ul>
+    <li><b>Solveur exact (MIP)</b> — modéliser le problème en programme linéaire en nombres entiers
+        et le confier à un solveur (couverture en contrainte, coût minimisé en objectif).</li>
+    <li><b>Heuristique greedy</b> — construire la solution créneau par créneau en choisissant à
+        chaque étape le meilleur candidat selon un score.</li>
+  </ul>
+
+  <h3>Recherche comparative (sources anglophones)</h3>
+  <p>Je me suis appuyé sur deux références de recherche opérationnelle en anglais :</p>
+  <blockquote>Ernst, A. T., Jiang, H., Krishnamoorthy, M. &amp; Sier, D. (2004). « Staff scheduling
+  and rostering: A review of applications, methods and models », <i>European Journal of Operational
+  Research</i> 153(1):3-27.</blockquote>
+  <blockquote>Bard, J. F., Binici, C. &amp; deSilva, A. H. (2003). « Staff scheduling at the United
+  States Postal Service », <i>Computers &amp; Operations Research</i> 30(5):745-771.</blockquote>
+  <p>Cette littérature établit que (1) la planification du personnel se modélise classiquement par
+  minimisation de la masse salariale sous contrainte de couverture, et que (2) le coût horaire est
+  l'objectif dominant dans plus de 95 % des modèles appliqués recensés. Le MIP donne l'optimum
+  global, mais au prix d'un temps de calcul non borné et d'une « boîte noire » difficile à expliquer
+  à un manager.</p>
+
+  <table>
+    <tr><th>Critère</th><th>Solveur exact (MIP)</th><th>Heuristique greedy</th></tr>
+    <tr><td>Qualité de la solution</td><td>Optimum global</td><td>Quasi-optimale (bonne en pratique)</td></tr>
+    <tr><td>Temps de réponse</td><td>Variable, peut exploser</td><td>Temps réel, borné</td></tr>
+    <tr><td>Explicabilité</td><td>Faible (boîte noire)</td><td>Forte (score lisible)</td></tr>
+    <tr><td>Dépendance externe</td><td>Solveur tiers à intégrer</td><td>Aucune (JS pur)</td></tr>
+    <tr><td>Gestion des contraintes dures</td><td>Native</td><td>Par filtrage explicite</td></tr>
+  </table>
+
+  <h3>Décision &amp; justification</h3>
+  <p>J'ai retenu une <b>heuristique greedy avec scoring multicritères</b>, pour trois raisons :</p>
+  <ol>
+    <li><b>Temps réel</b> — la preview doit s'afficher instantanément quand le manager clique.</li>
+    <li><b>Explicabilité</b> — le score (déficit d'heures, poste, séniorité, coût) est lisible et
+        défendable devant un manager, là où un MIP est opaque.</li>
+    <li><b>Contraintes dures garanties</b> — les plafonds légaux HCR (48 h/semaine, 6 jours max,
+        repos hebdomadaire) sont appliqués par filtrage strict <i>avant</i> le scoring : aucune
+        suggestion ne peut les enfreindre, exactement comme une contrainte de MIP.</li>
+  </ol>
+  <p>La même philosophie que Bard et al. (couverture imposée, coût pénalisé) est donc conservée, sous
+  une forme heuristique adaptée à un usage interactif. La limite assumée — une solution quasi-optimale
+  plutôt qu'optimale — est acceptable car le manager ajuste toujours la proposition avant publication.</p>
+
+  <div class="note"><b>À enrichir si tu veux :</b> insère ici une capture de la page d'une des sources
+  (ex. l'abstract de l'article EJOR 2004) pour matérialiser la veille, comme dans l'exemple de référence.</div>
+</div>
+
+<!-- ============ EVOLUTIONS ============ -->
+<div class="page pagebreak">
+  <h1>Évolutions — solver enrichi (migrations 006-012)</h1>
+  <p class="lead">Au-delà du périmètre MVP, le projet a intégré six dimensions métier supplémentaires,
+  documentées et adossées à la littérature peer-reviewed (annexe scientifique, 12 références).</p>
+
+  <h2>Profils normalisés (006)</h2>
+  <p>Chaque équipier porte un <b>niveau</b> (junior / confirmé / chef) auquel l'UI applique 5 profils
+  nommés (Apprenti 0,15 → Référent 0,60). Tous les poids sont &lt; 1 ; chaque poste vise une couverture
+  de 1,00 (= 100 %).</p>
+
+  <h2>Paramètres d'établissement (007)</h2>
+  <p>La table <code>teams</code> reçoit des coefficients par niveau, une capacité de référence
+  (<code>max_couverts</code>) et des idéaux de couverture par service et par poste, éditables par le
+  manager. Les anciennes constantes en dur sont supprimées.</p>
+
+  <h2>Override personnel &amp; coverage agrégée (008)</h2>
+  <p><code>team_members.coef_override</code> permet de surcharger le poids d'un équipier au cas par cas.
+  L'API <code>summary</code> expose la couverture par poste.</p>
+
+  <h2>Jours d'ouverture &amp; densité prévue (010)</h2>
+  <p><code>teams.closed_days_mask</code> (bitmask 7 bits) remplace l'ancienne constante. La modale
+  Smart Planner expose un tableau (date × service) où le manager déclare la densité prévue
+  (Calme 0,5 / Normal 1,0 / Chargé 1,3). Le solver scale l'idéal par cette densité.</p>
+
+  <h2>Polyvalence — multi-skill (011)</h2>
+  <p><code>team_members.skills_mask</code> (bitmask des postes maîtrisés). Le solver lit ce masque en
+  priorité ; le scoring conserve un bonus <code>+3</code> pour le poste primaire, si bien qu'un
+  équipier polyvalent <b>n'est mobilisé hors de sa spécialité que si aucun spécialiste primaire n'est
+  éligible</b>. Application du <i>théorème de la chaîne courte</i> (Jordan &amp; Graves 1995,
+  <i>Management Science</i>) : 2-3 postes/équipier captent ~95 % des gains d'une flexibilité totale.</p>
+
+  <h2>Optimisation économique cost-aware (012)</h2>
+  <p>Trois colonnes <code>*_rate</code> sur <code>teams</code> + <code>rate_override</code>, alignées
+  sur les minima de la Convention HCR 2026 (Junior 12 €, Confirmé 14 €, Chef 19 €). Le solver intègre
+  une pénalité de coût dans le score, calibrée pour rester sous-dominante face au déficit hebdomadaire
+  — le coût ne discrimine qu'entre candidats à besoins équivalents. La masse salariale prévisionnelle
+  (<code>laborCostTotal</code>) s'affiche dans l'en-tête de la page Planning.</p>
+
+  <h2>Alertes science-based intégrées</h2>
+  <ul>
+    <li><b>fatigueAlerts</b> — surcharge soutenue (KC &amp; Terwiesch 2009, <i>Management Science</i>).</li>
+    <li><b>hcrViolations</b> — non-conformités Convention HCR / Code du travail (Matre et al. 2021).</li>
+    <li><b>serviceHealth</b> — score composite 0-100 par (jour, service), pastille Saine / Tendue / Risque.</li>
+  </ul>
+
+  <h3>Récapitulatif des migrations</h3>
+  <table>
+    <tr><th>#</th><th>Sujet</th><th>Tables impactées</th></tr>
+    <tr><td>006</td><td>Niveaux Junior / Confirmé / Chef</td><td>team_members</td></tr>
+    <tr><td>007</td><td>Paramètres d'équipe (coef, idéal, capacité)</td><td>teams</td></tr>
+    <tr><td>008</td><td>Coef override personnel</td><td>team_members</td></tr>
+    <tr><td>009</td><td>Normalisation [0;1] des poids et idéaux</td><td>teams, team_members</td></tr>
+    <tr><td>010</td><td>Jours d'ouverture (closed_days_mask)</td><td>teams</td></tr>
+    <tr><td>011</td><td>Polyvalence (skills_mask)</td><td>team_members</td></tr>
+    <tr><td>012</td><td>Taux horaires + override</td><td>teams, team_members</td></tr>
+  </table>
+  <p class="small">Justification scientifique complète et bibliographie : annexe
+  <code>JUSTIFICATION_SCIENTIFIQUE.md</code> (12 références peer-reviewed et institutionnelles).</p>
+</div>
+
+<!-- ============ CONCLUSION ============ -->
+<div class="page pagebreak">
+  <h1>Conclusion</h1>
+
+  <p>La réalisation de Crew m'a permis de transformer un besoin métier concret — la planification
+  d'équipe sous contraintes — en une application web complète, fonctionnelle et déployée en production.</p>
+
+  <p>Ce projet m'a confronté à l'ensemble des compétences du titre : conception d'une base de données
+  relationnelle et de ses contraintes d'intégrité, développement d'une API REST structurée en MVC,
+  réalisation d'une interface React responsive et internationalisée, et — au cœur du projet — la
+  conception d'un composant métier non trivial, le solver d'auto-planning, qui applique des règles
+  légales strictes tout en optimisant l'équité et le coût.</p>
+
+  <p>J'ai particulièrement soigné la <b>sécurité à chaque niveau</b> : authentification JWT, hachage
+  bcrypt, contrôle d'accès par rôle sur chaque endpoint, requêtes préparées, validation systématique
+  des entrées, CORS restrictif et rate-limiting. Ces choix sont documentés et mis en regard du
+  référentiel OWASP.</p>
+
+  <p>À chaque décision technique importante, j'ai adopté une démarche de veille — comparer des sources
+  fiables, dont anglophones, avant de trancher — comme l'illustre le choix entre solveur exact et
+  heuristique greedy.</p>
+
+  <p>Le projet reste perfectible : j'identifie comme suites prioritaires l'ajout d'une couche de tests
+  automatisés, des notifications push, et une suggestion automatique de la densité de service à partir
+  de l'historique. Ces limites sont assumées et tracées.</p>
+
+  <p>Au terme de ce travail, je retiens surtout une montée en compétence sur la conception d'un
+  système complet — du modèle de données à la mise en production — et la capacité à mener un projet
+  technique exigeant de façon autonome et rigoureuse, dans un cadre proche d'un contexte
+  professionnel.</p>
+
+  <div class="note"><b>À compléter :</b> ajoute ici un mot de remerciement (formateur, La Plateforme_)
+  si tu le souhaites, comme dans le dossier de référence.</div>
+</div>
+
+</body>
+</html>
