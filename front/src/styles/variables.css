@@ -1,80 +1,84 @@
 /*
- * Palette « Indigo / SaaS »
- * Interface professionnelle, claire et corporate — registre « slide deck » :
- * fond clair froid, accent indigo, dégradé indigo→violet→cyan.
+ * Palette « Crew » — alignée sur la présentation de soutenance.
  *
- * Choix de couleur :
- *  - Fond clair froid (neutre, lisible, professionnel)
- *  - Accent indigo (confiance, sérieux, identité tech)
- *  - Vert émeraude pour validation
- *  - Rouge pour urgence, ambre pour avertissement
+ * Identité :
+ *  - Bleu nuit (navy) pour les surfaces fortes (barre de nav, en-têtes)
+ *  - Fond clair gris-bleu, cartes blanches (lisibilité « slide »)
+ *  - 4 accents vifs : sarcelle, ambre, corail, vert — repris du logo
  *
- * Typographie :
- *  - Serif éditorial (Cormorant Garamond) pour les titres
- *  - Sans-serif (Inter) pour le corps → lisibilité optimale
+ * Les NOMS de variables sont inchangés : tout le reste de l'app
+ * récupère automatiquement la nouvelle palette.
  */
 
 :root {
+  /* Accents de marque (logo à 4 barres) */
+  --c-navy:   #1f2a44;
+  --c-navy-2: #2b395b;
+  --c-teal:   #29b6a6;
+  --c-amber:  #ffb14a;
+  --c-coral:  #ff6b4a;
+  --c-green:  #3fc380;
+
   /* ── Fonds ─────────────────────────────────────────────────────── */
-  --bg-base: #f5f7fc;
+  --bg-base: #eef1f7;
   --bg-mesh:
-    radial-gradient(at 12% 8%,  rgba(99, 102, 241, 0.20) 0%, transparent 45%),
-    radial-gradient(at 88% 12%, rgba(6, 182, 212, 0.16)  0%, transparent 45%),
-    radial-gradient(at 50% 95%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
-    radial-gradient(at 92% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+    radial-gradient(at 12% 8%,  rgba(41, 182, 166, 0.10) 0%, transparent 45%),
+    radial-gradient(at 88% 12%, rgba(255, 177, 74, 0.12) 0%, transparent 45%),
+    radial-gradient(at 50% 95%, rgba(255, 107, 74, 0.08) 0%, transparent 50%),
+    radial-gradient(at 92% 80%, rgba(63, 195, 128, 0.10) 0%, transparent 40%),
     var(--bg-base);
 
-  /* ── Surfaces (glass blanc) ──────────────────────────────────── */
+  /* ── Surfaces (cartes blanches « slide ») ────────────────────── */
   --glass:                rgba(255, 255, 255, 0.72);
   --glass-strong:         rgba(255, 255, 255, 0.86);
-  --glass-elevated:       rgba(255, 255, 255, 0.95);
-  --glass-hover:          rgba(255, 255, 255, 0.80);
-  --glass-border:         rgba(99, 102, 241, 0.18);
-  --glass-border-strong:  rgba(99, 102, 241, 0.30);
+  --glass-elevated:       rgba(255, 255, 255, 0.97);
+  --glass-hover:          rgba(255, 255, 255, 0.82);
+  --glass-border:         rgba(31, 42, 68, 0.10);
+  --glass-border-strong:  rgba(31, 42, 68, 0.20);
 
   /* ── Texte ───────────────────────────────────────────────────── */
-  --text:        #1e293b;
-  --text-muted:  #64748b;
-  --text-strong: #0f172a;
+  --text:        #2b3344;
+  --text-muted:  #5b6678;
+  --text-strong: #1f2a44;
   --text-on-primary: #ffffff;
 
-  /* ── Marque : indigo ─────────────────────────────────────────── */
-  --primary:       #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-light: rgba(99, 102, 241, 0.12);
-  --primary-grad:  linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-  --primary-grad-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #0891b2 100%);
+  /* ── Marque : sarcelle (teal) ───────────────────────────────── */
+  --primary:       #1ea596;
+  --primary-hover: #178b7e;
+  --primary-light: rgba(41, 182, 166, 0.14);
+  --primary-grad:  linear-gradient(135deg, #29b6a6 0%, #3fc380 100%);
+  --primary-grad-hover: linear-gradient(135deg, #1ea596 0%, #35ad70 100%);
 
   /* ── Statuts ────────────────────────────────────────────────── */
-  --success:    #10b981;                       /* émeraude */
-  --success-bg: rgba(16, 185, 129, 0.16);
-  --warning:    #f59e0b;                        /* ambre */
-  --warning-bg: rgba(245, 158, 11, 0.18);
-  --danger:     #ef4444;                        /* rouge */
-  --danger-bg:  rgba(239, 68, 68, 0.16);
-  --info:       #06b6d4;                        /* cyan */
-  --info-bg:    rgba(6, 182, 212, 0.16);
+  --success:    #2faa68;                        /* vert */
+  --success-bg: rgba(63, 195, 128, 0.16);
+  --warning:    #d98e0a;                        /* ambre (lisible sur blanc) */
+  --warning-bg: rgba(255, 177, 74, 0.20);
+  --danger:     #e64a2a;                        /* corail (lisible sur blanc) */
+  --danger-bg:  rgba(255, 107, 74, 0.16);
+  --info:       #2b395b;                        /* navy */
+  --info-bg:    rgba(43, 57, 91, 0.12);
 
   /* ── Priorités (cohérent avec Statuts) ──────────────────────── */
-  --priority-high:   #ef4444;
-  --priority-medium: #f59e0b;
-  --priority-low:    #10b981;
+  --priority-high:   #e64a2a;
+  --priority-medium: #d98e0a;
+  --priority-low:    #2faa68;
 
-  /* ── Catégories ─────────────────────────────────────────────── */
-  --cat-Santé:         #ef4444;
-  --cat-Finances:      #10b981;
-  --cat-Administratif: #3b82f6;
-  --cat-Véhicule:      #06b6d4;
-  --cat-Logement:      #8b5cf6;
-  --cat-Corvée:        #f59e0b;
-  --cat-Autre:         #64748b;
+  /* ── Catégories (accents de la palette) ─────────────────────── */
+  --cat-Santé:         #e64a2a;
+  --cat-Finances:      #d98e0a;
+  --cat-Administratif: #2b6cb0;
+  --cat-Véhicule:      #2faa68;
+  --cat-Logement:      #1ea596;
+  --cat-Corvée:        #7c5cff;
+  --cat-Autre:         #5b6678;
 
-  /* ── Ombres : froides ───────────────────────────────────────── */
-  --shadow-xs:   0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-sm:   0 2px 8px rgba(15, 23, 42, 0.08);
-  --shadow-md:   0 8px 28px rgba(79, 70, 229, 0.12);
-  --shadow-lg:   0 20px 50px rgba(79, 70, 229, 0.18);
-  --shadow-glow: 0 0 0 4px rgba(99, 102, 241, 0.22);
+  /* ── Ombres : froides, teintées navy ────────────────────────── */
+  --shadow-xs:   0 1px 2px rgba(31, 42, 68, 0.08);
+  --shadow-sm:   0 2px 8px rgba(31, 42, 68, 0.10);
+  --shadow-md:   0 8px 28px rgba(31, 42, 68, 0.12);
+  --shadow-lg:   0 20px 50px rgba(31, 42, 68, 0.18);
+  --shadow-glow: 0 0 0 4px rgba(41, 182, 166, 0.22);
 
   /* ── Rayons ─────────────────────────────────────────────────── */
   --r-xs:   4px;
@@ -109,45 +113,47 @@
     'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* ── Mode sombre : « navy » ────────────────────────────────────── */
+/* ── Mode sombre : « nuit navy » ───────────────────────────────── */
 [data-theme="dark"] {
-  --bg-base: #0e1320;
+  --bg-base: #161e30;
   --bg-mesh:
-    radial-gradient(at 12% 8%,  rgba(99, 102, 241, 0.28) 0%, transparent 50%),
-    radial-gradient(at 88% 12%, rgba(6, 182, 212, 0.18)  0%, transparent 50%),
-    radial-gradient(at 50% 95%, rgba(139, 92, 246, 0.22) 0%, transparent 55%),
-    radial-gradient(at 92% 80%, rgba(59, 130, 246, 0.18) 0%, transparent 45%),
+    radial-gradient(at 12% 8%,  rgba(41, 182, 166, 0.16) 0%, transparent 50%),
+    radial-gradient(at 88% 12%, rgba(255, 177, 74, 0.14)  0%, transparent 50%),
+    radial-gradient(at 50% 95%, rgba(63, 195, 128, 0.16)  0%, transparent 55%),
+    radial-gradient(at 92% 80%, rgba(255, 107, 74, 0.14)  0%, transparent 45%),
     var(--bg-base);
 
-  --glass:               rgba(30, 41, 59, 0.62);
-  --glass-strong:        rgba(30, 41, 59, 0.80);
-  --glass-elevated:      rgba(38, 50, 71, 0.94);
-  --glass-hover:         rgba(34, 46, 66, 0.74);
+  --glass:               rgba(43, 57, 91, 0.55);
+  --glass-strong:        rgba(43, 57, 91, 0.80);
+  --glass-elevated:      rgba(48, 63, 99, 0.96);
+  --glass-hover:         rgba(48, 63, 99, 0.72);
   --glass-border:        rgba(255, 255, 255, 0.10);
   --glass-border-strong: rgba(255, 255, 255, 0.22);
 
-  --text:        #e2e8f0;
-  --text-muted:  #94a3b8;
-  --text-strong: #f8fafc;
+  --text:        #e7ecf4;
+  --text-muted:  #9aa6bc;
+  --text-strong: #ffffff;
 
-  --primary:       #818cf8;
-  --primary-hover: #6366f1;
-  --primary-light: rgba(129, 140, 248, 0.20);
-  --primary-grad:  linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #22d3ee 100%);
-  --primary-grad-hover: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+  --primary:       #35c4b3;
+  --primary-hover: #29b6a6;
+  --primary-light: rgba(41, 182, 166, 0.22);
+  --primary-grad:  linear-gradient(135deg, #29b6a6 0%, #3fc380 100%);
+  --primary-grad-hover: linear-gradient(135deg, #35c4b3 0%, #4ad08c 100%);
 
-  --success:    #34d399;
-  --success-bg: rgba(52, 211, 153, 0.20);
-  --warning:    #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.22);
-  --danger:     #f87171;
-  --danger-bg:  rgba(248, 113, 113, 0.20);
+  --success:    #4cd08a;
+  --success-bg: rgba(63, 195, 128, 0.22);
+  --warning:    #ffb14a;
+  --warning-bg: rgba(255, 177, 74, 0.22);
+  --danger:     #ff7a5c;
+  --danger-bg:  rgba(255, 107, 74, 0.22);
+  --info:       #8fa6d4;
+  --info-bg:    rgba(143, 166, 212, 0.18);
 
   --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-sm:   0 2px 8px rgba(0, 0, 0, 0.42);
   --shadow-md:   0 8px 28px rgba(0, 0, 0, 0.55);
   --shadow-lg:   0 20px 50px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 0 4px rgba(129, 140, 248, 0.28);
+  --shadow-glow: 0 0 0 4px rgba(41, 182, 166, 0.28);
 }
 
 /* ── Titres en serif éditorial ─────────────────────────────────── */

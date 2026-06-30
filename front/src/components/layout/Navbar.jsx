@@ -32,7 +32,9 @@ export function Navbar() {
     <header className="navbar">
       <div className="navbar-inner">
         <Link to="/dashboard" className="navbar-brand">
-          <span className="brand-mark">👥</span>
+          <span className="brand-logo" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
           <span>Crew</span>
         </Link>
 

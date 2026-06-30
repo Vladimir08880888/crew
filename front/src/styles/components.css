@@ -1,21 +1,61 @@
-/* ============ Auth pages (Login / Register) ============ */
+/* ============ Logo de marque (global) ============ */
+/* 4 barres colorées, repris de la présentation. */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 22px;
+}
+.brand-logo i {
+  display: block;
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+}
+.brand-logo i:nth-child(1) { background: var(--c-teal); }
+.brand-logo i:nth-child(2) { background: var(--c-amber); }
+.brand-logo i:nth-child(3) { background: var(--c-coral); }
+.brand-logo i:nth-child(4) { background: var(--c-green); }
+
+.brand-logo-lg { height: 36px; gap: 5px; }
+.brand-logo-lg i { width: 7px; height: 36px; border-radius: 4px; }
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+}
+.brand-word {
+  font-weight: 800;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+
+/* ============ Auth pages (Login / Register / 404) ============ */
 .auth-page {
-  min-height: calc(100vh - var(--nav-h, 0px));
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
+  background:
+    radial-gradient(at 15% 12%, rgba(41, 182, 166, 0.20) 0%, transparent 45%),
+    radial-gradient(at 85% 18%, rgba(255, 177, 74, 0.18) 0%, transparent 45%),
+    radial-gradient(at 78% 92%, rgba(255, 107, 74, 0.16) 0%, transparent 45%),
+    radial-gradient(at 20% 85%, rgba(63, 195, 128, 0.18) 0%, transparent 45%),
+    linear-gradient(160deg, #243152 0%, #1f2a44 58%, #18223a 100%);
 }
 .auth-card {
   width: 100%;
   max-width: 440px;
-  background: var(--glass);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
+  background: var(--glass-elevated);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
   padding: 2.5rem 2rem;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 30px 70px rgba(10, 15, 30, 0.45);
 }
 .auth-card h1 {
   font-size: 1.75rem;

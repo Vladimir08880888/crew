@@ -19,11 +19,11 @@ Chart.register(
 );
 
 const POSTE_COLORS = {
-  cuisine:        '#ec4899',
-  salle:          '#6366f1',
-  bar:            '#f59e0b',
-  plonge:         '#10b981',
-  administration: '#8b5cf6',
+  cuisine:        '#ff6b4a',
+  salle:          '#29b6a6',
+  bar:            '#ffb14a',
+  plonge:         '#3fc380',
+  administration: '#2b395b',
 };
 
 export default function Stats() {
@@ -102,7 +102,7 @@ export default function Stats() {
     datasets: [{
       label: t('stats.shiftsCount'),
       data: data.byMember.map((m) => m.shifts_count),
-      backgroundColor: '#6366f1',
+      backgroundColor: '#29b6a6',
       borderRadius: 6,
     }],
   };
@@ -112,12 +112,12 @@ export default function Stats() {
     datasets: [{
       label: t('stats.shiftsPerDay'),
       data: data.timeline.map((d) => d.n),
-      borderColor: '#6366f1',
-      backgroundColor: 'rgba(99, 102, 241, 0.2)',
+      borderColor: '#29b6a6',
+      backgroundColor: 'rgba(41, 182, 166, 0.2)',
       fill: true,
       tension: 0.35,
       pointRadius: 3,
-      pointBackgroundColor: '#6366f1',
+      pointBackgroundColor: '#29b6a6',
     }],
   };
 

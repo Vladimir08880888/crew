@@ -124,7 +124,7 @@ export default function Profile() {
             label={t('profile.feedAll')}
             icon={Smartphone}
             url={allUrl}
-            color="#6366f1"
+            color="#29b6a6"
           />
 
           <div className="card" style={{ marginTop: '1rem' }}>

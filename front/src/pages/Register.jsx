@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Crown, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import { Brand } from '../components/ui/Brand.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -39,6 +40,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <form onSubmit={submit} className="auth-card">
+        <Brand />
         <h1>{t('auth.register.title')}</h1>
         <p className="auth-sub">{t('app.tagline')}</p>
 

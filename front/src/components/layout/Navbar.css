@@ -2,12 +2,16 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--glass-strong);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
-  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, #243152 0%, var(--c-navy) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   height: var(--nav-h);
 }
+[data-theme="dark"] .navbar {
+  background: linear-gradient(180deg, #1a2336 0%, #131a2a 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* (les styles du logo .brand-logo sont dans components.css — chargé globalement) */
 
 .navbar-inner {
   max-width: var(--container-w);
@@ -25,11 +29,10 @@
   gap: 0.5rem;
   font-weight: 800;
   font-size: 1.1rem;
-  color: var(--text-strong);
+  color: #ffffff;
   letter-spacing: -0.02em;
 }
-.navbar-brand:hover { color: var(--text-strong); text-decoration: none; }
-.navbar-brand .brand-mark { font-size: 1.3rem; }
+.navbar-brand:hover { color: #ffffff; text-decoration: none; }
 
 .navbar-links {
   display: flex;
@@ -42,19 +45,19 @@
   gap: 0.4rem;
   padding: 0.5rem 0.85rem;
   border-radius: var(--r-sm);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.72);
   font-weight: 600;
   font-size: 0.9rem;
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 .navbar-links a:hover {
-  background: var(--glass);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
   text-decoration: none;
 }
 .navbar-links a.active {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: rgba(41, 182, 166, 0.22);
+  color: #7fe3d5;
 }
 
 .navbar-right {
@@ -78,15 +81,35 @@
   padding: 0.3rem 0.7rem 0.3rem 0.3rem;
   border-radius: var(--r-full);
   border: 1px solid transparent;
-  color: var(--text);
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.85rem;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
 .navbar-user:hover {
-  background: var(--glass);
-  border-color: var(--glass-border);
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.18);
   text-decoration: none;
+}
+
+/* Boutons utilitaires (langue, thème, déconnexion) sur fond navy */
+.navbar .ghost {
+  color: rgba(255, 255, 255, 0.82);
+}
+.navbar .ghost:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+}
+
+/* Sélecteur d'équipe : contrôle discret sur navy */
+.navbar .family-switcher {
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.navbar .family-switcher option {
+  color: var(--text);
+  background: var(--glass-elevated);
 }
 .navbar-avatar {
   width: 30px;
@@ -109,7 +132,7 @@
   height: 1.25rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  background: #ef4444;
+  background: var(--c-coral);
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
